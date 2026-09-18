@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师工作台 - 智慧教学平台</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* 教师工作台专用样式 */
+        
+        /* 统计卡片区域 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+        
+        .stat-icon.students {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        }
+        
+        .stat-icon.time {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        }
+        
+        .stat-icon.classes {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        }
+        
+        .stat-icon.courses {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        }
+        
+        .stat-content h3 {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+        
+        .stat-content p {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+        
+        /* AI快捷入口区域 */
+        .ai-shortcuts {
+            margin-bottom: var(--space-4);
+        }
+        
+        .ai-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-3);
+        }
+        
+        .ai-card {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            color: white;
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .ai-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .ai-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(71, 85, 105, 0.4);
+        }
+        
+        .ai-card-icon {
+            font-size: 32px;
+            margin-bottom: var(--space-2);
+        }
+        
+        .ai-card-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: 4px;
+        }
+        
+        .ai-card-desc {
+            font-size: var(--font-size-xs);
+            opacity: 0.9;
+            line-height: var(--line-height-relaxed);
+        }
+        
+        /* 内容区域两栏布局 */
+        .content-two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        /* 任务概览 */
+        .task-overview {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+        }
+        
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+        
+        .task-item {
+            padding: var(--space-2);
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all var(--duration-base) ease;
+        }
+        
+        .task-item:hover {
+            background: rgba(71, 85, 105, 0.05);
+        }
+        
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            flex: 1;
+        }
+        
+        .task-type-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .task-type-icon.homework {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3B82F6;
+        }
+        
+        .task-type-icon.exam {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+        }
+        
+        .task-type-icon.practice {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+        }
+        
+        .task-info h4 {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: 2px;
+        }
+        
+        .task-meta {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        .task-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .task-progress {
+            text-align: right;
+        }
+        
+        .progress-bar {
+            width: 100px;
+            height: 6px;
+            background: var(--border-light);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width var(--duration-slow) ease;
+        }
+        
+        .progress-fill.high {
+            background: linear-gradient(90deg, #10B981, #059669);
+        }
+        
+        .progress-fill.medium {
+            background: linear-gradient(90deg, #F59E0B, #D97706);
+        }
+        
+        .progress-fill.low {
+            background: linear-gradient(90deg, #EF4444, #DC2626);
+        }
+        
+        .progress-text {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        /* 班级学情概览 */
+        .class-overview {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+        }
+        
+        .chart-container {
+            padding: var(--space-2) 0;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 200px;
+            padding: var(--space-2) 0;
+            border-bottom: 2px solid var(--border-light);
+        }
+        
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-1);
+            flex: 1;
+        }
+        
+        .bar-wrapper {
+            width: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 160px;
+        }
+        
+        .bar {
+            width: 100%;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            transition: all var(--duration-base) ease;
+            position: relative;
+        }
+        
+        .bar:hover {
+            opacity: 0.8;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+        
+        .bar-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: var(--space-1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1400px) {
+            .stats-grid,
+            .ai-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .content-two-cols {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid,
+            .ai-cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card {
+                padding: var(--space-2);
+            }
+            
+            .ai-card {
+                min-height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- 顶部导航栏 -->
+        <nav class="top-nav" style="grid-column: 1 / -1;">
+            <div class="nav-brand">
+                <div class="nav-brand-icon">智</div>
+                <span class="nav-brand-text">智慧教学平台</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link">首页</a>
+                <a href="#" class="nav-link active">工作台</a>
+                <a href="#" class="nav-link">课程管理</a>
+                <a href="#" class="nav-link">学生管理</a>
+                <a href="#" class="nav-link">数据中心</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <span style="font-size: var(--font-size-sm); opacity: 0.9;">欢迎，张老师</span>
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #667EEA, #764BA2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">张</div>
+            </div>
+        </nav>
+        
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="teacher-dashboard.html" class="sidebar-item active">
+                    <span class="sidebar-icon">📊</span>
+                    工作台
+                </a>
+                <a href="course-hall.html" class="sidebar-item">
+                    <span class="sidebar-icon">📚</span>
+                    我的课程
+                </a>
+                <a href="task-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">👥</span>
+                    班级管理
+                </a>
+                <a href="task-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">📝</span>
+                    作业中心
+                </a>
+                <a href="exam-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">📋</span>
+                    考试管理
+                </a>
+                <a href="ai-assistant.html" class="sidebar-item">
+                    <span class="sidebar-icon">🤖</span>
+                    AI学习助手
+                </a>
+                <a href="ai-analysis.html" class="sidebar-item">
+                    <span class="sidebar-icon">📈</span>
+                    数据分析
+                </a>
+                <a href="profile.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚙️</span>
+                    系统设置
+                </a>
+            </div>
+        </aside>
+        
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1 class="page-title">教师工作台</h1>
+                <p class="page-subtitle">欢迎回来！这是您今天的教学概览</p>
+            </div>
+            
+            <!-- 统计数据卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon students">👥</div>
+                    <div class="stat-content">
+                        <h3>1,248</h3>
+                        <p>学生任务数</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon time">⏱️</div>
+                    <div class="stat-content">
+                        <h3>326h</h3>
+                        <p>任务总时长</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon classes">🏫</div>
+                    <div class="stat-content">
+                        <h3>6</h3>
+                        <p>班级数量</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon courses">📖</div>
+                    <div class="stat-content">
+                        <h3>12</h3>
+                        <p>课程数量</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI快捷入口 -->
+            <div class="ai-shortcuts">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">🤖</span>
+                        AI智能助手
+                    </h2>
+                </div>
+                <div class="ai-cards-grid">
+                    <div class="ai-card">
+                        <div>
+                            <div class="ai-card-icon">📋</div>
+                            <div class="ai-card-title">AI课标定制</div>
+                            <div class="ai-card-desc">智能生成符合教学标准的课程大纲</div>
+                        </div>
+                    </div>
+                    <div class="ai-card">
+                        <div>
+                            <div class="ai-card-icon">📝</div>
+                            <div class="ai-card-title">AI大纲设计</div>
+                            <div class="ai-card-desc">快速设计课程教学大纲与计划</div>
+                        </div>
+                    </div>
+                    <div class="ai-card">
+                        <div>
+                            <div class="ai-card-icon">🎨</div>
+                            <div class="ai-card-title">AI课件生成</div>
+                            <div class="ai-card-desc">一键生成精美教学课件PPT</div>
+                        </div>
+                    </div>
+                    <div class="ai-card">
+                        <div>
+                            <div class="ai-card-icon">📚</div>
+                            <div class="ai-card-title">AI题库设计</div>
+                            <div class="ai-card-desc">智能生成多样化练习题目</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 任务概览和班级学情 -->
+            <div class="content-two-cols">
+                <!-- 任务概览列表 -->
+                <div class="task-overview">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <span class="section-icon">📋</span>
+                            任务概览
+                        </h2>
+                        <a href="#" class="view-all">查看全部 →</a>
+                    </div>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <div class="task-left">
+                                <div class="task-type-icon homework">📝</div>
+                                <div class="task-info">
+                                    <h4>第三章课后习题</h4>
+                                    <div class="task-meta">高一(3)班 · 下发时间: 2024-01-15</div>
+                                </div>
+                            </div>
+                            <div class="task-right">
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill high" style="width: 92%;"></div>
+                                    </div>
+                                    <div class="progress-text">完成率 92%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-left">
+                                <div class="task-type-icon exam">📊</div>
+                                <div class="task-info">
+                                    <h4>月度测试卷</h4>
+                                    <div class="task-meta">高一(2)班 · 下发时间: 2024-01-14</div>
+                                </div>
+                            </div>
+                            <div class="task-right">
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill high" style="width: 88%;"></div>
+                                    </div>
+                                    <div class="progress-text">完成率 88%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-left">
+                                <div class="task-type-icon practice">🎯</div>
+                                <div class="task-info">
+                                    <h4>函数练习题组</h4>
+                                    <div class="task-meta">高一(1)班 · 下发时间: 2024-01-13</div>
+                                </div>
+                            </div>
+                            <div class="task-right">
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill medium" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="progress-text">完成率 75%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-left">
+                                <div class="task-type-icon homework">📝</div>
+                                <div class="task-info">
+                                    <h4>几何证明专项训练</h4>
+                                    <div class="task-meta">高一(4)班 · 下发时间: 2024-01-12</div>
+                                </div>
+                            </div>
+                            <div class="task-right">
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill medium" style="width: 68%;"></div>
+                                    </div>
+                                    <div class="progress-text">完成率 68%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-left">
+                                <div class="task-type-icon practice">🎯</div>
+                                <div class="task-info">
+                                    <h4>期中复习资料</h4>
+                                    <div class="task-meta">高一(5)班 · 下发时间: 2024-01-11</div>
+                                </div>
+                            </div>
+                            <div class="task-right">
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill low" style="width: 45%;"></div>
+                                    </div>
+                                    <div class="progress-text">完成率 45%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 班级学情概览 -->
+                <div class="class-overview">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <span class="section-icon">📊</span>
+                            班级学情概览
+                        </h2>
+                    </div>
+                    <div class="chart-container">
+                        <div class="bar-chart">
+                            <div class="bar-item">
+                                <div class="bar-wrapper">
+                                    <div class="bar" style="height: 85%; background: linear-gradient(180deg, #475569, #64748B);">
+                                        <span class="bar-value">85%</span>
+                                    </div>
+                                </div>
+                                <div class="bar-label">高一(1)班</div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-wrapper">
+                                    <div class="bar" style="height: 92%; background: linear-gradient(180deg, #475569, #64748B);">
+                                        <span class="bar-value">92%</span>
+                                    </div>
+                                </div>
+                                <div class="bar-label">高一(2)班</div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-wrapper">
+                                    <div class="bar" style="height: 78%; background: linear-gradient(180deg, #475569, #64748B);">
+                                        <span class="bar-value">78%</span>
+                                    </div>
+                                </div>
+                                <div class="bar-label">高一(3)班</div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-wrapper">
+                                    <div class="bar" style="height: 88%; background: linear-gradient(180deg, #475569, #64748B);">
+                                        <span class="bar-value">88%</span>
+                                    </div>
+                                </div>
+                                <div class="bar-label">高一(4)班</div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-wrapper">
+                                    <div class="bar" style="height: 72%; background: linear-gradient(180deg, #475569, #64748B);">
+                                        <span class="bar-value">72%</span>
+                                    </div>
+                                </div>
+                                <div class="bar-label">高一(5)班</div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-wrapper">
+                                    <div class="bar" style="height: 95%; background: linear-gradient(180deg, #475569, #64748B);">
+                                        <span class="bar-value">95%</span>
+                                    </div>
+                                </div>
+                                <div class="bar-label">高一(6)班</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-2); padding: var(--space-2); background: var(--bg-body); border-radius: var(--radius-base);">
+                        <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">整体完成情况</div>
+                        <div style="display: flex; align-items: center; gap: var(--space-2);">
+                            <div style="flex: 1; height: 8px; background: var(--border-light); border-radius: var(--radius-full); overflow: hidden;">
+                                <div style="width: 85%; height: 100%; background: linear-gradient(90deg, #475569, #64748B); border-radius: var(--radius-full);"></div>
+                            </div>
+                            <span style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--primary-blue);">85%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // AI卡片点击交互
+        document.querySelectorAll('.ai-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const title = this.querySelector('.ai-card-title').textContent;
+                alert(`即将打开: ${title}`);
+            });
+        });
+        
+        // 任务项点击交互
+        document.querySelectorAll('.task-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const taskName = this.querySelector('h4').textContent;
+                console.log('查看任务详情:', taskName);
+            });
+        });
+        
+        // 侧边栏导航交互
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // 顶部导航交互
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

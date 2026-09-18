@@ -1,0 +1,4690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D应用设计器 - 智慧场景可视化搭建平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --accent: #00d9a3;
+            --accent-hover: #00b386;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: #2d3a4f;
+            --danger: #ff4757;
+            --warning: #ffa502;
+            --success: #2ed573;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* 顶部工具栏 */
+        .toolbar {
+            height: 50px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            position: relative;
+            z-index: 100;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #00b386);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .app-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .toolbar-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .toolbar-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .toolbar-btn.primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* 主内容区 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+
+        /* 左侧组件库 */
+        .component-panel {
+            width: 240px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .component-search {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .component-search input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .component-search input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .component-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .component-category {
+            margin-bottom: 10px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .category-header:hover {
+            background: var(--accent);
+        }
+
+        .category-header .arrow {
+            transition: transform 0.2s;
+        }
+
+        .category-header.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .category-items {
+            padding: 8px 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .category-items.hidden {
+            display: none;
+        }
+
+        .component-item {
+            padding: 10px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: grab;
+            text-align: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .component-item:hover {
+            border-color: var(--accent);
+            background: var(--bg-tertiary);
+        }
+
+        .component-item:active {
+            cursor: grabbing;
+        }
+
+        .component-item .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        /* 中间画布区 */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-toolbar {
+            height: 40px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+        }
+
+        .canvas-tool-btn {
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .canvas-tool-btn:hover, .canvas-tool-btn.active {
+            background: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--accent);
+        }
+
+        .canvas-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border-color);
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: auto;
+        }
+
+        .zoom-level {
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+            background: #0d0d1a;
+        }
+
+        .canvas-container {
+            position: absolute;
+            transform-origin: 0 0;
+            cursor: default;
+            min-width: 1920px;
+            min-height: 1080px;
+        }
+
+        .canvas {
+            width: 1920px;
+            height: 1080px;
+            background: var(--bg-secondary);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 217, 163, 0.1);
+            border: 1px solid #2d3a4f;
+        }
+
+        .canvas-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .canvas-component {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+        }
+
+        .canvas-component.selected {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .canvas-component.locked {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .canvas-component.hidden-comp {
+            display: none;
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border: 1px solid #fff;
+            border-radius: 2px;
+        }
+
+        .resize-handle.nw { top: -4px; left: -4px; cursor: nw-resize; }
+        .resize-handle.ne { top: -4px; right: -4px; cursor: ne-resize; }
+        .resize-handle.sw { bottom: -4px; left: -4px; cursor: sw-resize; }
+        .resize-handle.se { bottom: -4px; right: -4px; cursor: se-resize; }
+        .resize-handle.n { top: -4px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .resize-handle.s { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .resize-handle.w { left: -4px; top: 50%; transform: translateY(-50%); cursor: w-resize; }
+        .resize-handle.e { right: -4px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
+
+        /* 右侧属性面板 */
+        .property-panel {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .property-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .property-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .property-tab:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .property-tab.active {
+            border-bottom-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .property-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .property-section {
+            margin-bottom: 20px;
+        }
+
+        .property-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .property-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .property-label {
+            width: 70px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .property-input {
+            flex: 1;
+            padding: 6px 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+
+        .property-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .property-input-group {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .property-input-group .property-input {
+            width: 50%;
+        }
+
+        .property-input-group .input-label {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .color-picker {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .property-select {
+            flex: 1;
+            padding: 6px 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .property-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .property-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            width: 40px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 数据配置 */
+        .data-source-toggle {
+            display: flex;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            padding: 3px;
+            margin-bottom: 12px;
+        }
+
+        .data-source-btn {
+            flex: 1;
+            padding: 6px;
+            text-align: center;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .data-source-btn.active {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .data-config-row {
+            margin-bottom: 10px;
+        }
+
+        .data-config-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        /* 条件样式 */
+        .condition-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .condition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .condition-value {
+            font-size: 12px;
+            color: var(--accent);
+        }
+
+        .condition-delete {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-condition-btn {
+            width: 100%;
+            padding: 8px;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .add-condition-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* 底部图层面板 */
+        .layer-panel {
+            height: 200px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .layer-header {
+            height: 36px;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .layer-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .layer-action-btn {
+            width: 26px;
+            height: 26px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .layer-action-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent);
+        }
+
+        .layer-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .layer-group {
+            margin-bottom: 4px;
+        }
+
+        .layer-group-header {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .layer-group-header:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .layer-group-toggle {
+            width: 16px;
+            text-align: center;
+            margin-right: 4px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px 6px 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .layer-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .layer-item.selected {
+            background: rgba(0, 217, 163, 0.2);
+            border-left: 2px solid var(--accent);
+        }
+
+        .layer-item.locked {
+            opacity: 0.5;
+        }
+
+        .layer-icon {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        .layer-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .layer-controls {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .layer-item:hover .layer-controls {
+            opacity: 1;
+        }
+
+        .layer-ctrl-btn {
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            border-radius: 3px;
+        }
+
+        .layer-ctrl-btn:hover {
+            background: var(--bg-primary);
+            color: var(--accent);
+        }
+
+        .layer-ctrl-btn.active {
+            color: var(--accent);
+        }
+
+        /* 组件样式 */
+        .comp-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+        }
+
+        .comp-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 217, 163, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .comp-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        .comp-container {
+            background: rgba(0, 217, 163, 0.05);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+        }
+
+        .comp-shape {
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #00b386);
+        }
+
+        .comp-chart {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .comp-gauge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+        }
+
+        .comp-gauge-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .comp-gauge-unit {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .comp-switch {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            padding: 5px;
+        }
+
+        .switch-track {
+            width: 50px;
+            height: 26px;
+            background: var(--bg-primary);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .switch-thumb {
+            width: 22px;
+            height: 22px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s;
+        }
+
+        .switch-track.on .switch-thumb {
+            left: 26px;
+            background: var(--accent);
+        }
+
+        .comp-slider {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .slider-track {
+            width: 80%;
+            height: 6px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .slider-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            width: 60%;
+        }
+
+        .slider-handle {
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            top: -5px;
+            left: 60%;
+            transform: translateX(-50%);
+        }
+
+        .comp-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .comp-select {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .comp-sensor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .sensor-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .sensor-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .sensor-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .comp-device-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .device-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .device-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .device-status.offline {
+            background: var(--text-secondary);
+        }
+
+        .device-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .device-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .device-info-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .device-info-label {
+            color: var(--text-secondary);
+        }
+
+        .comp-alert-light {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .alert-light {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 20px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .alert-light.warning {
+            background: var(--warning);
+            box-shadow: 0 0 20px var(--warning);
+        }
+
+        .alert-light.danger {
+            background: var(--danger);
+            box-shadow: 0 0 20px var(--danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .alert-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* 拖拽预览 */
+        .drag-preview {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0.8;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 框选框 */
+        .selection-box {
+            position: absolute;
+            border: 1px dashed var(--accent);
+            background: rgba(0, 217, 163, 0.1);
+            pointer-events: none;
+        }
+
+        /* 右键菜单 */
+        .context-menu {
+            position: fixed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 0;
+            min-width: 160px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .context-menu-item {
+            padding: 8px 15px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-menu-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent);
+        }
+
+        .context-menu-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 4px 0;
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 400px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 20px;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* 提示消息 */
+        .toast {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 3px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 3px solid var(--danger);
+        }
+
+        .toast.warning {
+            border-left: 3px solid var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+        }
+
+        /* 隐藏类 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* 进度条组件 */
+        .comp-progress {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #00b386);
+            border-radius: 6px;
+            transition: width 0.3s;
+        }
+
+        .progress-label {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 8px;
+            color: var(--text-primary);
+        }
+
+        /* 折线图模拟 */
+        .chart-line {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 柱状图模拟 */
+        .chart-bar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 100%;
+            padding: 10px;
+            gap: 5px;
+        }
+
+        .bar-item {
+            width: 20px;
+            min-height: 5px;
+            background: linear-gradient(to top, var(--accent), #00b386);
+            border-radius: 3px 3px 0 0;
+            transition: height 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部工具栏 -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div class="logo">
+                <div class="logo-icon">2D</div>
+                <span class="app-title">2D应用设计器</span>
+            </div>
+        </div>
+        <div class="toolbar-center">
+            <button class="toolbar-btn" onclick="undoAction()" title="撤销 (Ctrl+Z)">
+                <span>↶</span> 撤销
+            </button>
+            <button class="toolbar-btn" onclick="redoAction()" title="重做 (Ctrl+Y)">
+                <span>↷</span> 重做
+            </button>
+            <div class="toolbar-divider" style="width:1px;height:20px;background:var(--border-color);margin:0 10px;"></div>
+            <button class="toolbar-btn" onclick="importProject()">
+                <span>📥</span> 导入
+            </button>
+            <button class="toolbar-btn" onclick="exportProject()">
+                <span>📤</span> 导出
+            </button>
+            <button class="toolbar-btn" onclick="loadDemoScene()" style="background: linear-gradient(135deg, #00d9a3, #00a8cc); color: #fff;">
+                <span>☁️</span> 云平台
+            </button>
+            <button class="toolbar-btn" onclick="showHistoryDataPanel()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;">
+                <span>📊</span> 历史数据
+            </button>
+        </div>
+        <div class="toolbar-right">
+            <button class="toolbar-btn" onclick="toggleGrid()">
+                <span>▦</span> 网格
+            </button>
+            <button class="toolbar-btn" onclick="previewProject()">
+                <span>▶</span> 预览
+            </button>
+            <button class="toolbar-btn primary" onclick="publishProject()">
+                <span>🚀</span> 发布
+            </button>
+            <div class="user-avatar" title="用户">U</div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-container">
+        <!-- 左侧组件库 -->
+        <div class="component-panel">
+            <div class="panel-header">
+                <span>组件库</span>
+            </div>
+            <div class="component-search">
+                <input type="text" placeholder="搜索组件..." id="componentSearch" oninput="filterComponents()">
+            </div>
+            <div class="component-list" id="componentList">
+                <!-- 基础组件 -->
+                <div class="component-category" data-category="basic">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span>📦 基础组件</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="category-items">
+                        <div class="component-item" draggable="true" data-type="text" data-name="文本标签">
+                            <div class="icon">📝</div>
+                            <span>文本标签</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="number" data-name="数值显示">
+                            <div class="icon">🔢</div>
+                            <span>数值显示</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="image" data-name="图片">
+                            <div class="icon">🖼️</div>
+                            <span>图片</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="container" data-name="容器框">
+                            <div class="icon">□</div>
+                            <span>容器框</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="shape" data-name="形状图形">
+                            <div class="icon">●</div>
+                            <span>形状图形</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图表组件 -->
+                <div class="component-category" data-category="chart">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span>📊 图表组件</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="category-items">
+                        <div class="component-item" draggable="true" data-type="lineChart" data-name="折线图">
+                            <div class="icon">📈</div>
+                            <span>折线图</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="barChart" data-name="柱状图">
+                            <div class="icon">📊</div>
+                            <span>柱状图</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="gauge" data-name="仪表盘">
+                            <div class="icon">⭕</div>
+                            <span>仪表盘</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="progress" data-name="进度条">
+                            <div class="icon">████</div>
+                            <span>进度条</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 控制组件 -->
+                <div class="component-category" data-category="control">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span>🎛️ 控制组件</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="category-items">
+                        <div class="component-item" draggable="true" data-type="switch" data-name="开关按钮">
+                            <div class="icon">🔘</div>
+                            <span>开关按钮</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="slider" data-name="滑动条">
+                            <div class="icon">══◉═</div>
+                            <span>滑动条</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="button" data-name="按钮">
+                            <div class="icon">[按钮]</div>
+                            <span>按钮</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="select" data-name="下拉选择">
+                            <div class="icon">▼</div>
+                            <span>下拉选择</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 业务组件 -->
+                <div class="component-category" data-category="business">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span>🏢 业务组件</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="category-items">
+                        <div class="component-item" draggable="true" data-type="sensor" data-name="传感器仪表">
+                            <div class="icon">🌡️</div>
+                            <span>传感器仪表</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="deviceCard" data-name="设备状态卡">
+                            <div class="icon">📱</div>
+                            <span>设备状态卡</span>
+                        </div>
+                        <div class="component-item" draggable="true" data-type="alertLight" data-name="报警指示灯">
+                            <div class="icon">🚨</div>
+                            <span>报警指示灯</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间画布区 -->
+        <div class="canvas-area">
+            <div class="canvas-toolbar">
+                <button class="canvas-tool-btn active" onclick="setTool('select')" title="选择工具">
+                    <span>⬚</span>
+                </button>
+                <button class="canvas-tool-btn" onclick="setTool('move')" title="移动画布">
+                    <span>✋</span>
+                </button>
+                <div class="canvas-divider"></div>
+                <button class="canvas-tool-btn" onclick="alignComponents('left')" title="左对齐">
+                    <span>⫷</span>
+                </button>
+                <button class="canvas-tool-btn" onclick="alignComponents('center')" title="居中对齐">
+                    <span>⫿</span>
+                </button>
+                <button class="canvas-tool-btn" onclick="alignComponents('right')" title="右对齐">
+                    <span>⫸</span>
+                </button>
+                <button class="canvas-tool-btn" onclick="alignComponents('top')" title="顶部对齐">
+                    <span>⫯</span>
+                </button>
+                <button class="canvas-tool-btn" onclick="alignComponents('bottom')" title="底部对齐">
+                    <span>⫰</span>
+                </button>
+                <div class="canvas-divider"></div>
+                <button class="canvas-tool-btn" onclick="deleteSelected()" title="删除选中">
+                    <span>🗑️</span>
+                </button>
+                <button class="canvas-tool-btn" onclick="duplicateSelected()" title="复制选中">
+                    <span>📋</span>
+                </button>
+                <div class="zoom-controls">
+                    <button class="canvas-tool-btn" onclick="zoomOut()" title="缩小">
+                        <span>−</span>
+                    </button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button class="canvas-tool-btn" onclick="zoomIn()" title="放大">
+                        <span>+</span>
+                    </button>
+                    <button class="canvas-tool-btn" onclick="resetZoom()" title="重置缩放">
+                        <span>⟲</span>
+                    </button>
+                </div>
+            </div>
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <div class="canvas-container" id="canvasContainer">
+                    <div class="canvas" id="canvas">
+                        <canvas class="canvas-grid" id="gridCanvas" style="pointer-events: none;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧属性面板 -->
+        <div class="property-panel">
+            <div class="property-tabs">
+                <div class="property-tab active" onclick="switchPropertyTab('basic')">基础</div>
+                <div class="property-tab" onclick="switchPropertyTab('style')">样式</div>
+                <div class="property-tab" onclick="switchPropertyTab('data')">数据</div>
+            </div>
+            <div class="property-content" id="propertyContent">
+                <!-- 无选中时显示 -->
+                <div class="empty-state" id="emptyProperty">
+                    <div class="empty-state-icon">📦</div>
+                    <div class="empty-state-text">请选择一个组件<br>以查看和编辑属性</div>
+                </div>
+                
+                <!-- 基础属性面板 -->
+                <div class="property-panel-content hidden" id="basicPanel">
+                    <div class="property-section">
+                        <div class="property-section-title">
+                            <span>📐 基础属性</span>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">名称</label>
+                            <input type="text" class="property-input" id="propName" onchange="updateProperty('name', this.value)">
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">尺寸</label>
+                            <div class="property-input-group">
+                                <input type="number" class="property-input" id="propWidth" placeholder="宽" onchange="updateProperty('width', this.value)">
+                                <input type="number" class="property-input" id="propHeight" placeholder="高" onchange="updateProperty('height', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">位置</label>
+                            <div class="property-input-group">
+                                <input type="number" class="property-input" id="propX" placeholder="X" onchange="updateProperty('x', this.value)">
+                                <input type="number" class="property-input" id="propY" placeholder="Y" onchange="updateProperty('y', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">旋转</label>
+                            <div class="property-input-group">
+                                <input type="range" class="property-slider" id="propRotation" min="0" max="360" value="0" oninput="updateProperty('rotation', this.value)">
+                                <span class="slider-value" id="rotationValue">0°</span>
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">透明度</label>
+                            <div class="property-input-group">
+                                <input type="range" class="property-slider" id="propOpacity" min="0" max="100" value="100" oninput="updateProperty('opacity', this.value)">
+                                <span class="slider-value" id="opacityValue">100%</span>
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">层级</label>
+                            <input type="number" class="property-input" id="propZIndex" onchange="updateProperty('zIndex', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 样式面板 -->
+                <div class="property-panel-content hidden" id="stylePanel">
+                    <div class="property-section">
+                        <div class="property-section-title">
+                            <span>🎨 样式配置</span>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">背景色</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" class="color-picker" id="propBgColor" onchange="updateProperty('backgroundColor', this.value)">
+                                <input type="text" class="property-input" id="propBgColorText" placeholder="#1a1a2e" onchange="updateProperty('backgroundColor', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">边框色</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" class="color-picker" id="propBorderColor" onchange="updateProperty('borderColor', this.value)">
+                                <input type="text" class="property-input" id="propBorderColorText" placeholder="#00d9a3" onchange="updateProperty('borderColor', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">边框宽</label>
+                            <input type="number" class="property-input" id="propBorderWidth" min="0" onchange="updateProperty('borderWidth', this.value)">
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">圆角</label>
+                            <input type="number" class="property-input" id="propBorderRadius" min="0" onchange="updateProperty('borderRadius', this.value)">
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">字号</label>
+                            <input type="number" class="property-input" id="propFontSize" min="12" onchange="updateProperty('fontSize', this.value)">
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">字色</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" class="color-picker" id="propColor" onchange="updateProperty('color', this.value)">
+                                <input type="text" class="property-input" id="propColorText" placeholder="#ffffff" onchange="updateProperty('color', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据面板 -->
+                <div class="property-panel-content hidden" id="dataPanel">
+                    <div class="property-section">
+                        <div class="property-section-title">
+                            <span>📊 数据配置</span>
+                        </div>
+                        <div class="data-source-toggle">
+                            <div class="data-source-btn active" onclick="setDataSource('static')" id="staticBtn">静态数据</div>
+                            <div class="data-source-btn" onclick="setDataSource('dynamic')" id="dynamicBtn">动态数据</div>
+                        </div>
+                        
+                        <!-- 静态数据 -->
+                        <div id="staticDataConfig">
+                            <div class="data-config-row">
+                                <div class="data-config-label">数据值</div>
+                                <input type="text" class="property-input" id="propDataValue" placeholder="输入数据值" onchange="updateProperty('dataValue', this.value)">
+                            </div>
+                            <div class="data-config-row">
+                                <div class="data-config-label">单位</div>
+                                <input type="text" class="property-input" id="propDataUnit" placeholder="输入单位" onchange="updateProperty('dataUnit', this.value)">
+                            </div>
+                        </div>
+
+                        <!-- 动态数据 -->
+                        <div id="dynamicDataConfig" class="hidden">
+                            <div class="data-config-row">
+                                <div class="data-config-label">数据源类型</div>
+                                <select class="property-select" id="propDataSourceType" onchange="updateProperty('dataSourceType', this.value)">
+                                    <option value="simulation">工程虚拟仿真平台</option>
+                                    <option value="cloud">云平台设备</option>
+                                    <option value="api">API接口</option>
+                                    <option value="mqtt">MQTT主题</option>
+                                </select>
+                            </div>
+                            <div class="data-config-row">
+                                <div class="data-config-label">设备选择</div>
+                                <select class="property-select" id="propDeviceId" onchange="updateProperty('deviceId', this.value)">
+                                    <option value="temp01">温度传感器01</option>
+                                    <option value="humidity01">湿度传感器01</option>
+                                    <option value="light01">光照传感器01</option>
+                                    <option value="co201">CO2传感器01</option>
+                                    <option value="fan01">风机01</option>
+                                    <option value="pump01">水泵01</option>
+                                </select>
+                            </div>
+                            <div class="data-config-row">
+                                <div class="data-config-label">属性选择</div>
+                                <select class="property-select" id="propProperty" onchange="updateProperty('property', this.value)">
+                                    <option value="temperature">温度</option>
+                                    <option value="humidity">湿度</option>
+                                    <option value="light">光照</option>
+                                    <option value="co2">CO2浓度</option>
+                                    <option value="status">状态</option>
+                                    <option value="speed">速度</option>
+                                </select>
+                            </div>
+                            <div class="data-config-row">
+                                <div class="data-config-label">刷新频率</div>
+                                <select class="property-select" id="propRefreshInterval" onchange="updateProperty('refreshInterval', this.value)">
+                                    <option value="1000">1秒</option>
+                                    <option value="2000" selected>2秒</option>
+                                    <option value="5000">5秒</option>
+                                    <option value="10000">10秒</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="property-section">
+                        <div class="property-section-title">
+                            <span>⚡ 条件样式</span>
+                        </div>
+                        <div id="conditionList"></div>
+                        <button class="add-condition-btn" onclick="addCondition()">+ 添加条件</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部图层面板 -->
+    <div class="layer-panel">
+        <div class="layer-header">
+            <span>图层</span>
+            <div class="layer-actions">
+                <button class="layer-action-btn" onclick="createGroup()" title="新建分组">📁</button>
+                <button class="layer-action-btn" onclick="toggleAllLock()" title="全部锁定/解锁">🔒</button>
+                <button class="layer-action-btn" onclick="toggleAllVisibility()" title="全部显示/隐藏">👁️</button>
+            </div>
+        </div>
+        <div class="layer-tree" id="layerTree">
+            <!-- 图层树将动态生成 -->
+        </div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div class="context-menu hidden" id="contextMenu">
+        <div class="context-menu-item" onclick="copySelected()">📋 复制</div>
+        <div class="context-menu-item" onclick="pasteComponent()">📄 粘贴</div>
+        <div class="context-menu-item" onclick="duplicateSelected()">📑 复制选中</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="bringToFront()">⬆️ 置顶</div>
+        <div class="context-menu-item" onclick="sendToBack()">⬇️ 置底</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="toggleLock()">🔒 锁定/解锁</div>
+        <div class="context-menu-item" onclick="toggleVisibility()">👁️ 显示/隐藏</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="createGroup()">📁 创建分组</div>
+        <div class="context-menu-item" onclick="renameComponent()">✏️ 重命名</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="deleteSelected()" style="color: var(--danger);">🗑️ 删除</div>
+    </div>
+
+    <!-- 隐藏的文件输入 -->
+    <input type="file" id="fileInput" accept=".exp,.json" style="display: none;" onchange="handleFileImport(event)">
+
+    <script>
+        // ==================== 全局状态 ====================
+        const state = {
+            components: [],
+            selectedIds: [],
+            clipboard: null,
+            zoom: 1,
+            panX: 0,
+            panY: 0,
+            gridEnabled: true,
+            snapToGrid: true,
+            gridSize: 20,
+            currentTool: 'select',
+            isDragging: false,
+            isPanning: false,
+            dragStartX: 0,
+            dragStartY: 0,
+            selectionBox: null,
+            history: [],
+            historyIndex: -1,
+            maxHistory: 50,
+            componentIdCounter: 0,
+            groups: [],
+            // 云平台设备数据模拟
+            simulatedData: {
+                temperature: 25.5,
+                humidity: 65,
+                light: 850,
+                co2: 420,
+                fanStatus: true,
+                pumpStatus: false
+            },
+            // 设备列表（模拟云平台设备）
+            cloudDevices: [
+                { id: 'temp01', name: '温度传感器01', type: 'sensor', properties: ['temperature'], online: true },
+                { id: 'humidity01', name: '湿度传感器01', type: 'sensor', properties: ['humidity'], online: true },
+                { id: 'light01', name: '光照传感器01', type: 'sensor', properties: ['light'], online: true },
+                { id: 'co201', name: 'CO2传感器01', type: 'sensor', properties: ['co2'], online: true },
+                { id: 'fan01', name: '风机01', type: 'device', properties: ['status', 'speed'], online: true },
+                { id: 'pump01', name: '水泵01', type: 'device', properties: ['status', 'speed'], online: false }
+            ],
+            // 历史数据记录
+            historyData: {
+                temperature: [],
+                humidity: [],
+                light: [],
+                co2: [],
+                fanSpeed: [],
+                pumpSpeed: []
+            },
+            // 数据更新间隔ID
+            dataUpdateInterval: null
+        };
+
+        // ==================== 组件模板 ====================
+        const componentTemplates = {
+            text: {
+                name: '文本标签',
+                width: 150,
+                height: 40,
+                style: {
+                    backgroundColor: 'transparent',
+                    borderColor: 'transparent',
+                    borderWidth: 0,
+                    borderRadius: 0,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    textAlign: 'center'
+                },
+                content: '文本内容',
+                render: (comp) => `<div class="comp-text" style="font-size: ${comp.style.fontSize}px; color: ${comp.style.color};">${comp.content}</div>`
+            },
+            number: {
+                name: '数值显示',
+                width: 120,
+                height: 60,
+                style: {
+                    backgroundColor: 'rgba(0, 217, 163, 0.1)',
+                    borderColor: '#00d9a3',
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    fontSize: 24,
+                    color: '#00d9a3'
+                },
+                dataValue: '0',
+                dataUnit: '',
+                render: (comp) => `<div class="comp-number" style="font-size: ${comp.style.fontSize}px;">${comp.dataValue}${comp.dataUnit ? '<span style="font-size: 14px; margin-left: 4px;">' + comp.dataUnit + '</span>' : ''}</div>`
+            },
+            image: {
+                name: '图片',
+                width: 200,
+                height: 150,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 4
+                },
+                src: '',
+                render: (comp) => `<div class="comp-image">🖼️ 图片</div>`
+            },
+            container: {
+                name: '容器框',
+                width: 300,
+                height: 200,
+                style: {
+                    backgroundColor: 'rgba(0, 217, 163, 0.05)',
+                    borderColor: '#00d9a3',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                render: (comp) => `<div class="comp-container" style="width: 100%; height: 100%;"></div>`
+            },
+            shape: {
+                name: '形状图形',
+                width: 100,
+                height: 100,
+                style: {
+                    backgroundColor: '#00d9a3',
+                    borderColor: 'transparent',
+                    borderWidth: 0,
+                    borderRadius: 50
+                },
+                shape: 'circle',
+                render: (comp) => `<div class="comp-shape" style="border-radius: ${comp.style.borderRadius}%;"></div>`
+            },
+            lineChart: {
+                name: '折线图',
+                width: 300,
+                height: 200,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                render: (comp) => {
+                    // 使用历史数据或生成随机数据
+                    let dataPoints = [];
+                    if (comp.dataSource === 'dynamic' && comp.property) {
+                        const history = state.historyData[comp.property] || [];
+                        dataPoints = history.slice(-10).map(h => h.value);
+                    }
+                    if (dataPoints.length < 10) {
+                        for (let i = dataPoints.length; i < 10; i++) {
+                            dataPoints.push(20 + Math.random() * 60);
+                        }
+                    }
+                    
+                    // 计算SVG坐标点
+                    const points = dataPoints.map((val, i) => {
+                        const x = 10 + (i / (dataPoints.length - 1)) * 80;
+                        const y = 90 - (val / 100) * 80; // 将值映射到SVG坐标
+                        return `${x},${y}`;
+                    });
+                    
+                    return '<div class="comp-chart" style="width:100%;height:100%;display:flex;flex-direction:column;">' +
+                        '<div style="font-size:12px;color:#a0a0a0;padding:5px;">' + (comp.name || '折线图') + '</div>' +
+                        '<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:calc(100% - 20px);">' +
+                        '<polyline points="' + points.join(' ') + '" fill="none" stroke="#00d9a3" stroke-width="2"/>' +
+                        '<circle cx="' + points[points.length-1].split(',')[0] + '" cy="' + points[points.length-1].split(',')[1] + '" r="3" fill="#00d9a3"/>' +
+                        '</svg></div>';
+                }
+            },
+            barChart: {
+                name: '柱状图',
+                width: 300,
+                height: 200,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                render: (comp) => {
+                    // 使用模拟数据或静态数据
+                    let heights = [60, 80, 45, 90, 70, 55, 85];
+                    const labels = ['温度', '湿度', '光照', 'CO2', '风机', '水泵', '电压'];
+                    
+                    const bars = heights.map((h, i) => 
+                        '<div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:12%;">' +
+                        '<div class="bar-item" style="height:' + h + '%;width:100%;min-height:10px;"></div>' +
+                        '<div style="font-size:10px;color:#a0a0a0;margin-top:4px;white-space:nowrap;">' + labels[i] + '</div>' +
+                        '</div>'
+                    ).join('');
+                    
+                    return '<div class="comp-chart" style="width:100%;height:100%;display:flex;flex-direction:column;padding:10px;">' +
+                        '<div style="font-size:12px;color:#a0a0a0;margin-bottom:5px;">' + (comp.name || '柱状图') + '</div>' +
+                        '<div class="chart-bar" style="flex:1;height:calc(100% - 20px);">' + bars + '</div></div>';
+                }
+            },
+            gauge: {
+                name: '仪表盘',
+                width: 150,
+                height: 150,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#00d9a3',
+                    borderWidth: 2,
+                    borderRadius: 75
+                },
+                dataValue: '75',
+                dataUnit: '%',
+                render: (comp) => `<div class="comp-gauge">
+                    <div class="comp-gauge-value">${comp.dataValue}</div>
+                    <div class="comp-gauge-unit">${comp.dataUnit}</div>
+                </div>`
+            },
+            progress: {
+                name: '进度条',
+                width: 200,
+                height: 50,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                dataValue: '65',
+                render: (comp) => `<div class="comp-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${comp.dataValue}%;"></div>
+                    </div>
+                    <div class="progress-label">${comp.dataValue}%</div>
+                </div>`
+            },
+            switch: {
+                name: '开关按钮',
+                width: 80,
+                height: 50,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                switchOn: false,
+                render: (comp) => `<div class="comp-switch">
+                    <div class="switch-track ${comp.switchOn ? 'on' : ''}">
+                        <div class="switch-thumb"></div>
+                    </div>
+                </div>`
+            },
+            slider: {
+                name: '滑动条',
+                width: 200,
+                height: 60,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                dataValue: '60',
+                render: (comp) => `<div class="comp-slider">
+                    <div class="slider-track">
+                        <div class="slider-fill" style="width: ${comp.dataValue}%;"></div>
+                        <div class="slider-handle" style="left: ${comp.dataValue}%;"></div>
+                    </div>
+                </div>`
+            },
+            button: {
+                name: '按钮',
+                width: 100,
+                height: 40,
+                style: {
+                    backgroundColor: '#00d9a3',
+                    borderColor: 'transparent',
+                    borderWidth: 0,
+                    borderRadius: 6,
+                    fontSize: 14,
+                    color: '#000000'
+                },
+                content: '按钮',
+                render: (comp) => `<div class="comp-button" style="font-size: ${comp.style.fontSize}px;">${comp.content}</div>`
+            },
+            select: {
+                name: '下拉选择',
+                width: 150,
+                height: 40,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 6
+                },
+                content: '请选择',
+                render: (comp) => `<div class="comp-select">
+                    <span>${comp.content}</span>
+                    <span>▼</span>
+                </div>`
+            },
+            sensor: {
+                name: '传感器仪表',
+                width: 140,
+                height: 140,
+                style: {
+                    backgroundColor: 'linear-gradient(135deg, #0f3460, #16213e)',
+                    borderColor: '#00d9a3',
+                    borderWidth: 2,
+                    borderRadius: 12
+                },
+                sensorType: 'temperature',
+                dataValue: '25.5',
+                dataUnit: '°C',
+                render: (comp) => {
+                    const icons = {
+                        temperature: '🌡️',
+                        humidity: '💧',
+                        light: '☀️',
+                        co2: '💨'
+                    };
+                    return `<div class="comp-sensor">
+                        <div class="sensor-icon">${icons[comp.sensorType] || '📊'}</div>
+                        <div class="sensor-value">${comp.dataValue}</div>
+                        <div class="sensor-label">${comp.dataUnit}</div>
+                    </div>`;
+                }
+            },
+            deviceCard: {
+                name: '设备状态卡',
+                width: 200,
+                height: 100,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                deviceName: '设备名称',
+                deviceStatus: 'online',
+                render: (comp) => `<div class="comp-device-card">
+                    <div class="device-header">
+                        <div class="device-status ${comp.deviceStatus === 'offline' ? 'offline' : ''}"></div>
+                        <div class="device-name">${comp.deviceName}</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="device-info-item">
+                            <span class="device-info-label">状态</span>
+                            <span>${comp.deviceStatus === 'online' ? '在线' : '离线'}</span>
+                        </div>
+                        <div class="device-info-item">
+                            <span class="device-info-label">运行</span>
+                            <span>正常</span>
+                        </div>
+                    </div>
+                </div>`
+            },
+            alertLight: {
+                name: '报警指示灯',
+                width: 80,
+                height: 80,
+                style: {
+                    backgroundColor: '#0f3460',
+                    borderColor: '#2d3a4f',
+                    borderWidth: 1,
+                    borderRadius: 8
+                },
+                alertStatus: 'normal',
+                render: (comp) => {
+                    const statusClass = comp.alertStatus === 'warning' ? 'warning' : comp.alertStatus === 'danger' ? 'danger' : '';
+                    return `<div class="comp-alert-light">
+                        <div class="alert-light ${statusClass}"></div>
+                        <div class="alert-label">${comp.alertStatus === 'normal' ? '正常' : comp.alertStatus === 'warning' ? '警告' : '报警'}</div>
+                    </div>`;
+                }
+            }
+        };
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
+            initDragDrop();
+            initCanvasEvents();
+            initKeyboardShortcuts();
+            initSimulationData();
+            loadPresetScene();
+            renderLayerTree();
+        });
+
+        // 初始化画布
+        function initCanvas() {
+            const wrapper = document.getElementById('canvasWrapper');
+            const container = document.getElementById('canvasContainer');
+            
+            // 确保wrapper有尺寸
+            const wrapperRect = wrapper.getBoundingClientRect();
+            if (wrapperRect.width === 0 || wrapperRect.height === 0) {
+                // 如果wrapper还没有尺寸，使用默认值
+                state.panX = 50;
+                state.panY = 50;
+            } else {
+                // 居中画布
+                state.panX = Math.max(50, (wrapperRect.width - 1920 * state.zoom) / 2);
+                state.panY = Math.max(50, (wrapperRect.height - 1080 * state.zoom) / 2);
+            }
+            updateCanvasTransform();
+            
+            // 绘制网格
+            drawGrid();
+        }
+
+        // 更新画布变换
+        function updateCanvasTransform() {
+            const container = document.getElementById('canvasContainer');
+            container.style.transform = 'translate(' + state.panX + 'px, ' + state.panY + 'px) scale(' + state.zoom + ')';
+            container.style.left = '0';
+            container.style.top = '0';
+            document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
+        }
+
+        // 绘制网格
+        function drawGrid() {
+            const canvas = document.getElementById('gridCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1920;
+            canvas.height = 1080;
+            
+            if (!state.gridEnabled) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#2d3a4f';
+            ctx.lineWidth = 0.5;
+            
+            const gridSize = state.gridSize;
+            
+            // 绘制垂直线
+            for (let x = 0; x <= canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 绘制水平线
+            for (let y = 0; y <= canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        // 更新画布变换
+        function updateCanvasTransform() {
+            const container = document.getElementById('canvasContainer');
+            container.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+            document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
+        }
+
+        // ==================== 拖拽功能 ====================
+        function initDragDrop() {
+            const componentItems = document.querySelectorAll('.component-item');
+            const canvas = document.getElementById('canvas');
+            const canvasWrapper = document.getElementById('canvasWrapper');
+            const canvasContainer = document.getElementById('canvasContainer');
+            
+            componentItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+            
+            // 在多个层级添加事件监听器，确保drop事件能正确触发
+            canvas.addEventListener('dragover', handleDragOver);
+            canvas.addEventListener('drop', handleDrop);
+            canvasContainer.addEventListener('dragover', handleDragOver);
+            canvasContainer.addEventListener('drop', handleDrop);
+            canvasWrapper.addEventListener('dragover', handleDragOver);
+            canvasWrapper.addEventListener('drop', handleDrop);
+        }
+
+        let draggedType = null;
+        let dragPreview = null;
+
+        function handleDragStart(e) {
+            // 获取组件项元素（可能点击的是子元素）
+            const componentItem = e.target.closest('.component-item');
+            if (!componentItem) return;
+            
+            draggedType = componentItem.dataset.type;
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('text/plain', draggedType);
+            
+            // 创建拖拽预览
+            dragPreview = document.createElement('div');
+            dragPreview.className = 'drag-preview';
+            dragPreview.style.position = 'fixed';
+            dragPreview.style.width = '100px';
+            dragPreview.style.height = '80px';
+            dragPreview.style.background = 'rgba(0, 217, 163, 0.3)';
+            dragPreview.style.border = '2px dashed #00d9a3';
+            dragPreview.style.borderRadius = '8px';
+            dragPreview.style.display = 'flex';
+            dragPreview.style.alignItems = 'center';
+            dragPreview.style.justifyContent = 'center';
+            dragPreview.style.color = '#00d9a3';
+            dragPreview.style.fontSize = '12px';
+            dragPreview.style.pointerEvents = 'none';
+            dragPreview.style.zIndex = '10000';
+            dragPreview.textContent = componentItem.dataset.name;
+            document.body.appendChild(dragPreview);
+        }
+
+        function handleDragEnd(e) {
+            draggedType = null;
+            if (dragPreview) {
+                dragPreview.remove();
+                dragPreview = null;
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'copy';
+            
+            if (dragPreview) {
+                // 使预览居中显示在鼠标位置
+                dragPreview.style.left = (e.clientX - 50) + 'px';
+                dragPreview.style.top = (e.clientY - 40) + 'px';
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!draggedType) {
+                // 尝试从dataTransfer获取类型
+                draggedType = e.dataTransfer.getData('text/plain');
+            }
+            
+            if (!draggedType) return;
+            
+            const canvas = document.getElementById('canvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            // 计算放置位置（考虑缩放和平移）
+            const x = (e.clientX - canvasRect.left) / state.zoom;
+            const y = (e.clientY - canvasRect.top) / state.zoom;
+            
+            // 吸附网格
+            const snappedX = state.snapToGrid ? Math.round(x / state.gridSize) * state.gridSize : x;
+            const snappedY = state.snapToGrid ? Math.round(y / state.gridSize) * state.gridSize : y;
+            
+            createComponent(draggedType, snappedX, snappedY);
+            
+            draggedType = null;
+            if (dragPreview) {
+                dragPreview.remove();
+                dragPreview = null;
+            }
+        }
+
+        // ==================== 组件管理 ====================
+        function createComponent(type, x, y) {
+            const template = componentTemplates[type];
+            if (!template) return;
+            
+            const component = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: type,
+                name: template.name + '_' + state.componentIdCounter,
+                x: x,
+                y: y,
+                width: template.width,
+                height: template.height,
+                rotation: 0,
+                opacity: 100,
+                zIndex: state.components.length + 1,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { ...template.style },
+                ...template,
+                conditions: []
+            };
+            
+            // 复制模板的所有属性
+            Object.keys(template).forEach(key => {
+                if (key !== 'style' && key !== 'render') {
+                    if (typeof template[key] !== 'function') {
+                        component[key] = template[key];
+                    }
+                }
+            });
+            
+            state.components.push(component);
+            saveHistory();
+            renderComponent(component);
+            selectComponent(component.id);
+            renderLayerTree();
+            showToast('success', '组件已添加');
+        }
+
+        function renderComponent(comp) {
+            const canvas = document.getElementById('canvas');
+            let element = document.getElementById(comp.id);
+            
+            if (!element) {
+                element = document.createElement('div');
+                element.id = comp.id;
+                element.className = 'canvas-component';
+                canvas.appendChild(element);
+            }
+            
+            // 更新样式和位置
+            element.style.left = comp.x + 'px';
+            element.style.top = comp.y + 'px';
+            element.style.width = comp.width + 'px';
+            element.style.height = comp.height + 'px';
+            element.style.transform = `rotate(${comp.rotation}deg)`;
+            element.style.opacity = comp.opacity / 100;
+            element.style.zIndex = comp.zIndex;
+            element.style.display = comp.visible ? 'block' : 'none';
+            
+            if (comp.locked) {
+                element.classList.add('locked');
+            } else {
+                element.classList.remove('locked');
+            }
+            
+            if (comp.visible) {
+                element.classList.remove('hidden-comp');
+            } else {
+                element.classList.add('hidden-comp');
+            }
+            
+            // 渲染内容
+            const template = componentTemplates[comp.type];
+            if (template && template.render) {
+                element.innerHTML = template.render(comp);
+            }
+            
+            // 应用条件样式
+            applyConditionalStyles(comp, element);
+            
+            // 添加选中状态
+            if (state.selectedIds.includes(comp.id)) {
+                element.classList.add('selected');
+                addResizeHandles(element);
+            } else {
+                element.classList.remove('selected');
+                removeResizeHandles(element);
+            }
+            
+            // 添加事件
+            element.onclick = (e) => {
+                e.stopPropagation();
+                if (!comp.locked) {
+                    if (e.ctrlKey || e.metaKey) {
+                        toggleSelectComponent(comp.id);
+                    } else {
+                        selectComponent(comp.id);
+                    }
+                }
+            };
+            
+            element.ondblclick = (e) => {
+                e.stopPropagation();
+                if (comp.type === 'text' || comp.type === 'button') {
+                    const content = prompt('编辑内容:', comp.content);
+                    if (content !== null) {
+                        comp.content = content;
+                        renderComponent(comp);
+                        saveHistory();
+                    }
+                }
+            };
+            
+            element.oncontextmenu = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!comp.locked) {
+                    selectComponent(comp.id);
+                    showContextMenu(e.clientX, e.clientY);
+                }
+            };
+            
+            // 拖拽移动
+            if (!comp.locked) {
+                makeDraggable(element, comp);
+            }
+        }
+
+        function makeDraggable(element, comp) {
+            let startX, startY, startCompX, startCompY;
+            
+            element.onmousedown = (e) => {
+                if (e.target.classList.contains('resize-handle')) return;
+                if (comp.locked) return;
+                
+                e.preventDefault();
+                state.isDragging = true;
+                
+                startX = e.clientX;
+                startY = e.clientY;
+                startCompX = comp.x;
+                startCompY = comp.y;
+                
+                const onMouseMove = (e) => {
+                    if (!state.isDragging) return;
+                    
+                    const dx = (e.clientX - startX) / state.zoom;
+                    const dy = (e.clientY - startY) / state.zoom;
+                    
+                    let newX = startCompX + dx;
+                    let newY = startCompY + dy;
+                    
+                    // 吸附网格
+                    if (state.snapToGrid) {
+                        newX = Math.round(newX / state.gridSize) * state.gridSize;
+                        newY = Math.round(newY / state.gridSize) * state.gridSize;
+                    }
+                    
+                    comp.x = newX;
+                    comp.y = newY;
+                    
+                    element.style.left = newX + 'px';
+                    element.style.top = newY + 'px';
+                    
+                    updatePropertyPanel();
+                };
+                
+                const onMouseUp = () => {
+                    state.isDragging = false;
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    saveHistory();
+                };
+                
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            };
+        }
+
+        function addResizeHandles(element) {
+            removeResizeHandles(element);
+            
+            const handles = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
+            handles.forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = `resize-handle ${pos}`;
+                element.appendChild(handle);
+                
+                handle.onmousedown = (e) => {
+                    e.stopPropagation();
+                    initResize(element, pos, e);
+                };
+            });
+        }
+
+        function removeResizeHandles(element) {
+            const handles = element.querySelectorAll('.resize-handle');
+            handles.forEach(h => h.remove());
+        }
+
+        function initResize(element, position, e) {
+            const comp = state.components.find(c => c.id === element.id);
+            if (!comp || comp.locked) return;
+            
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startWidth = comp.width;
+            const startHeight = comp.height;
+            const startXPos = comp.x;
+            const startYPos = comp.y;
+            
+            const onMouseMove = (e) => {
+                const dx = (e.clientX - startX) / state.zoom;
+                const dy = (e.clientY - startY) / state.zoom;
+                
+                let newWidth = startWidth;
+                let newHeight = startHeight;
+                let newX = startXPos;
+                let newY = startYPos;
+                
+                if (position.includes('e')) {
+                    newWidth = Math.max(50, startWidth + dx);
+                }
+                if (position.includes('w')) {
+                    newWidth = Math.max(50, startWidth - dx);
+                    newX = startXPos + (startWidth - newWidth);
+                }
+                if (position.includes('s')) {
+                    newHeight = Math.max(30, startHeight + dy);
+                }
+                if (position.includes('n')) {
+                    newHeight = Math.max(30, startHeight - dy);
+                    newY = startYPos + (startHeight - newHeight);
+                }
+                
+                comp.width = newWidth;
+                comp.height = newHeight;
+                comp.x = newX;
+                comp.y = newY;
+                
+                renderComponent(comp);
+                updatePropertyPanel();
+            };
+            
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                saveHistory();
+            };
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function selectComponent(id) {
+            state.selectedIds = [id];
+            updateAllComponents();
+            updatePropertyPanel();
+            renderLayerTree();
+        }
+
+        function toggleSelectComponent(id) {
+            const index = state.selectedIds.indexOf(id);
+            if (index > -1) {
+                state.selectedIds.splice(index, 1);
+            } else {
+                state.selectedIds.push(id);
+            }
+            updateAllComponents();
+            updatePropertyPanel();
+            renderLayerTree();
+        }
+
+        function updateAllComponents() {
+            // 先清除画布上所有组件元素
+            const canvas = document.getElementById('canvas');
+            canvas.querySelectorAll('.canvas-component').forEach(el => el.remove());
+            
+            // 然后重新渲染所有组件
+            state.components.forEach(comp => {
+                renderComponent(comp);
+            });
+        }
+
+        // ==================== 画布事件 ====================
+        function initCanvasEvents() {
+            const wrapper = document.getElementById('canvasWrapper');
+            const canvas = document.getElementById('canvas');
+            
+            // 点击画布取消选择
+            canvas.addEventListener('click', (e) => {
+                if (e.target === canvas || e.target.id === 'gridCanvas') {
+                    state.selectedIds = [];
+                    updateAllComponents();
+                    updatePropertyPanel();
+                    renderLayerTree();
+                }
+            });
+            
+            // 右键菜单
+            canvas.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                if (state.selectedIds.length === 0) {
+                    showContextMenu(e.clientX, e.clientY);
+                }
+            });
+            
+            // 缩放
+            wrapper.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                const newZoom = Math.max(0.1, Math.min(4, state.zoom + delta));
+                
+                // 以鼠标位置为中心缩放
+                const rect = wrapper.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const scaleChange = newZoom / state.zoom;
+                state.panX = mouseX - (mouseX - state.panX) * scaleChange;
+                state.panY = mouseY - (mouseY - state.panY) * scaleChange;
+                
+                state.zoom = newZoom;
+                updateCanvasTransform();
+            });
+            
+            // 平移画布
+            wrapper.addEventListener('mousedown', (e) => {
+                if (e.target === wrapper || e.target.id === 'gridCanvas') {
+                    if (e.button === 0 && (e.altKey || state.currentTool === 'move')) {
+                        state.isPanning = true;
+                        state.dragStartX = e.clientX - state.panX;
+                        state.dragStartY = e.clientY - state.panY;
+                        wrapper.style.cursor = 'grabbing';
+                    }
+                }
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (state.isPanning) {
+                    state.panX = e.clientX - state.dragStartX;
+                    state.panY = e.clientY - state.dragStartY;
+                    updateCanvasTransform();
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                state.isPanning = false;
+                wrapper.style.cursor = 'default';
+            });
+            
+            // 框选
+            let selectionStartX, selectionStartY;
+            wrapper.addEventListener('mousedown', (e) => {
+                if (e.target === wrapper && e.button === 0 && !e.altKey && state.currentTool === 'select') {
+                    selectionStartX = e.clientX;
+                    selectionStartY = e.clientY;
+                    
+                    const selectionBox = document.createElement('div');
+                    selectionBox.className = 'selection-box';
+                    selectionBox.id = 'selectionBox';
+                    selectionBox.style.left = e.clientX + 'px';
+                    selectionBox.style.top = e.clientY + 'px';
+                    document.body.appendChild(selectionBox);
+                    
+                    const onMouseMove = (e) => {
+                        const box = document.getElementById('selectionBox');
+                        if (box) {
+                            const left = Math.min(selectionStartX, e.clientX);
+                            const top = Math.min(selectionStartY, e.clientY);
+                            const width = Math.abs(e.clientX - selectionStartX);
+                            const height = Math.abs(e.clientY - selectionStartY);
+                            
+                            box.style.left = left + 'px';
+                            box.style.top = top + 'px';
+                            box.style.width = width + 'px';
+                            box.style.height = height + 'px';
+                        }
+                    };
+                    
+                    const onMouseUp = (e) => {
+                        const box = document.getElementById('selectionBox');
+                        if (box) {
+                            // 计算框选区域内的组件
+                            const boxRect = box.getBoundingClientRect();
+                            const canvasEl = document.getElementById('canvas');
+                            const canvasRect = canvasEl.getBoundingClientRect();
+                            
+                            state.selectedIds = [];
+                            state.components.forEach(comp => {
+                                const compLeft = canvasRect.left + comp.x * state.zoom;
+                                const compTop = canvasRect.top + comp.y * state.zoom;
+                                const compRight = compLeft + comp.width * state.zoom;
+                                const compBottom = compTop + comp.height * state.zoom;
+                                
+                                if (compLeft < boxRect.right && compRight > boxRect.left &&
+                                    compTop < boxRect.bottom && compBottom > boxRect.top) {
+                                    state.selectedIds.push(comp.id);
+                                }
+                            });
+                            
+                            updateAllComponents();
+                            updatePropertyPanel();
+                            renderLayerTree();
+                            box.remove();
+                        }
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    };
+                    
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                }
+            });
+            
+            // 隐藏右键菜单
+            document.addEventListener('click', () => {
+                document.getElementById('contextMenu').classList.add('hidden');
+            });
+        }
+
+        // ==================== 属性面板 ====================
+        function updatePropertyPanel() {
+            const emptyState = document.getElementById('emptyProperty');
+            const basicPanel = document.getElementById('basicPanel');
+            const stylePanel = document.getElementById('stylePanel');
+            const dataPanel = document.getElementById('dataPanel');
+            
+            if (state.selectedIds.length === 0) {
+                emptyState.classList.remove('hidden');
+                basicPanel.classList.add('hidden');
+                stylePanel.classList.add('hidden');
+                dataPanel.classList.add('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            basicPanel.classList.remove('hidden');
+            stylePanel.classList.remove('hidden');
+            dataPanel.classList.remove('hidden');
+            
+            const comp = state.components.find(c => c.id === state.selectedIds[0]);
+            if (!comp) return;
+            
+            // 基础属性
+            document.getElementById('propName').value = comp.name;
+            document.getElementById('propWidth').value = comp.width;
+            document.getElementById('propHeight').value = comp.height;
+            document.getElementById('propX').value = Math.round(comp.x);
+            document.getElementById('propY').value = Math.round(comp.y);
+            document.getElementById('propRotation').value = comp.rotation;
+            document.getElementById('rotationValue').textContent = comp.rotation + '°';
+            document.getElementById('propOpacity').value = comp.opacity;
+            document.getElementById('opacityValue').textContent = comp.opacity + '%';
+            document.getElementById('propZIndex').value = comp.zIndex;
+            
+            // 样式属性
+            document.getElementById('propBgColor').value = comp.style.backgroundColor || '#1a1a2e';
+            document.getElementById('propBgColorText').value = comp.style.backgroundColor || '';
+            document.getElementById('propBorderColor').value = comp.style.borderColor || '#00d9a3';
+            document.getElementById('propBorderColorText').value = comp.style.borderColor || '';
+            document.getElementById('propBorderWidth').value = comp.style.borderWidth || 0;
+            document.getElementById('propBorderRadius').value = comp.style.borderRadius || 0;
+            document.getElementById('propFontSize').value = comp.style.fontSize || 14;
+            document.getElementById('propColor').value = comp.style.color || '#ffffff';
+            document.getElementById('propColorText').value = comp.style.color || '';
+            
+            // 数据属性
+            if (comp.dataValue !== undefined) {
+                document.getElementById('propDataValue').value = comp.dataValue;
+            }
+            if (comp.dataUnit !== undefined) {
+                document.getElementById('propDataUnit').value = comp.dataUnit;
+            }
+            
+            // 数据源配置
+            const dataSource = comp.dataSource || 'static';
+            document.getElementById('staticBtn').classList.toggle('active', dataSource === 'static');
+            document.getElementById('dynamicBtn').classList.toggle('active', dataSource === 'dynamic');
+            document.getElementById('staticDataConfig').classList.toggle('hidden', dataSource !== 'static');
+            document.getElementById('dynamicDataConfig').classList.toggle('hidden', dataSource !== 'dynamic');
+            
+            // 动态数据配置
+            if (comp.dataSourceType) {
+                document.getElementById('propDataSourceType').value = comp.dataSourceType;
+            }
+            if (comp.deviceId) {
+                document.getElementById('propDeviceId').value = comp.deviceId;
+            }
+            if (comp.property) {
+                document.getElementById('propProperty').value = comp.property;
+            }
+            if (comp.refreshInterval) {
+                document.getElementById('propRefreshInterval').value = comp.refreshInterval;
+            }
+            
+            // 条件样式
+            renderConditions(comp);
+        }
+
+        function updateProperty(prop, value) {
+            if (state.selectedIds.length === 0) return;
+            
+            const comp = state.components.find(c => c.id === state.selectedIds[0]);
+            if (!comp) return;
+            
+            switch (prop) {
+                case 'name':
+                    comp.name = value;
+                    renderLayerTree();
+                    break;
+                case 'width':
+                    comp.width = parseInt(value) || 50;
+                    break;
+                case 'height':
+                    comp.height = parseInt(value) || 30;
+                    break;
+                case 'x':
+                    comp.x = parseInt(value) || 0;
+                    break;
+                case 'y':
+                    comp.y = parseInt(value) || 0;
+                    break;
+                case 'rotation':
+                    comp.rotation = parseInt(value) || 0;
+                    document.getElementById('rotationValue').textContent = value + '°';
+                    break;
+                case 'opacity':
+                    comp.opacity = parseInt(value) || 100;
+                    document.getElementById('opacityValue').textContent = value + '%';
+                    break;
+                case 'zIndex':
+                    comp.zIndex = parseInt(value) || 1;
+                    break;
+                case 'backgroundColor':
+                    comp.style.backgroundColor = value;
+                    document.getElementById('propBgColor').value = value;
+                    document.getElementById('propBgColorText').value = value;
+                    break;
+                case 'borderColor':
+                    comp.style.borderColor = value;
+                    document.getElementById('propBorderColor').value = value;
+                    document.getElementById('propBorderColorText').value = value;
+                    break;
+                case 'borderWidth':
+                    comp.style.borderWidth = parseInt(value) || 0;
+                    break;
+                case 'borderRadius':
+                    comp.style.borderRadius = parseInt(value) || 0;
+                    break;
+                case 'fontSize':
+                    comp.style.fontSize = parseInt(value) || 14;
+                    break;
+                case 'color':
+                    comp.style.color = value;
+                    document.getElementById('propColor').value = value;
+                    document.getElementById('propColorText').value = value;
+                    break;
+                case 'dataValue':
+                    comp.dataValue = value;
+                    break;
+                case 'dataUnit':
+                    comp.dataUnit = value;
+                    break;
+            }
+            
+            renderComponent(comp);
+            saveHistory();
+        }
+
+        function switchPropertyTab(tab) {
+            const tabs = document.querySelectorAll('.property-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 这里可以根据tab切换显示不同面板
+        }
+
+        function setDataSource(type) {
+            document.getElementById('staticBtn').classList.toggle('active', type === 'static');
+            document.getElementById('dynamicBtn').classList.toggle('active', type === 'dynamic');
+            document.getElementById('staticDataConfig').classList.toggle('hidden', type !== 'static');
+            document.getElementById('dynamicDataConfig').classList.toggle('hidden', type !== 'dynamic');
+            
+            if (state.selectedIds.length > 0) {
+                const comp = state.components.find(c => c.id === state.selectedIds[0]);
+                if (comp) {
+                    comp.dataSource = type;
+                }
+            }
+        }
+
+        // ==================== 条件样式 ====================
+        function renderConditions(comp) {
+            const container = document.getElementById('conditionList');
+            container.innerHTML = '';
+            
+            if (!comp.conditions) comp.conditions = [];
+            
+            comp.conditions.forEach((cond, index) => {
+                const item = document.createElement('div');
+                item.className = 'condition-item';
+                item.innerHTML = `
+                    <div class="condition-header">
+                        <span>条件 ${index + 1}</span>
+                        <button class="condition-delete" onclick="removeCondition(${index})">✕</button>
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">属性</label>
+                        <select class="property-select" onchange="updateCondition(${index}, 'property', this.value)">
+                            <option value="value" ${cond.property === 'value' ? 'selected' : ''}>数据值</option>
+                        </select>
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">条件</label>
+                        <select class="property-select" onchange="updateCondition(${index}, 'operator', this.value)" style="width: 60px;">
+                            <option value=">" ${cond.operator === '>' ? 'selected' : ''}>></option>
+                            <option value="<" ${cond.operator === '<' ? 'selected' : ''}><</option>
+                            <option value="==" ${cond.operator === '==' ? 'selected' : ''}>=</option>
+                            <option value=">=" ${cond.operator === '>=' ? 'selected' : ''}>≥</option>
+                            <option value="<=" ${cond.operator === '<=' ? 'selected' : ''}>≤</option>
+                        </select>
+                        <input type="text" class="property-input" value="${cond.value || ''}" onchange="updateCondition(${index}, 'value', this.value)" style="width: 80px; margin-left: 5px;">
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">背景色</label>
+                        <input type="color" class="color-picker" value="${cond.style?.backgroundColor || '#ff4757'}" onchange="updateConditionStyle(${index}, 'backgroundColor', this.value)">
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function addCondition() {
+            if (state.selectedIds.length === 0) return;
+            
+            const comp = state.components.find(c => c.id === state.selectedIds[0]);
+            if (!comp) return;
+            
+            if (!comp.conditions) comp.conditions = [];
+            
+            comp.conditions.push({
+                property: 'value',
+                operator: '>',
+                value: '30',
+                style: {
+                    backgroundColor: '#ff4757'
+                }
+            });
+            
+            renderConditions(comp);
+            saveHistory();
+        }
+
+        function removeCondition(index) {
+            if (state.selectedIds.length === 0) return;
+            
+            const comp = state.components.find(c => c.id === state.selectedIds[0]);
+            if (!comp || !comp.conditions) return;
+            
+            comp.conditions.splice(index, 1);
+            renderConditions(comp);
+            renderComponent(comp);
+            saveHistory();
+        }
+
+        function updateCondition(index, prop, value) {
+            if (state.selectedIds.length === 0) return;
+            
+            const comp = state.components.find(c => c.id === state.selectedIds[0]);
+            if (!comp || !comp.conditions) return;
+            
+            comp.conditions[index][prop] = value;
+            saveHistory();
+        }
+
+        function updateConditionStyle(index, prop, value) {
+            if (state.selectedIds.length === 0) return;
+            
+            const comp = state.components.find(c => c.id === state.selectedIds[0]);
+            if (!comp || !comp.conditions) return;
+            
+            if (!comp.conditions[index].style) {
+                comp.conditions[index].style = {};
+            }
+            comp.conditions[index].style[prop] = value;
+            renderComponent(comp);
+            saveHistory();
+        }
+
+        function applyConditionalStyles(comp, element) {
+            if (!comp.conditions || comp.conditions.length === 0) return;
+            
+            const value = parseFloat(comp.dataValue) || 0;
+            
+            comp.conditions.forEach(cond => {
+                let conditionMet = false;
+                const condValue = parseFloat(cond.value) || 0;
+                
+                switch (cond.operator) {
+                    case '>': conditionMet = value > condValue; break;
+                    case '<': conditionMet = value < condValue; break;
+                    case '==': conditionMet = value === condValue; break;
+                    case '>=': conditionMet = value >= condValue; break;
+                    case '<=': conditionMet = value <= condValue; break;
+                }
+                
+                if (conditionMet && cond.style) {
+                    Object.keys(cond.style).forEach(key => {
+                        element.style[key] = cond.style[key];
+                    });
+                }
+            });
+        }
+
+        // ==================== 图层管理 ====================
+        function renderLayerTree() {
+            const tree = document.getElementById('layerTree');
+            tree.innerHTML = '';
+            
+            // 创建分组
+            const groups = {};
+            const ungrouped = [];
+            
+            state.components.forEach(comp => {
+                if (comp.groupId) {
+                    if (!groups[comp.groupId]) {
+                        groups[comp.groupId] = [];
+                    }
+                    groups[comp.groupId].push(comp);
+                } else {
+                    ungrouped.push(comp);
+                }
+            });
+            
+            // 渲染分组
+            Object.keys(groups).forEach(groupId => {
+                const groupItem = createLayerGroup(groupId, groups[groupId]);
+                tree.appendChild(groupItem);
+            });
+            
+            // 渲染未分组组件
+            ungrouped.reverse().forEach(comp => {
+                const item = createLayerItem(comp);
+                tree.appendChild(item);
+            });
+            
+            // 如果没有组件，显示提示
+            if (state.components.length === 0) {
+                tree.innerHTML = '<div class="empty-state" style="height: 100px;"><div class="empty-state-text">暂无组件</div></div>';
+            }
+        }
+
+        function createLayerGroup(groupId, components) {
+            const group = document.createElement('div');
+            group.className = 'layer-group';
+            
+            const header = document.createElement('div');
+            header.className = 'layer-group-header';
+            header.innerHTML = `
+                <span><span class="layer-group-toggle">▼</span> 📁 ${groupId}</span>
+                <span style="font-size: 11px; color: #a0a0a0;">${components.length}项</span>
+            `;
+            header.onclick = () => {
+                const toggle = header.querySelector('.layer-group-toggle');
+                const items = group.querySelectorAll('.layer-item');
+                toggle.textContent = toggle.textContent === '▼' ? '▶' : '▼';
+                items.forEach(item => item.classList.toggle('hidden'));
+            };
+            
+            group.appendChild(header);
+            
+            components.forEach(comp => {
+                const item = createLayerItem(comp);
+                group.appendChild(item);
+            });
+            
+            return group;
+        }
+
+        function createLayerItem(comp) {
+            const item = document.createElement('div');
+            item.className = 'layer-item' + 
+                (state.selectedIds.includes(comp.id) ? ' selected' : '') +
+                (comp.locked ? ' locked' : '');
+            
+            const icons = {
+                text: '📝', number: '🔢', image: '🖼️', container: '□', shape: '●',
+                lineChart: '📈', barChart: '📊', gauge: '⭕', progress: '████',
+                switch: '🔘', slider: '══◉═', button: '[按钮]', select: '▼',
+                sensor: '🌡️', deviceCard: '📱', alertLight: '🚨'
+            };
+            
+            item.innerHTML = `
+                <span class="layer-icon">${icons[comp.type] || '📦'}</span>
+                <span class="layer-name">${comp.name}</span>
+                <div class="layer-controls">
+                    <button class="layer-ctrl-btn ${comp.locked ? 'active' : ''}" onclick="event.stopPropagation(); toggleComponentLock('${comp.id}')" title="锁定">🔒</button>
+                    <button class="layer-ctrl-btn ${!comp.visible ? 'active' : ''}" onclick="event.stopPropagation(); toggleComponentVisibility('${comp.id}')" title="显示/隐藏">${comp.visible ? '👁️' : '👁️‍🗨️'}</button>
+                </div>
+            `;
+            
+            item.onclick = () => selectComponent(comp.id);
+            item.ondblclick = () => renameComponent();
+            
+            return item;
+        }
+
+        function toggleComponentLock(id) {
+            const comp = state.components.find(c => c.id === id);
+            if (comp) {
+                comp.locked = !comp.locked;
+                renderComponent(comp);
+                renderLayerTree();
+                saveHistory();
+            }
+        }
+
+        function toggleComponentVisibility(id) {
+            const comp = state.components.find(c => c.id === id);
+            if (comp) {
+                comp.visible = !comp.visible;
+                renderComponent(comp);
+                renderLayerTree();
+                saveHistory();
+            }
+        }
+
+        function createGroup() {
+            if (state.selectedIds.length < 2) {
+                showToast('warning', '请选择至少2个组件来创建分组');
+                return;
+            }
+            
+            const groupId = '分组_' + Date.now();
+            state.selectedIds.forEach(id => {
+                const comp = state.components.find(c => c.id === id);
+                if (comp) {
+                    comp.groupId = groupId;
+                }
+            });
+            
+            renderLayerTree();
+            saveHistory();
+            showToast('success', '分组已创建');
+        }
+
+        function toggleAllLock() {
+            const allLocked = state.components.every(c => c.locked);
+            state.components.forEach(c => c.locked = !allLocked);
+            updateAllComponents();
+            renderLayerTree();
+            saveHistory();
+        }
+
+        function toggleAllVisibility() {
+            const allHidden = state.components.every(c => !c.visible);
+            state.components.forEach(c => c.visible = allHidden);
+            updateAllComponents();
+            renderLayerTree();
+            saveHistory();
+        }
+
+        // ==================== 右键菜单 ====================
+        function showContextMenu(x, y) {
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.classList.remove('hidden');
+        }
+
+        function copySelected() {
+            if (state.selectedIds.length === 0) return;
+            
+            state.clipboard = state.selectedIds.map(id => {
+                const comp = state.components.find(c => c.id === id);
+                return JSON.parse(JSON.stringify(comp));
+            });
+            
+            showToast('success', '已复制 ' + state.clipboard.length + ' 个组件');
+        }
+
+        function pasteComponent() {
+            if (!state.clipboard || state.clipboard.length === 0) {
+                showToast('warning', '剪贴板为空');
+                return;
+            }
+            
+            const newIds = [];
+            state.clipboard.forEach(comp => {
+                const newComp = {
+                    ...comp,
+                    id: 'comp_' + (++state.componentIdCounter),
+                    name: comp.name + '_副本',
+                    x: comp.x + 20,
+                    y: comp.y + 20
+                };
+                state.components.push(newComp);
+                newIds.push(newComp.id);
+            });
+            
+            state.selectedIds = newIds;
+            updateAllComponents();
+            updatePropertyPanel();
+            renderLayerTree();
+            saveHistory();
+            showToast('success', '已粘贴 ' + newIds.length + ' 个组件');
+        }
+
+        function duplicateSelected() {
+            if (state.selectedIds.length === 0) return;
+            
+            const newIds = [];
+            state.selectedIds.forEach(id => {
+                const comp = state.components.find(c => c.id === id);
+                if (comp) {
+                    const newComp = JSON.parse(JSON.stringify(comp));
+                    newComp.id = 'comp_' + (++state.componentIdCounter);
+                    newComp.name = comp.name + '_副本';
+                    newComp.x = comp.x + 20;
+                    newComp.y = comp.y + 20;
+                    state.components.push(newComp);
+                    newIds.push(newComp.id);
+                }
+            });
+            
+            state.selectedIds = newIds;
+            updateAllComponents();
+            updatePropertyPanel();
+            renderLayerTree();
+            saveHistory();
+        }
+
+        function deleteSelected() {
+            if (state.selectedIds.length === 0) return;
+            
+            state.components = state.components.filter(c => !state.selectedIds.includes(c.id));
+            state.selectedIds = [];
+            updateAllComponents();
+            updatePropertyPanel();
+            renderLayerTree();
+            saveHistory();
+            showToast('success', '已删除组件');
+        }
+
+        function bringToFront() {
+            if (state.selectedIds.length === 0) return;
+            
+            const maxZ = Math.max(...state.components.map(c => c.zIndex));
+            state.selectedIds.forEach(id => {
+                const comp = state.components.find(c => c.id === id);
+                if (comp) comp.zIndex = maxZ + 1;
+            });
+            
+            updateAllComponents();
+            saveHistory();
+        }
+
+        function sendToBack() {
+            if (state.selectedIds.length === 0) return;
+            
+            const minZ = Math.min(...state.components.map(c => c.zIndex));
+            state.selectedIds.forEach(id => {
+                const comp = state.components.find(c => c.id === id);
+                if (comp) comp.zIndex = minZ - 1;
+            });
+            
+            updateAllComponents();
+            saveHistory();
+        }
+
+        function toggleLock() {
+            if (state.selectedIds.length === 0) return;
+            
+            state.selectedIds.forEach(id => {
+                const comp = state.components.find(c => c.id === id);
+                if (comp) comp.locked = !comp.locked;
+            });
+            
+            updateAllComponents();
+            renderLayerTree();
+            saveHistory();
+        }
+
+        function toggleVisibility() {
+            if (state.selectedIds.length === 0) return;
+            
+            state.selectedIds.forEach(id => {
+                const comp = state.components.find(c => c.id === id);
+                if (comp) comp.visible = !comp.visible;
+            });
+            
+            updateAllComponents();
+            renderLayerTree();
+            saveHistory();
+        }
+
+        function renameComponent() {
+            if (state.selectedIds.length === 0) return;
+            
+            const comp = state.components.find(c => c.id === state.selectedIds[0]);
+            if (comp) {
+                const newName = prompt('请输入新名称:', comp.name);
+                if (newName && newName.trim()) {
+                    comp.name = newName.trim();
+                    renderLayerTree();
+                    updatePropertyPanel();
+                    saveHistory();
+                }
+            }
+        }
+
+        // ==================== 工具栏功能 ====================
+        function setTool(tool) {
+            state.currentTool = tool;
+            document.querySelectorAll('.canvas-tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function toggleGrid() {
+            state.gridEnabled = !state.gridEnabled;
+            drawGrid();
+            showToast('success', state.gridEnabled ? '网格已开启' : '网格已关闭');
+        }
+
+        function zoomIn() {
+            state.zoom = Math.min(4, state.zoom + 0.1);
+            updateCanvasTransform();
+        }
+
+        function zoomOut() {
+            state.zoom = Math.max(0.1, state.zoom - 0.1);
+            updateCanvasTransform();
+        }
+
+        function resetZoom() {
+            state.zoom = 1;
+            const wrapper = document.getElementById('canvasWrapper');
+            const wrapperRect = wrapper.getBoundingClientRect();
+            state.panX = Math.max(50, (wrapperRect.width - 1920) / 2);
+            state.panY = Math.max(50, (wrapperRect.height - 1080) / 2);
+            updateCanvasTransform();
+            showToast('success', '已重置缩放');
+        }
+
+        function alignComponents(direction) {
+            if (state.selectedIds.length < 2) {
+                showToast('warning', '请选择至少2个组件进行对齐');
+                return;
+            }
+            
+            const selectedComps = state.components.filter(c => state.selectedIds.includes(c.id));
+            
+            switch (direction) {
+                case 'left':
+                    const minLeft = Math.min(...selectedComps.map(c => c.x));
+                    selectedComps.forEach(c => c.x = minLeft);
+                    break;
+                case 'right':
+                    const maxRight = Math.max(...selectedComps.map(c => c.x + c.width));
+                    selectedComps.forEach(c => c.x = maxRight - c.width);
+                    break;
+                case 'top':
+                    const minTop = Math.min(...selectedComps.map(c => c.y));
+                    selectedComps.forEach(c => c.y = minTop);
+                    break;
+                case 'bottom':
+                    const maxBottom = Math.max(...selectedComps.map(c => c.y + c.height));
+                    selectedComps.forEach(c => c.y = maxBottom - c.height);
+                    break;
+                case 'center':
+                    const avgCenterX = selectedComps.reduce((sum, c) => sum + c.x + c.width / 2, 0) / selectedComps.length;
+                    selectedComps.forEach(c => c.x = avgCenterX - c.width / 2);
+                    break;
+            }
+            
+            updateAllComponents();
+            saveHistory();
+        }
+
+        // ==================== 导入导出 ====================
+        function exportProject() {
+            const project = {
+                version: '2.0',
+                name: '2D应用设计',
+                canvasSize: { width: 1920, height: 1080 },
+                components: state.components,
+                groups: state.groups,
+                exportTime: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'project_' + Date.now() + '.exp';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('success', '项目已导出');
+        }
+
+        function importProject() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const project = JSON.parse(e.target.result);
+                    
+                    if (project.components) {
+                        // 清除现有组件
+                        const canvas = document.getElementById('canvas');
+                        canvas.querySelectorAll('.canvas-component').forEach(el => el.remove());
+                        
+                        state.components = project.components;
+                        state.componentIdCounter = Math.max(...project.components.map(c => parseInt(c.id.split('_')[1]) || 0));
+                        
+                        updateAllComponents();
+                        renderLayerTree();
+                        showToast('success', '项目已导入，共 ' + project.components.length + ' 个组件');
+                    }
+                } catch (err) {
+                    showToast('error', '导入失败：文件格式错误');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function previewProject() {
+            const preview = window.open('', '_blank');
+            const html = generatePreviewHTML();
+            preview.document.write(html);
+            preview.document.close();
+        }
+
+        function generatePreviewHTML() {
+            const componentsHTML = state.components.map(comp => {
+                const template = componentTemplates[comp.type];
+                const innerHTML = template ? template.render(comp) : '';
+                return '<div style="position: absolute; left: ' + comp.x + 'px; top: ' + comp.y + 'px; width: ' + comp.width + 'px; height: ' + comp.height + 'px; transform: rotate(' + comp.rotation + 'deg); opacity: ' + (comp.opacity / 100) + '; z-index: ' + comp.zIndex + ';">' + innerHTML + '</div>';
+            }).join('');
+            
+            return '<!DOCTYPE html>\n<html>\n<head>\n    <meta charset="UTF-8">\n    <title>预览 - 2D应用</title>\n    <style>\n        * { margin: 0; padding: 0; box-sizing: border-box; }\n        body { background: #1a1a2e; overflow: auto; }\n        .canvas { width: 1920px; height: 1080px; background: #16213e; position: relative; margin: 20px auto; }\n    </style>\n</head>\n<body>\n    <div class="canvas">' + componentsHTML + '</div>\n</body>\n</html>';
+        }
+
+        function publishProject() {
+            showToast('success', '发布功能开发中...');
+        }
+
+        // ==================== 历史记录 ====================
+        function saveHistory() {
+            const historyState = JSON.stringify(state.components);
+            
+            // 如果当前不在历史末尾，删除后面的记录
+            if (state.historyIndex < state.history.length - 1) {
+                state.history = state.history.slice(0, state.historyIndex + 1);
+            }
+            
+            state.history.push(historyState);
+            
+            // 限制历史记录数量
+            if (state.history.length > state.maxHistory) {
+                state.history.shift();
+            }
+            
+            state.historyIndex = state.history.length - 1;
+        }
+
+        function undoAction() {
+            if (state.historyIndex <= 0) {
+                showToast('warning', '没有可撤销的操作');
+                return;
+            }
+            
+            state.historyIndex--;
+            state.components = JSON.parse(state.history[state.historyIndex]);
+            
+            // 重新渲染
+            const canvas = document.getElementById('canvas');
+            canvas.querySelectorAll('.canvas-component').forEach(el => el.remove());
+            updateAllComponents();
+            renderLayerTree();
+            showToast('success', '已撤销');
+        }
+
+        function redoAction() {
+            if (state.historyIndex >= state.history.length - 1) {
+                showToast('warning', '没有可重做的操作');
+                return;
+            }
+            
+            state.historyIndex++;
+            state.components = JSON.parse(state.history[state.historyIndex]);
+            
+            // 重新渲染
+            const canvas = document.getElementById('canvas');
+            canvas.querySelectorAll('.canvas-component').forEach(el => el.remove());
+            updateAllComponents();
+            renderLayerTree();
+            showToast('success', '已重做');
+        }
+
+        // ==================== 键盘快捷键 ====================
+        function initKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // 如果正在输入框中，不处理快捷键
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                if (e.ctrlKey || e.metaKey) {
+                    switch (e.key.toLowerCase()) {
+                        case 'c':
+                            e.preventDefault();
+                            copySelected();
+                            break;
+                        case 'v':
+                            e.preventDefault();
+                            pasteComponent();
+                            break;
+                        case 'x':
+                            e.preventDefault();
+                            copySelected();
+                            deleteSelected();
+                            break;
+                        case 'z':
+                            e.preventDefault();
+                            if (e.shiftKey) {
+                                redoAction();
+                            } else {
+                                undoAction();
+                            }
+                            break;
+                        case 'y':
+                            e.preventDefault();
+                            redoAction();
+                            break;
+                        case 'd':
+                            e.preventDefault();
+                            duplicateSelected();
+                            break;
+                        case 'g':
+                            e.preventDefault();
+                            createGroup();
+                            break;
+                        case 's':
+                            e.preventDefault();
+                            exportProject();
+                            break;
+                    }
+                } else {
+                    switch (e.key) {
+                        case 'Delete':
+                        case 'Backspace':
+                            e.preventDefault();
+                            deleteSelected();
+                            break;
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            moveSelected(0, e.shiftKey ? -10 : -1);
+                            break;
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            moveSelected(0, e.shiftKey ? 10 : 1);
+                            break;
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            moveSelected(e.shiftKey ? -10 : -1, 0);
+                            break;
+                        case 'ArrowRight':
+                            e.preventDefault();
+                            moveSelected(e.shiftKey ? 10 : 1, 0);
+                            break;
+                        case 'F2':
+                            e.preventDefault();
+                            renameComponent();
+                            break;
+                    }
+                }
+            });
+        }
+
+        function moveSelected(dx, dy) {
+            if (state.selectedIds.length === 0) return;
+            
+            state.selectedIds.forEach(id => {
+                const comp = state.components.find(c => c.id === id);
+                if (comp && !comp.locked) {
+                    comp.x += dx;
+                    comp.y += dy;
+                    renderComponent(comp);
+                }
+            });
+            
+            updatePropertyPanel();
+            saveHistory();
+        }
+
+        // ==================== 模拟数据 ====================
+        function initSimulationData() {
+            // 清除之前的定时器
+            if (state.dataUpdateInterval) {
+                clearInterval(state.dataUpdateInterval);
+            }
+            
+            state.dataUpdateInterval = setInterval(() => {
+                // 模拟云平台设备数据变化
+                state.simulatedData.temperature = 20 + Math.random() * 15;
+                state.simulatedData.humidity = 50 + Math.random() * 30;
+                state.simulatedData.light = 500 + Math.random() * 500;
+                state.simulatedData.co2 = 350 + Math.random() * 150;
+                state.simulatedData.fanSpeed = 50 + Math.random() * 50;
+                state.simulatedData.pumpSpeed = 30 + Math.random() * 70;
+                
+                // 记录历史数据（最多保留100条）
+                const maxHistoryRecords = 100;
+                const timestamp = new Date().toLocaleTimeString();
+                
+                Object.keys(state.historyData).forEach(key => {
+                    if (state.simulatedData[key]) {
+                        state.historyData[key].push({
+                            value: state.simulatedData[key],
+                            time: timestamp
+                        });
+                        if (state.historyData[key].length > maxHistoryRecords) {
+                            state.historyData[key].shift();
+                        }
+                    }
+                });
+                
+                // 更新绑定了动态数据的组件
+                state.components.forEach(comp => {
+                    if (comp.dataSource === 'dynamic' && comp.deviceId && comp.property) {
+                        const device = state.cloudDevices.find(d => d.id === comp.deviceId);
+                        if (device && device.online) {
+                            const value = state.simulatedData[comp.property];
+                            if (value !== undefined) {
+                                comp.dataValue = value.toFixed(1);
+                                renderComponent(comp);
+                                
+                                // 更新属性面板（如果当前组件被选中）
+                                if (state.selectedIds.includes(comp.id)) {
+                                    document.getElementById('propDataValue').value = comp.dataValue;
+                                }
+                            }
+                        }
+                    }
+                });
+            }, 2000);
+        }
+        
+        // 获取设备历史数据
+        function getDeviceHistoryData(deviceId, property, count = 20) {
+            const history = state.historyData[property] || [];
+            return history.slice(-count);
+        }
+        
+        // 获取设备实时数据
+        function getDeviceRealtimeData(deviceId, property) {
+            const device = state.cloudDevices.find(d => d.id === deviceId);
+            if (device && device.online) {
+                return state.simulatedData[property];
+            }
+            return null;
+        }
+
+        // ==================== 预设场景 ====================
+        function loadPresetScene() {
+            // 空白画布 - 不加载任何预设组件
+            state.components = [];
+            state.componentIdCounter = 0;
+            saveHistory();
+            updateAllComponents();
+            renderLayerTree();
+        }
+        
+        // 加载云平台数据演示场景
+        function loadDemoScene() {
+            state.components = [];
+            state.componentIdCounter = 0;
+            
+            // 演示场景标题
+            const titleComp = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'text',
+                name: '演示标题',
+                x: 760,
+                y: 30,
+                width: 400,
+                height: 50,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 1,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { fontSize: 28, color: '#00d9a3', backgroundColor: 'transparent', borderColor: 'transparent', borderWidth: 0, borderRadius: 0 },
+                content: '云平台数据对接演示',
+                dataSource: 'static'
+            };
+            state.components.push(titleComp);
+            
+            // 温度传感器 - 绑定云平台动态数据
+            const tempSensor = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'sensor',
+                name: '温度传感器',
+                x: 100,
+                y: 120,
+                width: 160,
+                height: 160,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 2,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#00d9a3', borderWidth: 2, borderRadius: 12, fontSize: 24, color: '#00d9a3' },
+                sensorType: 'temperature',
+                dataValue: '25.5',
+                dataUnit: '°C',
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'temp01',
+                property: 'temperature',
+                refreshInterval: '2000',
+                conditions: [{ property: 'value', operator: '>', value: '30', style: { backgroundColor: '#ff4757' } }]
+            };
+            state.components.push(tempSensor);
+            
+            // 湿度传感器 - 绑定云平台动态数据
+            const humiditySensor = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'sensor',
+                name: '湿度传感器',
+                x: 300,
+                y: 120,
+                width: 160,
+                height: 160,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 3,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#00d9a3', borderWidth: 2, borderRadius: 12, fontSize: 24, color: '#00d9a3' },
+                sensorType: 'humidity',
+                dataValue: '65',
+                dataUnit: '%',
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'humidity01',
+                property: 'humidity',
+                refreshInterval: '2000'
+            };
+            state.components.push(humiditySensor);
+            
+            // 光照传感器 - 绑定云平台动态数据
+            const lightSensor = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'sensor',
+                name: '光照传感器',
+                x: 500,
+                y: 120,
+                width: 160,
+                height: 160,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 4,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#00d9a3', borderWidth: 2, borderRadius: 12, fontSize: 24, color: '#00d9a3' },
+                sensorType: 'light',
+                dataValue: '850',
+                dataUnit: 'Lux',
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'light01',
+                property: 'light',
+                refreshInterval: '2000'
+            };
+            state.components.push(lightSensor);
+            
+            // CO2传感器 - 绑定云平台动态数据
+            const co2Sensor = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'sensor',
+                name: 'CO2传感器',
+                x: 700,
+                y: 120,
+                width: 160,
+                height: 160,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 5,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#00d9a3', borderWidth: 2, borderRadius: 12, fontSize: 24, color: '#00d9a3' },
+                sensorType: 'co2',
+                dataValue: '420',
+                dataUnit: 'ppm',
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'co201',
+                property: 'co2',
+                refreshInterval: '2000'
+            };
+            state.components.push(co2Sensor);
+            
+            // 折线图 - 展示温度历史数据趋势
+            const lineChart = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'lineChart',
+                name: '温度趋势图',
+                x: 100,
+                y: 320,
+                width: 450,
+                height: 280,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 6,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#2d3a4f', borderWidth: 1, borderRadius: 8 },
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'temp01',
+                property: 'temperature',
+                refreshInterval: '2000'
+            };
+            state.components.push(lineChart);
+            
+            // 柱状图 - 展示数据对比
+            const barChart = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'barChart',
+                name: '数据对比图',
+                x: 600,
+                y: 320,
+                width: 450,
+                height: 280,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 7,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#2d3a4f', borderWidth: 1, borderRadius: 8 },
+                dataSource: 'static'
+            };
+            state.components.push(barChart);
+            
+            // 仪表盘 - 温度仪表
+            const gaugeTemp = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'gauge',
+                name: '温度仪表',
+                x: 1100,
+                y: 120,
+                width: 180,
+                height: 180,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 8,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#00d9a3', borderWidth: 2, borderRadius: 12 },
+                dataValue: '25.5',
+                dataUnit: '°C',
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'temp01',
+                property: 'temperature',
+                refreshInterval: '2000'
+            };
+            state.components.push(gaugeTemp);
+            
+            // 仪表盘 - 湿度仪表
+            const gaugeHumidity = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'gauge',
+                name: '湿度仪表',
+                x: 1320,
+                y: 120,
+                width: 180,
+                height: 180,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 9,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#00d9a3', borderWidth: 2, borderRadius: 12 },
+                dataValue: '65',
+                dataUnit: '%',
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'humidity01',
+                property: 'humidity',
+                refreshInterval: '2000'
+            };
+            state.components.push(gaugeHumidity);
+            
+            // 设备状态卡 - 风机（在线）
+            const fanCard = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'deviceCard',
+                name: '风机设备',
+                x: 1100,
+                y: 320,
+                width: 220,
+                height: 120,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 10,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#2d3a4f', borderWidth: 1, borderRadius: 8 },
+                deviceName: '风机-01',
+                deviceStatus: 'online',
+                dataSource: 'static'
+            };
+            state.components.push(fanCard);
+            
+            // 设备状态卡 - 水泵（离线）
+            const pumpCard = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'deviceCard',
+                name: '水泵设备',
+                x: 1350,
+                y: 320,
+                width: 220,
+                height: 120,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 11,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#2d3a4f', borderWidth: 1, borderRadius: 8 },
+                deviceName: '水泵-01',
+                deviceStatus: 'offline',
+                dataSource: 'static'
+            };
+            state.components.push(pumpCard);
+            
+            // 数值显示 - 当前温度
+            const numberTemp = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'number',
+                name: '当前温度',
+                x: 1100,
+                y: 460,
+                width: 150,
+                height: 80,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 12,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: 'rgba(0, 217, 163, 0.1)', borderColor: '#00d9a3', borderWidth: 2, borderRadius: 8, fontSize: 28, color: '#00d9a3' },
+                dataValue: '25.5',
+                dataUnit: '°C',
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'temp01',
+                property: 'temperature',
+                refreshInterval: '2000'
+            };
+            state.components.push(numberTemp);
+            
+            // 进度条 - 风机速度
+            const progressFan = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'progress',
+                name: '风机速度',
+                x: 100,
+                y: 640,
+                width: 250,
+                height: 60,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 13,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#2d3a4f', borderWidth: 1, borderRadius: 8 },
+                dataValue: '75',
+                dataSource: 'dynamic',
+                dataSourceType: 'cloud',
+                deviceId: 'fan01',
+                property: 'fanSpeed',
+                refreshInterval: '2000'
+            };
+            state.components.push(progressFan);
+            
+            // 开关按钮 - 风机开关
+            const switchFan = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'switch',
+                name: '风机开关',
+                x: 400,
+                y: 640,
+                width: 100,
+                height: 60,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 14,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#2d3a4f', borderWidth: 1, borderRadius: 8 },
+                switchOn: true,
+                dataSource: 'static'
+            };
+            state.components.push(switchFan);
+            
+            // 报警指示灯 - 温度报警
+            const alertLight = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'alertLight',
+                name: '温度报警',
+                x: 1550,
+                y: 120,
+                width: 100,
+                height: 100,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 15,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { backgroundColor: '#0f3460', borderColor: '#2d3a4f', borderWidth: 1, borderRadius: 8 },
+                alertStatus: 'normal',
+                dataSource: 'static'
+            };
+            state.components.push(alertLight);
+            
+            // 说明文本
+            const infoText = {
+                id: 'comp_' + (++state.componentIdCounter),
+                type: 'text',
+                name: '说明信息',
+                x: 100,
+                y: 750,
+                width: 600,
+                height: 40,
+                rotation: 0,
+                opacity: 100,
+                zIndex: 16,
+                locked: false,
+                visible: true,
+                groupId: null,
+                style: { fontSize: 14, color: '#a0a0a0', backgroundColor: 'transparent', borderColor: 'transparent', borderWidth: 0, borderRadius: 0 },
+                content: '提示：选中组件后可在右侧面板切换"动态数据"并配置云平台设备绑定',
+                dataSource: 'static'
+            };
+            state.components.push(infoText);
+            
+            saveHistory();
+            updateAllComponents();
+            renderLayerTree();
+            showToast('success', '已加载云平台数据演示场景');
+        }
+
+        // ==================== 辅助功能 ====================
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠'}</span><span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        function toggleCategory(header) {
+            header.classList.toggle('collapsed');
+            const items = header.nextElementSibling;
+            items.classList.toggle('hidden');
+        }
+
+        function filterComponents() {
+            const search = document.getElementById('componentSearch').value.toLowerCase();
+            const items = document.querySelectorAll('.component-item');
+            
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                item.style.display = name.includes(search) ? '' : 'none';
+            });
+        }
+        
+        // ==================== 历史数据面板功能 ====================
+        let historyPanelState = {
+            selectedDevice: null,
+            selectedProperty: 'temperature',
+            timeRange: 10
+        };
+        
+        // 显示历史数据面板
+        function showHistoryDataPanel() {
+            document.getElementById('historyDataPanel').style.display = 'flex';
+            initHistoryPanel();
+        }
+        
+        // 关闭历史数据面板
+        function closeHistoryDataPanel() {
+            document.getElementById('historyDataPanel').style.display = 'none';
+        }
+        
+        // 初始化历史数据面板
+        function initHistoryPanel() {
+            // 渲染设备列表
+            renderDeviceList();
+            // 更新实时数据
+            updateRealtimeData();
+            // 更新历史图表
+            updateHistoryChart();
+            // 更新历史数据表格
+            updateHistoryTable();
+        }
+        
+        // 渲染设备列表
+        function renderDeviceList() {
+            const container = document.getElementById('historyDeviceList');
+            container.innerHTML = '';
+            
+            state.cloudDevices.forEach(device => {
+                const card = document.createElement('div');
+                card.className = 'device-card' + (historyPanelState.selectedDevice === device.id ? ' selected' : '');
+                card.onclick = function() { selectDevice(device.id); };
+                
+                const statusClass = device.online ? 'online' : 'offline';
+                const statusText = device.online ? '在线' : '离线';
+                
+                card.innerHTML = '<div class="device-name">' + device.name + '</div>' +
+                    '<div class="device-status ' + statusClass + '">' + statusText + '</div>';
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // 选择设备
+        function selectDevice(deviceId) {
+            historyPanelState.selectedDevice = deviceId;
+            renderDeviceList();
+            updateHistoryChart();
+            updateHistoryTable();
+        }
+        
+        // 设置时间范围
+        function setTimeRange(count) {
+            historyPanelState.timeRange = count;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateHistoryChart();
+            updateHistoryTable();
+        }
+        
+        // 更新实时数据展示
+        function updateRealtimeData() {
+            const container = document.getElementById('realtimeDataGrid');
+            container.innerHTML = '';
+            
+            const properties = [
+                { key: 'temperature', label: '温度', unit: '°C' },
+                { key: 'humidity', label: '湿度', unit: '%' },
+                { key: 'light', label: '光照', unit: 'Lux' },
+                { key: 'co2', label: 'CO2', unit: 'ppm' },
+                { key: 'fanSpeed', label: '风机速度', unit: '%' },
+                { key: 'pumpSpeed', label: '水泵速度', unit: '%' }
+            ];
+            
+            properties.forEach(prop => {
+                const value = state.simulatedData[prop.key] || 0;
+                const item = document.createElement('div');
+                item.className = 'realtime-item';
+                item.innerHTML = '<div class="label">' + prop.label + '</div>' +
+                    '<div class="value">' + value.toFixed(1) + '</div>' +
+                    '<div class="unit">' + prop.unit + '</div>';
+                container.appendChild(item);
+            });
+        }
+        
+        // 更新历史数据图表
+        function updateHistoryChart() {
+            const property = document.getElementById('historyPropertySelect').value;
+            const canvas = document.getElementById('historyChart');
+            const ctx = canvas.getContext('2d');
+            
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 获取历史数据
+            const history = state.historyData[property] || [];
+            const data = history.slice(-historyPanelState.timeRange);
+            
+            if (data.length === 0) {
+                ctx.fillStyle = '#a0a0a0';
+                ctx.font = '14px sans-serif';
+                ctx.fillText('暂无历史数据', canvas.width / 2 - 50, canvas.height / 2);
+                return;
+            }
+            
+            // 绘制图表背景
+            ctx.fillStyle = '#16213e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格线
+            ctx.strokeStyle = '#2d3a4f';
+            ctx.lineWidth = 0.5;
+            
+            // 水平网格线
+            for (let y = 0; y <= canvas.height - 40; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(50, y + 20);
+                ctx.lineTo(canvas.width - 20, y + 20);
+                ctx.stroke();
+            }
+            
+            // 垂直网格线
+            for (let x = 50; x <= canvas.width - 20; x += 70) {
+                ctx.beginPath();
+                ctx.moveTo(x, 20);
+                ctx.lineTo(x, canvas.height - 20);
+                ctx.stroke();
+            }
+            
+            // 计算数据范围
+            const values = data.map(d => d.value);
+            const minVal = Math.min(...values);
+            const maxVal = Math.max(...values);
+            const range = maxVal - minVal || 1;
+            
+            // 绘制折线
+            ctx.strokeStyle = '#00d9a3';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const chartWidth = canvas.width - 70;
+            const chartHeight = canvas.height - 40;
+            
+            data.forEach((point, i) => {
+                const x = 50 + (i / (data.length - 1 || 1)) * chartWidth;
+                const y = 20 + chartHeight - ((point.value - minVal) / range) * chartHeight;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // 绘制数据点
+            ctx.fillStyle = '#00d9a3';
+            data.forEach((point, i) => {
+                const x = 50 + (i / (data.length - 1 || 1)) * chartWidth;
+                const y = 20 + chartHeight - ((point.value - minVal) / range) * chartHeight;
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // 绘制标题和标签
+            ctx.fillStyle = '#a0a0a0';
+            ctx.font = '12px sans-serif';
+            
+            const propertyLabels = {
+                temperature: '温度 (°C)',
+                humidity: '湿度 (%)',
+                light: '光照 (Lux)',
+                co2: 'CO2 (ppm)',
+                fanSpeed: '风机速度 (%)',
+                pumpSpeed: '水泵速度 (%)'
+            };
+            
+            ctx.fillText(propertyLabels[property] || property, 50, 10);
+            ctx.fillText('时间', canvas.width - 50, canvas.height - 5);
+            
+            // 绘制数值范围标签
+            ctx.fillText(maxVal.toFixed(1), 10, 25);
+            ctx.fillText(minVal.toFixed(1), 10, canvas.height - 25);
+        }
+        
+        // 更新历史数据表格
+        function updateHistoryTable() {
+            const property = document.getElementById('historyPropertySelect').value;
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            
+            const history = state.historyData[property] || [];
+            const data = history.slice(-historyPanelState.timeRange);
+            
+            data.forEach(point => {
+                const row = document.createElement('tr');
+                const status = point.value > 30 ? '异常' : '正常';
+                const statusColor = point.value > 30 ? '#ff4757' : '#00d9a3';
+                
+                row.innerHTML = '<td>' + point.time + '</td>' +
+                    '<td>' + point.value.toFixed(2) + '</td>' +
+                    '<td style="color: ' + statusColor + '">' + status + '</td>';
+                
+                tbody.appendChild(row);
+            });
+            
+            if (data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="3" style="text-align: center; color: #a0a0a0;">暂无历史数据</td>';
+                tbody.appendChild(row);
+            }
+        }
+        
+        // 刷新历史数据
+        function refreshHistoryData() {
+            updateRealtimeData();
+            updateHistoryChart();
+            updateHistoryTable();
+            showToast('success', '数据已刷新');
+        }
+        
+        // 导出历史数据
+        function exportHistoryData() {
+            const property = document.getElementById('historyPropertySelect').value;
+            const history = state.historyData[property] || [];
+            
+            if (history.length === 0) {
+                showToast('warning', '暂无数据可导出');
+                return;
+            }
+            
+            // 生成CSV内容
+            let csv = '时间,数值,状态\n';
+            history.forEach(point => {
+                const status = point.value > 30 ? '异常' : '正常';
+                csv += point.time + ',' + point.value.toFixed(2) + ',' + status + '\n';
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = property + '_history_' + new Date().toISOString().slice(0, 10) + '.csv';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('success', '数据已导出');
+        }
+        
+        // 清除历史数据
+        function clearHistoryData() {
+            const property = document.getElementById('historyPropertySelect').value;
+            state.historyData[property] = [];
+            updateHistoryChart();
+            updateHistoryTable();
+            showToast('success', '历史数据已清除');
+        }
+    </script>
+    
+    <!-- 历史数据查询面板 -->
+    <div id="historyDataPanel" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>📊 历史数据查询</h3>
+                <button class="modal-close" onclick="closeHistoryDataPanel()">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- 设备选择 -->
+                <div class="history-section">
+                    <div class="section-title">设备选择</div>
+                    <div class="device-selector">
+                        <div class="device-list" id="historyDeviceList">
+                            <!-- 设备列表将动态生成 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 数据属性选择 -->
+                <div class="history-section">
+                    <div class="section-title">数据属性</div>
+                    <div class="property-selector">
+                        <select id="historyPropertySelect" onchange="updateHistoryChart()">
+                            <option value="temperature">温度</option>
+                            <option value="humidity">湿度</option>
+                            <option value="light">光照</option>
+                            <option value="co2">CO2</option>
+                            <option value="fanSpeed">风机速度</option>
+                            <option value="pumpSpeed">水泵速度</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 时间范围选择 -->
+                <div class="history-section">
+                    <div class="section-title">时间范围</div>
+                    <div class="time-range-selector">
+                        <button class="time-btn active" onclick="setTimeRange(10)">最近10条</button>
+                        <button class="time-btn" onclick="setTimeRange(20)">最近20条</button>
+                        <button class="time-btn" onclick="setTimeRange(50)">最近50条</button>
+                        <button class="time-btn" onclick="setTimeRange(100)">全部数据</button>
+                    </div>
+                </div>
+                
+                <!-- 历史数据图表 -->
+                <div class="history-section">
+                    <div class="section-title">数据趋势图</div>
+                    <div class="history-chart-container">
+                        <canvas id="historyChart" width="750" height="300"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 实时数据展示 -->
+                <div class="history-section">
+                    <div class="section-title">实时数据</div>
+                    <div class="realtime-data-grid" id="realtimeDataGrid">
+                        <!-- 实时数据将动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 数据表格 -->
+                <div class="history-section">
+                    <div class="section-title">历史数据记录</div>
+                    <div class="history-table-container">
+                        <table class="history-table" id="historyDataTable">
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>数值</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- 数据将动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="history-actions">
+                    <button class="action-btn" onclick="refreshHistoryData()">
+                        <span>🔄</span> 刷新数据
+                    </button>
+                    <button class="action-btn" onclick="exportHistoryData()">
+                        <span>📥</span> 导出CSV
+                    </button>
+                    <button class="action-btn" onclick="clearHistoryData()">
+                        <span>🗑️</span> 清除历史
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 历史数据面板样式 -->
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-header h3 {
+            color: var(--text-primary);
+            font-size: 18px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .history-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .device-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .device-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .device-card:hover {
+            border-color: var(--accent);
+        }
+        
+        .device-card.selected {
+            border-color: var(--accent);
+            background: rgba(0, 217, 163, 0.1);
+        }
+        
+        .device-card .device-name {
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+        
+        .device-card .device-status {
+            font-size: 11px;
+            margin-top: 3px;
+        }
+        
+        .device-card .device-status.online {
+            color: #00d9a3;
+        }
+        
+        .device-card .device-status.offline {
+            color: #ff4757;
+        }
+        
+        .property-selector select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 200px;
+        }
+        
+        .time-range-selector {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .time-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .time-btn:hover {
+            border-color: var(--accent);
+        }
+        
+        .time-btn.active {
+            border-color: var(--accent);
+            background: rgba(0, 217, 163, 0.1);
+            color: var(--accent);
+        }
+        
+        .history-chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .realtime-data-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .realtime-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .realtime-item .label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .realtime-item .value {
+            color: var(--accent);
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .realtime-item .unit {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        .history-table-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .history-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+        
+        .history-table td {
+            color: var(--text-primary);
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .action-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 217, 163, 0.1);
+        }
+    </style>
+</body>
+</html>

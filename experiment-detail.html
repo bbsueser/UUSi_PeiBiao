@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实验详情 - 智联网综合实践平台</title>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* 实验详情页面特定样式 */
+        .experiment-detail-header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-active) 100%);
+            color: white;
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4);
+        }
+
+        .experiment-detail-header h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--space-2);
+        }
+
+        .experiment-detail-header .meta-info {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+        }
+
+        .experiment-detail-header .meta-info span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 环境卡片区域 */
+        .env-section {
+            margin-bottom: var(--space-4);
+        }
+
+        .section-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-3);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .section-title .icon {
+            font-size: 24px;
+        }
+
+        .env-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .env-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all var(--duration-slow) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .env-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-blue);
+            transform: scaleX(0);
+            transition: transform var(--duration-base) ease;
+        }
+
+        .env-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .env-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-blue);
+        }
+
+        .env-card.active {
+            border-color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.05);
+        }
+
+        .env-card.active::before {
+            transform: scaleX(1);
+        }
+
+        .env-card-icon {
+            font-size: 32px;
+            margin-bottom: var(--space-2);
+        }
+
+        .env-card-title {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+
+        .env-card-desc {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .env-card-badge {
+            position: absolute;
+            top: var(--space-2);
+            right: var(--space-2);
+            padding: 2px 6px;
+            background: var(--success);
+            color: white;
+            border-radius: var(--radius-full);
+            font-size: 10px;
+            font-weight: var(--font-weight-medium);
+        }
+
+        /* 功能详情区域 */
+        .feature-detail-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+            margin-bottom: var(--space-4);
+        }
+
+        .feature-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .feature-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .feature-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .status-badge {
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .status-badge.online {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        /* 场景切换 */
+        .scene-switcher {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .scene-item {
+            background: var(--bg-body);
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-base);
+            padding: var(--space-2);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+        }
+
+        .scene-item:hover {
+            border-color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.05);
+        }
+
+        .scene-item.active {
+            border-color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.1);
+        }
+
+        .scene-item-icon {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        .scene-item-name {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+        }
+
+        /* 功能列表 */
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .feature-item {
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            border: 1px solid var(--border-light);
+        }
+
+        .feature-item-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+
+        .feature-item-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-base);
+            background: rgba(71, 85, 105, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .feature-item-title {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .feature-item-desc {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            line-height: var(--line-height-relaxed);
+        }
+
+        /* 重点标记 */
+        .highlight-star {
+            color: #f59e0b;
+            font-size: 12px;
+        }
+
+        .highlight-triangle {
+            color: #10b981;
+            font-size: 12px;
+        }
+
+        /* 协议兼容标签 */
+        .protocol-tags {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-3);
+        }
+
+        .protocol-tag {
+            padding: var(--space-1) var(--space-3);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            color: white;
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .protocol-tag.http {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .protocol-tag.mqtt {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .protocol-tag.tcp {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        /* 模型库展示 */
+        .model-library {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .model-item {
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            padding: var(--space-2);
+            text-align: center;
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+        }
+
+        .model-item:hover {
+            border-color: var(--primary-blue);
+            transform: scale(1.05);
+        }
+
+        .model-item-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .model-item-name {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        /* 设备库统计 */
+        .device-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
+        .device-stat-card {
+            background: linear-gradient(135deg, rgba(71, 85, 105, 0.1), rgba(71, 85, 105, 0.05));
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+
+        .device-stat-number {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-blue);
+            margin-bottom: 4px;
+        }
+
+        .device-stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        /* 实验模式按钮组 */
+        .mode-buttons {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .mode-btn {
+            padding: var(--space-2) var(--space-4);
+            background: var(--bg-body);
+            border: 2px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .mode-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .mode-btn.active {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        /* 代码编辑器模拟 */
+        .code-editor {
+            background: #1e293b;
+            border-radius: var(--radius-base);
+            overflow: hidden;
+            margin-bottom: var(--space-3);
+        }
+
+        .code-editor-header {
+            background: #0f172a;
+            padding: var(--space-2) var(--space-3);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .code-editor-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .code-editor-dot.red { background: #ef4444; }
+        .code-editor-dot.yellow { background: #f59e0b; }
+        .code-editor-dot.green { background: #10b981; }
+
+        .code-editor-title {
+            color: #94a3b8;
+            font-size: var(--font-size-sm);
+            margin-left: var(--space-2);
+        }
+
+        .code-editor-body {
+            padding: var(--space-3);
+            color: #e2e8f0;
+            font-family: var(--code-font);
+            font-size: var(--font-size-sm);
+            line-height: 1.6;
+            min-height: 200px;
+        }
+
+        .code-line {
+            display: flex;
+        }
+
+        .code-line-number {
+            color: #475569;
+            min-width: 30px;
+            text-align: right;
+            margin-right: var(--space-2);
+        }
+
+        .code-keyword { color: #c084fc; }
+        .code-string { color: #86efac; }
+        .code-comment { color: #64748b; }
+        .code-function { color: #93c5fd; }
+
+        /* Jupyter 预置模块 */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .module-item {
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            padding: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+        }
+
+        .module-item:hover {
+            border-color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.05);
+        }
+
+        .module-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .module-icon.python {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+
+        .module-icon.data {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .module-icon.chart {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        .module-name {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+        }
+
+        /* 区块链实验类型 */
+        .blockchain-experiments {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .blockchain-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            transition: all var(--duration-base) ease;
+        }
+
+        .blockchain-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .blockchain-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+
+        .blockchain-card-icon {
+            font-size: 28px;
+        }
+
+        .blockchain-card-title {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .blockchain-card-desc {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            line-height: var(--line-height-relaxed);
+        }
+
+        /* 沙箱环境指示器 */
+        .sandbox-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-full);
+            margin-bottom: var(--space-3);
+            width: fit-content;
+        }
+
+        .sandbox-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sandbox-text {
+            font-size: var(--font-size-sm);
+            color: var(--success);
+            font-weight: var(--font-weight-medium);
+        }
+
+        /* 图表展示区 */
+        .chart-preview {
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            border: 1px solid var(--border-light);
+            margin-bottom: var(--space-3);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+
+        .chart-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .chart-type {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            padding: 2px 8px;
+            background: white;
+            border-radius: var(--radius-full);
+        }
+
+        .chart-placeholder {
+            height: 150px;
+            background: linear-gradient(180deg, rgba(71, 85, 105, 0.1) 0%, rgba(71, 85, 105, 0.02) 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        /* 操作按钮区 */
+        .action-buttons {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-4);
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-primary {
+            padding: var(--space-2) var(--space-4);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            padding: var(--space-2) var(--space-4);
+            background: white;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.05);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .env-cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+
+            .scene-switcher {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .mode-buttons {
+                flex-wrap: wrap;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="nav-brand-icon">E</div>
+            <span class="nav-brand-text">智联网综合实践平台</span>
+        </div>
+        <div class="nav-menu">
+            <a href="experiment-hall.html" class="nav-link">实验大厅</a>
+            <a href="#" class="nav-link active">实验详情</a>
+            <a href="#" class="nav-link">我的实验</a>
+            <a href="#" class="nav-link">帮助中心</a>
+        </div>
+    </header>
+
+    <!-- 应用布局 -->
+    <div class="app-layout">
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-item">
+                    <span class="sidebar-icon">📊</span>
+                    我的工作台
+                </a>
+                <a href="ai-assistant.html" class="sidebar-item">
+                    <span class="sidebar-icon">🤖</span>
+                    AI学习助手
+                </a>
+                <a href="experiment-hall.html" class="sidebar-item">
+                    <span class="sidebar-icon">🔬</span>
+                    实验大厅
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item active">
+                    <span class="sidebar-icon">💻</span>
+                    虚拟仿真实验
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item">
+                    <span class="sidebar-icon">☁️</span>
+                    科研云服务
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item">
+                    <span class="sidebar-icon">🎨</span>
+                    创意设计
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item">
+                    <span class="sidebar-icon">🔧</span>
+                    嵌入式实训
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚙️</span>
+                    算法演练
+                </a>
+                <a href="exam-hall.html" class="sidebar-item">
+                    <span class="sidebar-icon">📝</span>
+                    考场大厅
+                </a>
+                <a href="profile.html" class="sidebar-item">
+                    <span class="sidebar-icon">👤</span>
+                    个人中心
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 实验详情头部 -->
+            <div class="experiment-detail-header">
+                <h1>🔬 智联网综合实验平台</h1>
+                <div class="meta-info">
+                    <span>📚 实验类型：综合实验</span>
+                    <span>⏱️ 预计时长：4小时</span>
+                    <span>🎯 难度等级：★★★☆☆</span>
+                    <span>👥 已参与：1,256人</span>
+                    <span>⭐ 评分：4.8/5.0</span>
+                </div>
+            </div>
+
+            <!-- 实验环境选择区域 -->
+            <div class="env-section">
+                <h2 class="section-title">
+                    <span class="icon">🖥️</span>
+                    实验环境选择
+                </h2>
+                <div class="env-cards-grid">
+                    <div class="env-card active" data-env="virtual-sim">
+                        <span class="env-card-badge">热门</span>
+                        <div class="env-card-icon">🏭</div>
+                        <div class="env-card-title">工程虚拟仿真</div>
+                        <div class="env-card-desc">物联网设备仿真与场景模拟</div>
+                    </div>
+                    <div class="env-card" data-env="3d-designer">
+                        <div class="env-card-icon">🎮</div>
+                        <div class="env-card-title">3D应用设计器</div>
+                        <div class="env-card-desc">三维场景可视化设计</div>
+                    </div>
+                    <div class="env-card" data-env="industry-cloud">
+                        <span class="env-card-badge">推荐</span>
+                        <div class="env-card-icon">☁️</div>
+                        <div class="env-card-title">行业云</div>
+                        <div class="env-card-desc">工业物联网云平台</div>
+                    </div>
+                    <div class="env-card" data-env="2d-designer">
+                        <div class="env-card-icon">📱</div>
+                        <div class="env-card-title">2D应用设计器</div>
+                        <div class="env-card-desc">二维界面快速开发</div>
+                    </div>
+                    <div class="env-card" data-env="vscode">
+                        <div class="env-card-icon">💻</div>
+                        <div class="env-card-title">VSCode</div>
+                        <div class="env-card-desc">云端代码编辑环境</div>
+                    </div>
+                    <div class="env-card" data-env="jupyter">
+                        <span class="env-card-badge">AI</span>
+                        <div class="env-card-icon">📓</div>
+                        <div class="env-card-title">Jupyter</div>
+                        <div class="env-card-desc">Python数据分析环境</div>
+                    </div>
+                    <div class="env-card" data-env="blockchain">
+                        <div class="env-card-icon">⛓️</div>
+                        <div class="env-card-title">区块链仿真</div>
+                        <div class="env-card-desc">区块链技术实验平台</div>
+                    </div>
+                    <div class="env-card" data-env="database">
+                        <div class="env-card-icon">🗄️</div>
+                        <div class="env-card-title">数据库实验</div>
+                        <div class="env-card-desc">SQL数据库操作实践</div>
+                    </div>
+                    <div class="env-card" data-env="network">
+                        <div class="env-card-icon">🌐</div>
+                        <div class="env-card-title">网络仿真</div>
+                        <div class="env-card-desc">网络拓扑与协议仿真</div>
+                    </div>
+                    <div class="env-card" data-env="embedded">
+                        <div class="env-card-icon">🔧</div>
+                        <div class="env-card-title">嵌入式开发</div>
+                        <div class="env-card-desc">硬件编程与调试</div>
+                    </div>
+                    <div class="env-card" data-env="ai-lab">
+                        <div class="env-card-icon">🤖</div>
+                        <div class="env-card-title">AI实验室</div>
+                        <div class="env-card-desc">机器学习模型训练</div>
+                    </div>
+                    <div class="env-card" data-env="security">
+                        <div class="env-card-icon">🔒</div>
+                        <div class="env-card-title">安全实验</div>
+                        <div class="env-card-desc">网络安全攻防演练</div>
+                    </div>
+                    <div class="env-card" data-env="cloud-native">
+                        <div class="env-card-icon">☁️</div>
+                        <div class="env-card-title">云原生开发</div>
+                        <div class="env-card-desc">容器与微服务实践</div>
+                    </div>
+                    <div class="env-card" data-env="big-data">
+                        <div class="env-card-icon">📊</div>
+                        <div class="env-card-title">大数据实验</div>
+                        <div class="env-card-desc">数据处理与分析</div>
+                    </div>
+                    <div class="env-card" data-env="robot">
+                        <div class="env-card-icon">🤖</div>
+                        <div class="env-card-title">机器人仿真</div>
+                        <div class="env-card-desc">机器人控制与编程</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工程虚拟仿真功能详情 -->
+            <div class="feature-detail-section" id="virtual-sim-detail">
+                <div class="feature-header">
+                    <div class="feature-title">
+                        <span>🏭</span>
+                        工程虚拟仿真
+                    </div>
+                    <div class="feature-status">
+                        <span class="status-badge online">● 在线</span>
+                    </div>
+                </div>
+
+                <!-- 场景切换 -->
+                <div style="margin-bottom: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        场景切换 <span class="highlight-triangle">▲</span>
+                    </h3>
+                    <div class="scene-switcher">
+                        <div class="scene-item active" data-scene="pasture">
+                            <div class="scene-item-icon">🐄</div>
+                            <div class="scene-item-name">智慧牧场</div>
+                        </div>
+                        <div class="scene-item" data-scene="home">
+                            <div class="scene-item-icon">🏠</div>
+                            <div class="scene-item-name">智慧家居</div>
+                        </div>
+                        <div class="scene-item" data-scene="greenhouse">
+                            <div class="scene-item-icon">🌿</div>
+                            <div class="scene-item-name">智慧温室</div>
+                        </div>
+                        <div class="scene-item" data-scene="mine">
+                            <div class="scene-item-icon">⛏️</div>
+                            <div class="scene-item-name">智慧矿山</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 功能列表 -->
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">🔗</div>
+                            <div class="feature-item-title">连线检测功能 <span class="highlight-star">★</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            实时检测设备之间的连接状态，自动识别连接故障并提供修复建议。支持拓扑图可视化展示连接关系。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">💬</div>
+                            <div class="feature-item-title">消息面板 <span class="highlight-star">★</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            实时显示设备通信消息，支持消息过滤、搜索和导出功能。可查看MQTT、HTTP等多种协议的消息内容。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">📊</div>
+                            <div class="feature-item-title">模拟数据产生 <span class="highlight-star">★</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            自动生成模拟传感器数据，支持自定义数据范围、频率和波动模式。可模拟真实设备的各种运行场景。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">📦</div>
+                            <div class="feature-item-title">设备库（200+种） <span class="highlight-star">★</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            内置200+种物联网设备模型，涵盖传感器、执行器、网关等类型。支持自定义设备属性和通信协议。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">☁️</div>
+                            <div class="feature-item-title">云平台对接 <span class="highlight-star">★</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            支持与阿里云、腾讯云、华为云等主流IoT平台对接，实现设备数据的云端同步和远程控制。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">🤖</div>
+                            <div class="feature-item-title">智能问答排错 <span class="highlight-triangle">▲</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            AI驱动的智能问答系统，可快速定位设备故障原因，提供解决方案和操作指导。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">✨</div>
+                            <div class="feature-item-title">自然语言创建工程 <span class="highlight-triangle">▲</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            通过自然语言描述自动生成工程项目，AI理解意图后自动配置设备、场景和连接关系。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设备库统计 -->
+                <div style="margin-top: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        设备库统计
+                    </h3>
+                    <div class="device-stats">
+                        <div class="device-stat-card">
+                            <div class="device-stat-number">200+</div>
+                            <div class="device-stat-label">设备类型</div>
+                        </div>
+                        <div class="device-stat-card">
+                            <div class="device-stat-number">50+</div>
+                            <div class="device-stat-label">传感器类型</div>
+                        </div>
+                        <div class="device-stat-card">
+                            <div class="device-stat-number">30+</div>
+                            <div class="device-stat-label">执行器类型</div>
+                        </div>
+                        <div class="device-stat-card">
+                            <div class="device-stat-number">20+</div>
+                            <div class="device-stat-label">网关类型</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 行业云功能详情 -->
+            <div class="feature-detail-section" id="industry-cloud-detail">
+                <div class="feature-header">
+                    <div class="feature-title">
+                        <span>☁️</span>
+                        行业云
+                    </div>
+                    <div class="feature-status">
+                        <span class="status-badge online">● 在线</span>
+                    </div>
+                </div>
+
+                <!-- 协议兼容 -->
+                <div style="margin-bottom: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        协议兼容
+                    </h3>
+                    <div class="protocol-tags">
+                        <span class="protocol-tag mqtt">MQTT</span>
+                        <span class="protocol-tag tcp">TCP</span>
+                        <span class="protocol-tag http">HTTP/HTTPS</span>
+                        <span class="protocol-tag">CoAP</span>
+                        <span class="protocol-tag">WebSocket</span>
+                        <span class="protocol-tag">Modbus</span>
+                    </div>
+                </div>
+
+                <!-- 功能列表 -->
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">🔗</div>
+                            <div class="feature-item-title">场景联动设置 <span class="highlight-triangle">▲</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            可视化配置设备间的联动规则，支持条件触发、定时执行和场景模式切换，实现智能化场景控制。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">📈</div>
+                            <div class="feature-item-title">数据仿真 <span class="highlight-triangle">▲</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            模拟真实设备数据流，支持多种数据模式和噪声注入，用于系统测试和性能评估。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">⏰</div>
+                            <div class="feature-item-title">设备任务调度 <span class="highlight-triangle">▲</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            灵活的任务调度系统，支持定时任务、周期任务和事件触发任务，可配置任务优先级和执行策略。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">🔔</div>
+                            <div class="feature-item-title">事件中心 <span class="highlight-triangle">▲</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            集中管理设备事件，支持事件订阅、过滤和告警通知。可配置事件处理规则和通知策略。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 应用设计器3D/2D -->
+            <div class="feature-detail-section" id="designer-detail">
+                <div class="feature-header">
+                    <div class="feature-title">
+                        <span>🎨</span>
+                        应用设计器（3D/2D）
+                    </div>
+                    <div class="feature-status">
+                        <span class="status-badge online">● 在线</span>
+                    </div>
+                </div>
+
+                <!-- 模型库 -->
+                <div style="margin-bottom: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        模型库（50+）
+                    </h3>
+                    <div class="model-library">
+                        <div class="model-item">
+                            <div class="model-item-icon">🏠</div>
+                            <div class="model-item-name">房屋</div>
+                        </div>
+                        <div class="model-item">
+                            <div class="model-item-icon">🏢</div>
+                            <div class="model-item-name">建筑</div>
+                        </div>
+                        <div class="model-item">
+                            <div class="model-item-icon">🏭</div>
+                            <div class="model-item-name">工厂</div>
+                        </div>
+                        <div class="model-item">
+                            <div class="model-item-icon">🌾</div>
+                            <div class="model-item-name">农田</div>
+                        </div>
+                        <div class="model-item">
+                            <div class="model-item-icon">🚗</div>
+                            <div class="model-item-name">车辆</div>
+                        </div>
+                        <div class="model-item">
+                            <div class="model-item-icon">⚡</div>
+                            <div class="model-item-name">电力设备</div>
+                        </div>
+                        <div class="model-item">
+                            <div class="model-item-icon">💡</div>
+                            <div class="model-item-name">照明设备</div>
+                        </div>
+                        <div class="model-item">
+                            <div class="model-item-icon">🌡️</div>
+                            <div class="model-item-name">传感器</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 功能列表 -->
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">🚀</div>
+                            <div class="feature-item-title">快速搭建场景</div>
+                        </div>
+                        <div class="feature-item-desc">
+                            拖拽式场景搭建，支持3D和2D视图切换。内置丰富的模型库和模板，快速创建物联网应用界面。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">📊</div>
+                            <div class="feature-item-title">数据源配置 <span class="highlight-star">★</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            支持多种数据源接入，包括MQTT、HTTP API、数据库等。可视化配置数据绑定和转换规则。
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">⚙️</div>
+                            <div class="feature-item-title">模型属性配置 <span class="highlight-triangle">▲</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            灵活配置模型的外观、行为和数据绑定属性。支持条件样式、动画效果和交互事件配置。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jupyter实验 -->
+            <div class="feature-detail-section" id="jupyter-detail">
+                <div class="feature-header">
+                    <div class="feature-title">
+                        <span>📓</span>
+                        Jupyter实验
+                    </div>
+                    <div class="feature-status">
+                        <span class="status-badge online">● 在线</span>
+                    </div>
+                </div>
+
+                <!-- 沙箱环境指示器 -->
+                <div class="sandbox-indicator">
+                    <div class="sandbox-dot"></div>
+                    <span class="sandbox-text">独立沙箱环境运行中 <span class="highlight-triangle">▲</span></span>
+                </div>
+
+                <!-- 预置模块 -->
+                <div style="margin-bottom: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        预置模块 <span class="highlight-star">★</span>
+                    </h3>
+                    <div class="module-grid">
+                        <div class="module-item">
+                            <div class="module-icon python">🐍</div>
+                            <div class="module-name">Python基础</div>
+                        </div>
+                        <div class="module-item">
+                            <div class="module-icon data">📊</div>
+                            <div class="module-name">Pandas数据分析</div>
+                        </div>
+                        <div class="module-item">
+                            <div class="module-icon chart">📈</div>
+                            <div class="module-name">Matplotlib绑图</div>
+                        </div>
+                        <div class="module-item">
+                            <div class="module-icon">🤖</div>
+                            <div class="module-name">Scikit-learn</div>
+                        </div>
+                        <div class="module-item">
+                            <div class="module-icon">🧮</div>
+                            <div class="module-name">NumPy计算</div>
+                        </div>
+                        <div class="module-item">
+                            <div class="module-icon">📈</div>
+                            <div class="module-name">Seaborn可视化</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图表展示 -->
+                <div style="margin-bottom: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        Pyecharts图表展示 <span class="highlight-triangle">▲</span>
+                    </h3>
+                    <div class="chart-preview">
+                        <div class="chart-header">
+                            <span class="chart-title">数据可视化示例</span>
+                            <span class="chart-type">交互式图表</span>
+                        </div>
+                        <div class="chart-placeholder">
+                            📈 Pyecharts 交互式图表区域
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 功能列表 -->
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-item-header">
+                            <div class="feature-item-icon">🎯</div>
+                            <div class="feature-item-title">可视化模型训练工具 <span class="highlight-star">★</span></div>
+                        </div>
+                        <div class="feature-item-desc">
+                            图形化机器学习模型训练界面，支持数据预处理、特征工程、模型选择和超参数调优，无需编写代码即可训练模型。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 代码编辑器模拟 -->
+                <div style="margin-top: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        代码编辑器
+                    </h3>
+                    <div class="code-editor">
+                        <div class="code-editor-header">
+                            <div class="code-editor-dot red"></div>
+                            <div class="code-editor-dot yellow"></div>
+                            <div class="code-editor-dot green"></div>
+                            <span class="code-editor-title">experiment.ipynb</span>
+                        </div>
+                        <div class="code-editor-body">
+                            <div class="code-line">
+                                <span class="code-line-number">1</span>
+                                <span><span class="code-comment"># 导入必要的库</span></span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-line-number">2</span>
+                                <span><span class="code-keyword">import</span> pandas <span class="code-keyword">as</span> pd</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-line-number">3</span>
+                                <span><span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-line-number">4</span>
+                                <span><span class="code-keyword">from</span> pyecharts <span class="code-keyword">import</span> <span class="code-function">Bar</span></span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-line-number">5</span>
+                                <span></span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-line-number">6</span>
+                                <span><span class="code-comment"># 加载数据</span></span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-line-number">7</span>
+                                <span>data = pd.<span class="code-function">read_csv</span>(<span class="code-string">'sensor_data.csv'</span>)</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-line-number">8</span>
+                                <span>data.<span class="code-function">head</span>()</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 区块链仿真 -->
+            <div class="feature-detail-section" id="blockchain-detail">
+                <div class="feature-header">
+                    <div class="feature-title">
+                        <span>⛓️</span>
+                        区块链仿真
+                    </div>
+                    <div class="feature-status">
+                        <span class="status-badge online">● 在线</span>
+                    </div>
+                </div>
+
+                <!-- 实验模式 -->
+                <div style="margin-bottom: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        实验模式 <span class="highlight-star">★</span>
+                    </h3>
+                    <div class="mode-buttons">
+                        <button class="mode-btn active" data-mode="auto">▶️ 自动模式</button>
+                        <button class="mode-btn" data-mode="step">⏯️ 单步模式</button>
+                        <button class="mode-btn" data-mode="reset">🔄 重置实验</button>
+                    </div>
+                </div>
+
+                <!-- 区块链实验类型 -->
+                <div style="margin-bottom: var(--space-3);">
+                    <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-title); margin-bottom: var(--space-2);">
+                        实验类型
+                    </h3>
+                    <div class="blockchain-experiments">
+                        <div class="blockchain-card">
+                            <div class="blockchain-card-header">
+                                <span class="blockchain-card-icon">🖼️</span>
+                                <span class="blockchain-card-title">NFT实验</span>
+                            </div>
+                            <div class="blockchain-card-desc">
+                                学习NFT的创建、发行和交易流程。实践智能合约编写，理解ERC-721和ERC-1155标准。
+                            </div>
+                        </div>
+                        <div class="blockchain-card">
+                            <div class="blockchain-card-header">
+                                <span class="blockchain-card-icon">💰</span>
+                                <span class="blockchain-card-title">DeFi实验</span>
+                            </div>
+                            <div class="blockchain-card-desc">
+                                探索去中心化金融应用，包括流动性挖矿、借贷协议和DEX交易机制的模拟实验。
+                            </div>
+                        </div>
+                        <div class="blockchain-card">
+                            <div class="blockchain-card-header">
+                                <span class="blockchain-card-icon">📝</span>
+                                <span class="blockchain-card-title">智能合约实验</span>
+                            </div>
+                            <div class="blockchain-card-desc">
+                                编写和部署智能合约，学习Solidity语言基础和合约安全最佳实践。
+                            </div>
+                        </div>
+                        <div class="blockchain-card">
+                            <div class="blockchain-card-header">
+                                <span class="blockchain-card-icon">🔐</span>
+                                <span class="blockchain-card-title">共识机制实验</span>
+                            </div>
+                            <div class="blockchain-card-desc">
+                                模拟PoW、PoS等共识算法，理解区块链网络如何达成一致性和防止攻击。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="startExperiment()">
+                    🚀 开始实验
+                </button>
+                <button class="btn-secondary" onclick="previewExperiment()">
+                    👁️ 预览实验
+                </button>
+                <button class="btn-secondary" onclick="saveProgress()">
+                    💾 保存进度
+                </button>
+                <button class="btn-secondary" onclick="viewGuide()">
+                    📖 实验指南
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 环境卡片点击事件
+        document.querySelectorAll('.env-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // 移除所有active类
+                document.querySelectorAll('.env-card').forEach(c => c.classList.remove('active'));
+                // 添加当前active类
+                this.classList.add('active');
+                
+                // 滚动到对应的详情区域
+                const env = this.dataset.env;
+                const detailSection = document.getElementById(`${env}-detail`);
+                if (detailSection) {
+                    detailSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // 场景切换
+        document.querySelectorAll('.scene-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.scene-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                const scene = this.dataset.scene;
+                const sceneNames = {
+                    'pasture': '智慧牧场',
+                    'home': '智慧家居',
+                    'greenhouse': '智慧温室',
+                    'mine': '智慧矿山'
+                };
+                
+                // 显示场景切换提示
+                showNotification(`已切换到${sceneNames[scene]}场景`);
+            });
+        });
+
+        // 实验模式切换
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const mode = this.dataset.mode;
+                const modeNames = {
+                    'auto': '自动模式',
+                    'step': '单步模式',
+                    'reset': '重置实验'
+                };
+                
+                showNotification(`已切换到${modeNames[mode]}`);
+            });
+        });
+
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--primary-blue);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 操作按钮事件
+        function startExperiment() {
+            showNotification('正在启动实验环境...');
+        }
+
+        function previewExperiment() {
+            showNotification('正在加载实验预览...');
+        }
+
+        function saveProgress() {
+            showNotification('实验进度已保存');
+        }
+
+        function viewGuide() {
+            showNotification('正在打开实验指南...');
+        }
+    </script>
+</body>
+</html>

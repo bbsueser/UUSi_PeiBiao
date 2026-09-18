@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配色方案预览 - 智慧教学平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+            padding: 40px 20px;
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .preview-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .preview-header p {
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .color-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .color-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .color-card.selected {
+            border-color: #10b981;
+        }
+
+        .color-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .color-description {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .color-preview {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .preview-element {
+            flex: 1;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .preview-element:hover {
+            transform: scale(1.05);
+        }
+
+        .preview-button {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .preview-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .color-values {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .color-values code {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 4px;
+        }
+
+        /* ========== 配色方案 1: 深紫色 - 专业科技感 ========== */
+        .scheme-purple .color-name { color: #7C3AED; }
+        .scheme-purple .preview-element:nth-child(1) { background: linear-gradient(135deg, #7C3AED, #8B5CF6); }
+        .scheme-purple .preview-element:nth-child(2) { background: linear-gradient(135deg, #8B5CF6, #A78BFA); }
+        .scheme-purple .preview-element:nth-child(3) { background: linear-gradient(135deg, #6D28D9, #7C3AED); }
+        .scheme-purple .preview-button { background: linear-gradient(135deg, #7C3AED, #8B5CF6); }
+        .scheme-purple .preview-button:hover { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
+
+        /* ========== 配色方案 2: 深绿色 - 清新教育感 ========== */
+        .scheme-green .color-name { color: #059669; }
+        .scheme-green .preview-element:nth-child(1) { background: linear-gradient(135deg, #059669, #10B981); }
+        .scheme-green .preview-element:nth-child(2) { background: linear-gradient(135deg, #10B981, #34D399); }
+        .scheme-green .preview-element:nth-child(3) { background: linear-gradient(135deg, #047857, #059669); }
+        .scheme-green .preview-button { background: linear-gradient(135deg, #059669, #10B981); }
+        .scheme-green .preview-button:hover { box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4); }
+
+        /* ========== 配色方案 3: 橙色琥珀 - 温暖活力 ========== */
+        .scheme-orange .color-name { color: #EA580C; }
+        .scheme-orange .preview-element:nth-child(1) { background: linear-gradient(135deg, #EA580C, #F97316); }
+        .scheme-orange .preview-element:nth-child(2) { background: linear-gradient(135deg, #F97316, #FB923C); }
+        .scheme-orange .preview-element:nth-child(3) { background: linear-gradient(135deg, #C2410C, #EA580C); }
+        .scheme-orange .preview-button { background: linear-gradient(135deg, #EA580C, #F97316); }
+        .scheme-orange .preview-button:hover { box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4); }
+
+        /* ========== 配色方案 4: 深青色 - 独特现代 ========== */
+        .scheme-teal .color-name { color: #0D9488; }
+        .scheme-teal .preview-element:nth-child(1) { background: linear-gradient(135deg, #0D9488, #14B8A6); }
+        .scheme-teal .preview-element:nth-child(2) { background: linear-gradient(135deg, #14B8A6, #2DD4BF); }
+        .scheme-teal .preview-element:nth-child(3) { background: linear-gradient(135deg, #0F766E, #0D9488); }
+        .scheme-teal .preview-button { background: linear-gradient(135deg, #0D9488, #14B8A6); }
+        .scheme-teal .preview-button:hover { box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4); }
+
+        /* ========== 配色方案 5: 粉紫色 - 年轻创新 ========== */
+        .scheme-pink .color-name { color: #DB2777; }
+        .scheme-pink .preview-element:nth-child(1) { background: linear-gradient(135deg, #DB2777, #EC4899); }
+        .scheme-pink .preview-element:nth-child(2) { background: linear-gradient(135deg, #EC4899, #F472B6); }
+        .scheme-pink .preview-element:nth-child(3) { background: linear-gradient(135deg, #BE185D, #DB2777); }
+        .scheme-pink .preview-button { background: linear-gradient(135deg, #DB2777, #EC4899); }
+        .scheme-pink .preview-button:hover { box-shadow: 0 6px 20px rgba(219, 39, 119, 0.4); }
+
+        /* ========== 配色方案 6: 深蓝灰 - 稳重专业 ========== */
+        .scheme-slate .color-name { color: #475569; }
+        .scheme-slate .preview-element:nth-child(1) { background: linear-gradient(135deg, #475569, #64748B); }
+        .scheme-slate .preview-element:nth-child(2) { background: linear-gradient(135deg, #64748B, #94A3B8); }
+        .scheme-slate .preview-element:nth-child(3) { background: linear-gradient(135deg, #334155, #475569); }
+        .scheme-slate .preview-button { background: linear-gradient(135deg, #475569, #64748B); }
+        .scheme-slate .preview-button:hover { box-shadow: 0 6px 20px rgba(71, 85, 105, 0.4); }
+
+        /* ========== 配色方案 7: 金色 - 高端典雅 ========== */
+        .scheme-gold .color-name { color: #D97706; }
+        .scheme-gold .preview-element:nth-child(1) { background: linear-gradient(135deg, #D97706, #F59E0B); }
+        .scheme-gold .preview-element:nth-child(2) { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
+        .scheme-gold .preview-element:nth-child(3) { background: linear-gradient(135deg, #B45309, #D97706); }
+        .scheme-gold .preview-button { background: linear-gradient(135deg, #D97706, #F59E0B); }
+        .scheme-gold .preview-button:hover { box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4); }
+
+        /* ========== 配色方案 8: 深红色 - 热情专业 ========== */
+        .scheme-red .color-name { color: #DC2626; }
+        .scheme-red .preview-element:nth-child(1) { background: linear-gradient(135deg, #DC2626, #EF4444); }
+        .scheme-red .preview-element:nth-child(2) { background: linear-gradient(135deg, #EF4444, #F87171); }
+        .scheme-red .preview-element:nth-child(3) { background: linear-gradient(135deg, #B91C1C, #DC2626); }
+        .scheme-red .preview-button { background: linear-gradient(135deg, #DC2626, #EF4444); }
+        .scheme-red .preview-button:hover { box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4); }
+
+        .apply-section {
+            text-align: center;
+            margin-top: 40px;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .apply-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .apply-section p {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .apply-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .apply-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .selected-info {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .color-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .preview-header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-header">
+        <h1>🎨 配色方案预览</h1>
+        <p>选择一种独特的配色方案，让您的平台与众不同</p>
+    </div>
+
+    <div class="color-grid">
+        <!-- 配色方案 1: 深紫色 -->
+        <div class="color-card scheme-purple" onclick="selectColor('purple')">
+            <div class="color-name">💜 深紫色 - 专业科技感</div>
+            <div class="color-description">适合AI、科技、创新类平台。紫色代表智慧、创造力和未来感，非常独特且专业。</div>
+            <div class="color-preview">
+                <div class="preview-element">主色</div>
+                <div class="preview-element">悬停</div>
+                <div class="preview-element">深色</div>
+            </div>
+            <button class="preview-button">预览按钮效果</button>
+            <div class="color-values">
+                主色: <code>#7C3AED</code> 悬停: <code>#8B5CF6</code> 深色: <code>#6D28D9</code>
+            </div>
+        </div>
+
+        <!-- 配色方案 2: 深绿色 -->
+        <div class="color-card scheme-green" onclick="selectColor('green')">
+            <div class="color-name">💚 深绿色 - 清新教育感</div>
+            <div class="color-description">适合教育、环保、健康类平台。绿色代表成长、希望和生命力，清新自然。</div>
+            <div class="color-preview">
+                <div class="preview-element">主色</div>
+                <div class="preview-element">悬停</div>
+                <div class="preview-element">深色</div>
+            </div>
+            <button class="preview-button">预览按钮效果</button>
+            <div class="color-values">
+                主色: <code>#059669</code> 悬停: <code>#10B981</code> 深色: <code>#047857</code>
+            </div>
+        </div>
+
+        <!-- 配色方案 3: 橙色琥珀 -->
+        <div class="color-card scheme-orange" onclick="selectColor('orange')">
+            <div class="color-name">🧡 橙色琥珀 - 温暖活力</div>
+            <div class="color-description">适合创意、活力、年轻化平台。橙色代表热情、活力和创新，温暖且引人注目。</div>
+            <div class="color-preview">
+                <div class="preview-element">主色</div>
+                <div class="preview-element">悬停</div>
+                <div class="preview-element">深色</div>
+            </div>
+            <button class="preview-button">预览按钮效果</button>
+            <div class="color-values">
+                主色: <code>#EA580C</code> 悬停: <code>#F97316</code> 深色: <code>#C2410C</code>
+            </div>
+        </div>
+
+        <!-- 配色方案 4: 深青色 -->
+        <div class="color-card scheme-teal" onclick="selectColor('teal')">
+            <div class="color-name">💙 深青色 - 独特现代</div>
+            <div class="color-description">适合现代、独特、专业平台。青色介于蓝绿之间，独特且不失专业感，非常少见。</div>
+            <div class="color-preview">
+                <div class="preview-element">主色</div>
+                <div class="preview-element">悬停</div>
+                <div class="preview-element">深色</div>
+            </div>
+            <button class="preview-button">预览按钮效果</button>
+            <div class="color-values">
+                主色: <code>#0D9488</code> 悬停: <code>#14B8A6</code> 深色: <code>#0F766E</code>
+            </div>
+        </div>
+
+        <!-- 配色方案 5: 粉紫色 -->
+        <div class="color-card scheme-pink" onclick="selectColor('pink')">
+            <div class="color-name">💗 粉紫色 - 年轻创新</div>
+            <div class="color-description">适合年轻化、创新、设计类平台。粉紫色代表创意、时尚和个性，年轻且独特。</div>
+            <div class="color-preview">
+                <div class="preview-element">主色</div>
+                <div class="preview-element">悬停</div>
+                <div class="preview-element">深色</div>
+            </div>
+            <button class="preview-button">预览按钮效果</button>
+            <div class="color-values">
+                主色: <code>#DB2777</code> 悬停: <code>#EC4899</code> 深色: <code>#BE185D</code>
+            </div>
+        </div>
+
+        <!-- 配色方案 6: 深蓝灰 -->
+        <div class="color-card scheme-slate" onclick="selectColor('slate')">
+            <div class="color-name">🖤 深蓝灰 - 稳重专业</div>
+            <div class="color-description">适合企业、专业、稳重平台。深蓝灰代表专业、可靠和稳重，低调且高级。</div>
+            <div class="color-preview">
+                <div class="preview-element">主色</div>
+                <div class="preview-element">悬停</div>
+                <div class="preview-element">深色</div>
+            </div>
+            <button class="preview-button">预览按钮效果</button>
+            <div class="color-values">
+                主色: <code>#475569</code> 悬停: <code>#64748B</code> 深色: <code>#334155</code>
+            </div>
+        </div>
+
+        <!-- 配色方案 7: 金色 -->
+        <div class="color-card scheme-gold" onclick="selectColor('gold')">
+            <div class="color-name">💛 金色 - 高端典雅</div>
+            <div class="color-description">适合高端、精品、专业平台。金色代表品质、成功和专业，高端且引人注目。</div>
+            <div class="color-preview">
+                <div class="preview-element">主色</div>
+                <div class="preview-element">悬停</div>
+                <div class="preview-element">深色</div>
+            </div>
+            <button class="preview-button">预览按钮效果</button>
+            <div class="color-values">
+                主色: <code>#D97706</code> 悬停: <code>#F59E0B</code> 深色: <code>#B45309</code>
+            </div>
+        </div>
+
+        <!-- 配色方案 8: 深红色 -->
+        <div class="color-card scheme-red" onclick="selectColor('red')">
+            <div class="color-name">❤️ 深红色 - 热情专业</div>
+            <div class="color-description">适合热情、专业、重点突出平台。红色代表热情、重要和专业，醒目且有力量。</div>
+            <div class="color-preview">
+                <div class="preview-element">主色</div>
+                <div class="preview-element">悬停</div>
+                <div class="preview-element">深色</div>
+            </div>
+            <button class="preview-button">预览按钮效果</button>
+            <div class="color-values">
+                主色: <code>#DC2626</code> 悬停: <code>#EF4444</code> 深色: <code>#B91C1C</code>
+            </div>
+        </div>
+    </div>
+
+    <div class="apply-section">
+        <h3>应用到整个平台</h3>
+        <p>点击上方卡片选择配色方案，然后点击下方按钮应用到所有页面</p>
+        <button class="apply-btn" id="applyBtn" disabled onclick="applyColorScheme()">应用配色方案</button>
+        <div class="selected-info" id="selectedInfo"></div>
+    </div>
+
+    <script>
+        let selectedScheme = null;
+
+        const colorSchemes = {
+            purple: {
+                name: '深紫色',
+                primary: '#7C3AED',
+                hover: '#8B5CF6',
+                active: '#6D28D9'
+            },
+            green: {
+                name: '深绿色',
+                primary: '#059669',
+                hover: '#10B981',
+                active: '#047857'
+            },
+            orange: {
+                name: '橙色琥珀',
+                primary: '#EA580C',
+                hover: '#F97316',
+                active: '#C2410C'
+            },
+            teal: {
+                name: '深青色',
+                primary: '#0D9488',
+                hover: '#14B8A6',
+                active: '#0F766E'
+            },
+            pink: {
+                name: '粉紫色',
+                primary: '#DB2777',
+                hover: '#EC4899',
+                active: '#BE185D'
+            },
+            slate: {
+                name: '深蓝灰',
+                primary: '#475569',
+                hover: '#64748B',
+                active: '#334155'
+            },
+            gold: {
+                name: '金色',
+                primary: '#D97706',
+                hover: '#F59E0B',
+                active: '#B45309'
+            },
+            red: {
+                name: '深红色',
+                primary: '#DC2626',
+                hover: '#EF4444',
+                active: '#B91C1C'
+            }
+        };
+
+        function selectColor(scheme) {
+            selectedScheme = scheme;
+            
+            // 移除所有选中状态
+            document.querySelectorAll('.color-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // 添加选中状态
+            document.querySelector(`.scheme-${scheme}`).classList.add('selected');
+            
+            // 启用应用按钮
+            document.getElementById('applyBtn').disabled = false;
+            
+            // 显示选中信息
+            const info = colorSchemes[scheme];
+            document.getElementById('selectedInfo').textContent = 
+                `已选择: ${info.name} (主色: ${info.primary})`;
+        }
+
+        function applyColorScheme() {
+            if (!selectedScheme) return;
+            
+            const info = colorSchemes[selectedScheme];
+            alert(`即将应用 ${info.name} 配色方案到所有页面！\n\n主色: ${info.primary}\n悬停: ${info.hover}\n深色: ${info.active}\n\n请确认后，我会为您更新所有样式文件。`);
+            
+            // 这里可以触发实际的配色更新
+            console.log('应用配色方案:', info);
+        }
+    </script>
+</body>
+</html>

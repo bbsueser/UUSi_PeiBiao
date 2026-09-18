@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实验大厅 - 智联网综合实践平台</title>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* 实验大厅特定样式 */
+        .experiment-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue {
+            background: rgba(24, 144, 255, 0.1);
+        }
+
+        .stat-icon.green {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .stat-icon.orange {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .stat-icon.purple {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .stat-content h3 {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            margin-bottom: 2px;
+        }
+
+        .stat-content p {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            transition: all var(--duration-slow) ease;
+        }
+
+        .experiment-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+
+        .experiment-header {
+            padding: var(--space-3);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .experiment-type-badge {
+            display: inline-block;
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            margin-bottom: var(--space-2);
+        }
+
+        .type-basic {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .type-comprehensive {
+            background: rgba(24, 144, 255, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .type-innovative {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .type-virtual {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .experiment-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-1);
+        }
+
+        .experiment-body {
+            padding: var(--space-3);
+        }
+
+        .experiment-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .info-item-icon {
+            font-size: 16px;
+        }
+
+        .difficulty-stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .star {
+            color: #fbbf24;
+        }
+
+        .star.empty {
+            color: #d1d5db;
+        }
+
+        .experiment-equipment {
+            padding: var(--space-2);
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-3);
+        }
+
+        .equipment-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .equipment-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .equipment-tag {
+            padding: 2px 8px;
+            background: white;
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            color: var(--text-body);
+        }
+
+        .experiment-footer {
+            padding: var(--space-3);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .experiment-meta {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .btn-start {
+            padding: 6px var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .btn-start:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .results-count {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-3);
+        }
+
+        .results-count strong {
+            color: var(--primary-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="nav-brand-icon">E</div>
+            <span class="nav-brand-text">智联网综合实践平台</span>
+        </div>
+        <div class="nav-menu">
+            <a href="#" class="nav-link">首页</a>
+            <a href="#" class="nav-link active">实验大厅</a>
+            <a href="#" class="nav-link">我的实验</a>
+            <a href="#" class="nav-link">帮助中心</a>
+        </div>
+    </header>
+
+    <!-- 应用布局 -->
+    <div class="app-layout">
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <span class="sidebar-icon">📊</span>
+                    我的工作台
+                </a>
+                <a href="ai-assistant.html" class="sidebar-item" data-page="ai-assistant">
+                    <span class="sidebar-icon">🤖</span>
+                    AI学习助手
+                </a>
+                <a href="experiment-hall.html" class="sidebar-item active" data-page="experiment-hall">
+                    <span class="sidebar-icon">🔬</span>
+                    实验大厅
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="simulation">
+                    <span class="sidebar-icon">💻</span>
+                    虚拟仿真实验
+                </a>
+                <a href="industry-cloud.html" class="sidebar-item" data-page="research">
+                    <span class="sidebar-icon">☁️</span>
+                    科研云服务
+                </a>
+                <a href="3d-designer.html" class="sidebar-item" data-page="design">
+                    <span class="sidebar-icon">🎨</span>
+                    创意设计
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="embedded">
+                    <span class="sidebar-icon">🔧</span>
+                    嵌入式实训
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="algorithm">
+                    <span class="sidebar-icon">⚙️</span>
+                    算法演练
+                </a>
+                <a href="exam-hall.html" class="sidebar-item" data-page="exam-hall">
+                    <span class="sidebar-icon">📝</span>
+                    考场大厅
+                </a>
+                <a href="profile.html" class="sidebar-item" data-page="profile">
+                    <span class="sidebar-icon">👤</span>
+                    个人中心
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1 class="page-title">🔬 实验大厅</h1>
+                <p class="page-subtitle">探索丰富的实验项目，开启你的实践学习之旅</p>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="experiment-stats">
+                <div class="stat-card">
+                    <div class="stat-icon blue">📚</div>
+                    <div class="stat-content">
+                        <h3>128</h3>
+                        <p>实验项目总数</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">✅</div>
+                    <div class="stat-content">
+                        <h3>45</h3>
+                        <p>已完成实验</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">⏳</div>
+                    <div class="stat-content">
+                        <h3>12</h3>
+                        <p>进行中实验</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">⭐</div>
+                    <div class="stat-content">
+                        <h3>4.8</h3>
+                        <p>平均评分</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 搜索栏 -->
+            <div class="search-bar">
+                <div class="search-input-group">
+                    <select class="search-select" id="categoryFilter">
+                        <option value="">全部分类</option>
+                        <option value="basic">基础实验</option>
+                        <option value="comprehensive">综合实验</option>
+                        <option value="innovative">创新实验</option>
+                        <option value="virtual">虚拟仿真</option>
+                    </select>
+                    <select class="search-select" id="majorFilter">
+                        <option value="">全部专业</option>
+                        <option value="cs">计算机科学</option>
+                        <option value="ee">电子信息</option>
+                        <option value="ai">人工智能</option>
+                        <option value="iot">物联网工程</option>
+                        <option value="se">软件工程</option>
+                    </select>
+                    <input type="text" class="search-input" id="keywordSearch" placeholder="搜索实验名称、关键词...">
+                </div>
+                <button class="search-btn" onclick="searchExperiments()">🔍 搜索</button>
+            </div>
+
+            <!-- 分类标签 -->
+            <div class="filter-tags">
+                <button class="filter-tag active" data-category="all">全部</button>
+                <button class="filter-tag" data-category="basic">基础实验</button>
+                <button class="filter-tag" data-category="comprehensive">综合实验</button>
+                <button class="filter-tag" data-category="innovative">创新实验</button>
+                <button class="filter-tag" data-category="virtual">虚拟仿真</button>
+            </div>
+
+            <!-- 结果统计 -->
+            <div class="results-count">
+                共找到 <strong>6</strong> 个实验项目
+            </div>
+
+            <!-- 实验卡片网格 -->
+            <div class="card-grid">
+                <!-- 实验卡片 1 -->
+                <div class="experiment-card">
+                    <div class="experiment-header">
+                        <span class="experiment-type-badge type-basic">基础实验</span>
+                        <h3 class="experiment-title">数据结构基础：链表操作实验</h3>
+                    </div>
+                    <div class="experiment-body">
+                        <div class="experiment-info">
+                            <div class="info-item">
+                                <span class="info-item-icon">📊</span>
+                                <span>类型：验证型</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">⏱️</span>
+                                <span>时长：2小时</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">🎯</span>
+                                <span>难度：</span>
+                                <div class="difficulty-stars">
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star empty">★</span>
+                                    <span class="star empty">★</span>
+                                    <span class="star empty">★</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">👥</span>
+                                <span>已参与：256人</span>
+                            </div>
+                        </div>
+                        <div class="experiment-equipment">
+                            <div class="equipment-label">设备要求</div>
+                            <div class="equipment-tags">
+                                <span class="equipment-tag">PC电脑</span>
+                                <span class="equipment-tag">IDE环境</span>
+                                <span class="equipment-tag">C/C++</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-footer">
+                        <span class="experiment-meta">更新于 2026-06-01</span>
+                        <button class="btn-start">开始实验</button>
+                    </div>
+                </div>
+
+                <!-- 实验卡片 2 -->
+                <div class="experiment-card">
+                    <div class="experiment-header">
+                        <span class="experiment-type-badge type-comprehensive">综合实验</span>
+                        <h3 class="experiment-title">操作系统进程调度模拟</h3>
+                    </div>
+                    <div class="experiment-body">
+                        <div class="experiment-info">
+                            <div class="info-item">
+                                <span class="info-item-icon">📊</span>
+                                <span>类型：设计型</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">⏱️</span>
+                                <span>时长：4小时</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">🎯</span>
+                                <span>难度：</span>
+                                <div class="difficulty-stars">
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star empty">★</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">👥</span>
+                                <span>已参与：189人</span>
+                            </div>
+                        </div>
+                        <div class="experiment-equipment">
+                            <div class="equipment-label">设备要求</div>
+                            <div class="equipment-tags">
+                                <span class="equipment-tag">Linux环境</span>
+                                <span class="equipment-tag">GCC编译器</span>
+                                <span class="equipment-tag">GDB调试</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-footer">
+                        <span class="experiment-meta">更新于 2026-05-28</span>
+                        <button class="btn-start">开始实验</button>
+                    </div>
+                </div>
+
+                <!-- 实验卡片 3 -->
+                <div class="experiment-card">
+                    <div class="experiment-header">
+                        <span class="experiment-type-badge type-innovative">创新实验</span>
+                        <h3 class="experiment-title">机器学习图像识别实战</h3>
+                    </div>
+                    <div class="experiment-body">
+                        <div class="experiment-info">
+                            <div class="info-item">
+                                <span class="info-item-icon">📊</span>
+                                <span>类型：创新型</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">⏱️</span>
+                                <span>时长：6小时</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">🎯</span>
+                                <span>难度：</span>
+                                <div class="difficulty-stars">
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">👥</span>
+                                <span>已参与：142人</span>
+                            </div>
+                        </div>
+                        <div class="experiment-equipment">
+                            <div class="equipment-label">设备要求</div>
+                            <div class="equipment-tags">
+                                <span class="equipment-tag">GPU服务器</span>
+                                <span class="equipment-tag">Python环境</span>
+                                <span class="equipment-tag">TensorFlow</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-footer">
+                        <span class="experiment-meta">更新于 2026-05-25</span>
+                        <button class="btn-start">开始实验</button>
+                    </div>
+                </div>
+
+                <!-- 实验卡片 4 -->
+                <div class="experiment-card">
+                    <div class="experiment-header">
+                        <span class="experiment-type-badge type-virtual">虚拟仿真</span>
+                        <h3 class="experiment-title">计算机网络拓扑仿真</h3>
+                    </div>
+                    <div class="experiment-body">
+                        <div class="experiment-info">
+                            <div class="info-item">
+                                <span class="info-item-icon">📊</span>
+                                <span>类型：仿真型</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">⏱️</span>
+                                <span>时长：3小时</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">🎯</span>
+                                <span>难度：</span>
+                                <div class="difficulty-stars">
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star empty">★</span>
+                                    <span class="star empty">★</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">👥</span>
+                                <span>已参与：320人</span>
+                            </div>
+                        </div>
+                        <div class="experiment-equipment">
+                            <div class="equipment-label">设备要求</div>
+                            <div class="equipment-tags">
+                                <span class="equipment-tag">浏览器</span>
+                                <span class="equipment-tag">网络连接</span>
+                                <span class="equipment-tag">仿真平台</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-footer">
+                        <span class="experiment-meta">更新于 2026-05-20</span>
+                        <button class="btn-start">开始实验</button>
+                    </div>
+                </div>
+
+                <!-- 实验卡片 5 -->
+                <div class="experiment-card">
+                    <div class="experiment-header">
+                        <span class="experiment-type-badge type-basic">基础实验</span>
+                        <h3 class="experiment-title">数据库SQL查询优化实验</h3>
+                    </div>
+                    <div class="experiment-body">
+                        <div class="experiment-info">
+                            <div class="info-item">
+                                <span class="info-item-icon">📊</span>
+                                <span>类型：验证型</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">⏱️</span>
+                                <span>时长：2.5小时</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">🎯</span>
+                                <span>难度：</span>
+                                <div class="difficulty-stars">
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star empty">★</span>
+                                    <span class="star empty">★</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">👥</span>
+                                <span>已参与：198人</span>
+                            </div>
+                        </div>
+                        <div class="experiment-equipment">
+                            <div class="equipment-label">设备要求</div>
+                            <div class="equipment-tags">
+                                <span class="equipment-tag">MySQL</span>
+                                <span class="equipment-tag">数据库工具</span>
+                                <span class="equipment-tag">样本数据</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-footer">
+                        <span class="experiment-meta">更新于 2026-05-15</span>
+                        <button class="btn-start">开始实验</button>
+                    </div>
+                </div>
+
+                <!-- 实验卡片 6 -->
+                <div class="experiment-card">
+                    <div class="experiment-header">
+                        <span class="experiment-type-badge type-comprehensive">综合实验</span>
+                        <h3 class="experiment-title">嵌入式系统开发实践</h3>
+                    </div>
+                    <div class="experiment-body">
+                        <div class="experiment-info">
+                            <div class="info-item">
+                                <span class="info-item-icon">📊</span>
+                                <span>类型：综合型</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">⏱️</span>
+                                <span>时长：8小时</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">🎯</span>
+                                <span>难度：</span>
+                                <div class="difficulty-stars">
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star empty">★</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-icon">👥</span>
+                                <span>已参与：87人</span>
+                            </div>
+                        </div>
+                        <div class="experiment-equipment">
+                            <div class="equipment-label">设备要求</div>
+                            <div class="equipment-tags">
+                                <span class="equipment-tag">ARM开发板</span>
+                                <span class="equipment-tag">Keil IDE</span>
+                                <span class="equipment-tag">调试器</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="experiment-footer">
+                        <span class="experiment-meta">更新于 2026-05-10</span>
+                        <button class="btn-start">开始实验</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 分类标签筛选
+        document.querySelectorAll('.filter-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                // 移除所有active类
+                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                // 添加当前active类
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                filterExperiments(category);
+            });
+        });
+
+        // 筛选实验
+        function filterExperiments(category) {
+            const cards = document.querySelectorAll('.experiment-card');
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                const badge = card.querySelector('.experiment-type-badge');
+                let cardCategory = '';
+                
+                if (badge.classList.contains('type-basic')) cardCategory = 'basic';
+                else if (badge.classList.contains('type-comprehensive')) cardCategory = 'comprehensive';
+                else if (badge.classList.contains('type-innovative')) cardCategory = 'innovative';
+                else if (badge.classList.contains('type-virtual')) cardCategory = 'virtual';
+                
+                if (category === 'all' || cardCategory === category) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // 更新结果统计
+            document.querySelector('.results-count strong').textContent = visibleCount;
+        }
+
+        // 搜索实验
+        function searchExperiments() {
+            const keyword = document.getElementById('keywordSearch').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const major = document.getElementById('majorFilter').value;
+            
+            const cards = document.querySelectorAll('.experiment-card');
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                const title = card.querySelector('.experiment-title').textContent.toLowerCase();
+                const badge = card.querySelector('.experiment-type-badge');
+                let cardCategory = '';
+                
+                if (badge.classList.contains('type-basic')) cardCategory = 'basic';
+                else if (badge.classList.contains('type-comprehensive')) cardCategory = 'comprehensive';
+                else if (badge.classList.contains('type-innovative')) cardCategory = 'innovative';
+                else if (badge.classList.contains('type-virtual')) cardCategory = 'virtual';
+                
+                const matchKeyword = keyword === '' || title.includes(keyword);
+                const matchCategory = category === '' || cardCategory === category;
+                const matchMajor = major === ''; // 简化处理，实际应根据专业属性筛选
+                
+                if (matchKeyword && matchCategory && matchMajor) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // 更新结果统计
+            document.querySelector('.results-count strong').textContent = visibleCount;
+        }
+
+        // 开始实验按钮点击事件
+        document.querySelectorAll('.btn-start').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.experiment-card');
+                const title = card.querySelector('.experiment-title').textContent;
+                alert(`即将开始实验：${title}`);
+            });
+        });
+    </script>
+</body>
+</html>

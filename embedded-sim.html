@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>嵌入式仿真平台</title>
+    <style>
+        /* ==================== 全局样式 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #1e1e2e;
+            --bg-panel: #252536;
+            --bg-card: #2d2d44;
+            --tech-blue: #00a8ff;
+            --tech-green: #00d4aa;
+            --tech-red: #ff4757;
+            --tech-orange: #ffa502;
+            --tech-purple: #7b68ee;
+            --text-primary: #ffffff;
+            --text-secondary: #8c9eb0;
+            --border-color: #3d3d5c;
+            --grid-color: #3a3a50;
+            --pin-input: #00a8ff;
+            --pin-output: #00d4aa;
+            --pin-power: #ff4757;
+            --pin-ground: #2d2d44;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ==================== 主布局 ==================== */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ==================== 顶部工具栏 ==================== */
+        .toolbar {
+            height: 50px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 8px;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 8px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+
+        .toolbar-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--tech-blue);
+            transform: translateY(-1px);
+        }
+
+        .toolbar-btn.active {
+            background: var(--tech-green);
+        }
+
+        .toolbar-btn.danger:hover {
+            background: var(--tech-red);
+        }
+
+        .toolbar-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 16px;
+            color: var(--tech-blue);
+        }
+
+        .sim-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .sim-status.running {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--tech-green);
+        }
+
+        .sim-status.paused {
+            background: rgba(255, 165, 2, 0.2);
+            color: var(--tech-orange);
+        }
+
+        /* ==================== 中间区域 ==================== */
+        .middle-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ==================== 左侧组件库 ==================== */
+        .component-library {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .library-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .library-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .library-search {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .library-search:focus {
+            border-color: var(--tech-blue);
+            outline: none;
+        }
+
+        .library-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        /* 分类面板 */
+        .category-panel {
+            margin-bottom: 8px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-header:hover {
+            background: rgba(0, 168, 255, 0.1);
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .category-icon.chip { background: #6c757d; }
+        .category-icon.sensor { background: var(--tech-blue); }
+        .category-icon.display { background: var(--tech-purple); }
+        .category-icon.bus { background: var(--tech-green); }
+        .category-icon.debug { background: var(--tech-orange); }
+        .category-icon.button { background: #495057; }
+        .category-icon.power { background: var(--tech-red); }
+
+        .category-name {
+            font-size: 13px;
+            margin-left: 8px;
+        }
+
+        .category-expand {
+            font-size: 10px;
+            transition: transform 0.2s;
+        }
+
+        .category-panel.expanded .category-expand {
+            transform: rotate(90deg);
+        }
+
+        .category-items {
+            display: none;
+            padding: 8px 4px;
+        }
+
+        .category-panel.expanded .category-items {
+            display: block;
+        }
+
+        /* 组件卡片 */
+        .component-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg-dark);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            cursor: grab;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .component-card:hover {
+            border-color: var(--tech-blue);
+            background: rgba(0, 168, 255, 0.1);
+        }
+
+        .component-card:active {
+            cursor: grabbing;
+        }
+
+        .component-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .component-name {
+            font-size: 12px;
+        }
+
+        /* ==================== 中央画布 ==================== */
+        .canvas-area {
+            flex: 1;
+            background: var(--bg-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+        }
+
+        .canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform-origin: center;
+        }
+
+        .zoom-indicator {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            background: var(--bg-panel);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 节点样式 */
+        .canvas-node {
+            position: absolute;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: move;
+            transition: border-color 0.2s;
+            min-width: 80px;
+            min-height: 60px;
+        }
+
+        .canvas-node:hover {
+            border-color: var(--tech-blue);
+        }
+
+        .canvas-node.selected {
+            border-color: var(--tech-blue);
+            box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+        }
+
+        .canvas-node.running {
+            border-color: var(--tech-green);
+            box-shadow: 0 0 15px rgba(0, 212, 170, 0.4);
+        }
+
+        .node-header {
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px 6px 0 0;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .node-body {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+        }
+
+        .node-icon {
+            font-size: 24px;
+        }
+
+        .node-display {
+            background: #1a1a2e;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 10px;
+            color: var(--tech-green);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* 引脚样式 */
+        .node-pins {
+            position: absolute;
+        }
+
+        .pin {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: crosshair;
+            transition: all 0.2s;
+        }
+
+        .pin.input {
+            background: var(--pin-input);
+            border: 2px solid var(--pin-input);
+        }
+
+        .pin.output {
+            background: var(--pin-output);
+            border: 2px solid var(--pin-output);
+        }
+
+        .pin.power {
+            background: var(--pin-power);
+            border: 2px solid var(--pin-power);
+        }
+
+        .pin.ground {
+            background: var(--pin-ground);
+            border: 2px solid #666;
+        }
+
+        .pin:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .pin-label {
+            position: absolute;
+            font-size: 8px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        /* 连线样式 */
+        .canvas-edges {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .edge-line {
+            stroke: var(--tech-blue);
+            stroke-width: 2;
+            fill: none;
+            pointer-events: stroke;
+            cursor: pointer;
+        }
+
+        .edge-line:hover {
+            stroke: var(--tech-green);
+            stroke-width: 3;
+        }
+
+        .edge-line.selected {
+            stroke: var(--tech-orange);
+            stroke-width: 3;
+        }
+
+        /* ==================== 右侧属性面板 ==================== */
+        .properties-panel {
+            width: 280px;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .properties-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .properties-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .no-selection {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px 20px;
+        }
+
+        .property-group {
+            margin-bottom: 16px;
+        }
+
+        .property-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .property-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .property-input:focus {
+            border-color: var(--tech-blue);
+            outline: none;
+        }
+
+        .property-select {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .property-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .property-table th {
+            background: var(--bg-card);
+            padding: 8px;
+            font-size: 11px;
+            text-align: left;
+        }
+
+        .property-table td {
+            padding: 8px;
+            font-size: 11px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* ==================== 底部终端 ==================== */
+        .terminal-panel {
+            height: 150px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-title {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .terminal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-btn {
+            padding: 4px 8px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .terminal-btn:hover {
+            background: var(--tech-blue);
+        }
+
+        .terminal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+
+        .terminal-line {
+            margin-bottom: 4px;
+        }
+
+        .terminal-time {
+            color: var(--text-secondary);
+        }
+
+        .terminal-msg {
+            color: var(--text-primary);
+        }
+
+        .terminal-msg.success {
+            color: var(--tech-green);
+        }
+
+        .terminal-msg.error {
+            color: var(--tech-red);
+        }
+
+        .terminal-msg.info {
+            color: var(--tech-blue);
+        }
+
+        /* ==================== 拖拽预览 ==================== */
+        .drag-preview {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.7;
+            z-index: 1000;
+            display: none;
+        }
+
+        /* ==================== 右键菜单 ==================== */
+        .context-menu {
+            position: fixed;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 0;
+            z-index: 1000;
+            display: none;
+        }
+
+        .context-menu-item {
+            padding: 8px 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .context-menu-item:hover {
+            background: var(--bg-card);
+        }
+
+        .context-menu-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 4px 0;
+        }
+
+        /* ==================== 消息提示 ==================== */
+        .message {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: var(--bg-panel);
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 1001;
+            animation: fadeIn 0.3s;
+        }
+
+        .message.success {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--tech-green);
+            border: 1px solid var(--tech-green);
+        }
+
+        .message.error {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--tech-red);
+            border: 1px solid var(--tech-red);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ==================== 折叠按钮 ==================== */
+        .collapse-btn {
+            width: 24px;
+            height: 24px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .collapse-btn:hover {
+            background: var(--tech-blue);
+        }
+
+        .panel.collapsed {
+            width: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <!-- 顶部工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-title">嵌入式仿真平台</div>
+            
+            <div class="toolbar-group">
+                <div class="toolbar-btn" onclick="undo()" title="撤销">↩️</div>
+                <div class="toolbar-btn" onclick="redo()" title="重做">↪️</div>
+            </div>
+            
+            <div class="toolbar-group">
+                <div class="toolbar-btn" onclick="saveProject()" title="保存">💾</div>
+                <div class="toolbar-btn" onclick="downloadProject()" title="下载">📥</div>
+                <div class="toolbar-btn" onclick="takeScreenshot()" title="截图">🖼️</div>
+            </div>
+            
+            <div class="toolbar-group">
+                <div class="toolbar-btn" onclick="startSimulation()" id="playBtn" title="运行">▶️</div>
+                <div class="toolbar-btn" onclick="pauseSimulation()" id="pauseBtn" title="暂停">⏸️</div>
+                <div class="toolbar-btn" onclick="stopSimulation()" id="stopBtn" title="停止">⏹️</div>
+                <div class="toolbar-btn danger" onclick="resetCanvas()" title="重置">🔄</div>
+            </div>
+            
+            <div class="toolbar-group">
+                <div class="toolbar-btn" onclick="zoomIn()" title="放大">🔍+</div>
+                <div class="toolbar-btn" onclick="zoomOut()" title="缩小">🔍-</div>
+                <div class="toolbar-btn" onclick="resetView()" title="重置视图">📐</div>
+            </div>
+            
+            <div class="sim-status" id="simStatus">
+                <span>●</span>
+                <span>就绪</span>
+            </div>
+        </div>
+
+        <!-- 中间区域 -->
+        <div class="middle-area">
+            <!-- 左侧组件库 -->
+            <div class="component-library panel" id="libraryPanel">
+                <div class="library-header">
+                    <div class="library-title">📦 组件库</div>
+                    <input class="library-search" placeholder="请输入组件名" oninput="searchComponents(this.value)">
+                </div>
+                <div class="library-content" id="libraryContent">
+                    <!-- 主控芯片 -->
+                    <div class="category-panel expanded" data-category="chip">
+                        <div class="category-header" onclick="toggleCategory('chip')">
+                            <div class="category-icon chip">🔲</div>
+                            <span class="category-name">主控芯片</span>
+                            <span class="category-expand">▶</span>
+                        </div>
+                        <div class="category-items">
+                            <div class="component-card" draggable="true" data-type="stm32f103" ondragstart="startDrag(event, 'stm32f103')">
+                                <div class="component-icon" style="background: #6c757d;">STM</div>
+                                <span class="component-name">STM32F103</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="stm32f407" ondragstart="startDrag(event, 'stm32f407')">
+                                <div class="component-icon" style="background: #495057;">STM</div>
+                                <span class="component-name">STM32F407</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 传感器 -->
+                    <div class="category-panel expanded" data-category="sensor">
+                        <div class="category-header" onclick="toggleCategory('sensor')">
+                            <div class="category-icon sensor">📡</div>
+                            <span class="category-name">传感器</span>
+                            <span class="category-expand">▶</span>
+                        </div>
+                        <div class="category-items">
+                            <div class="component-card" draggable="true" data-type="dht11" ondragstart="startDrag(event, 'dht11')">
+                                <div class="component-icon" style="background: var(--tech-blue);">🌡️</div>
+                                <span class="component-name">温湿度传感器</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="light" ondragstart="startDrag(event, 'light')">
+                                <div class="component-icon" style="background: var(--tech-orange);">☀️</div>
+                                <span class="component-name">光敏传感器</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="ultrasonic" ondragstart="startDrag(event, 'ultrasonic')">
+                                <div class="component-icon" style="background: var(--tech-purple);">📢</div>
+                                <span class="component-name">超声波传感器</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 显示器 -->
+                    <div class="category-panel expanded" data-category="display">
+                        <div class="category-header" onclick="toggleCategory('display')">
+                            <div class="category-icon display">📺</div>
+                            <span class="category-name">显示器</span>
+                            <span class="category-expand">▶</span>
+                        </div>
+                        <div class="category-items">
+                            <div class="component-card" draggable="true" data-type="lcd1602" ondragstart="startDrag(event, 'lcd1602')">
+                                <div class="component-icon" style="background: var(--tech-purple);">LCD</div>
+                                <span class="component-name">LCD1602</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="oled" ondragstart="startDrag(event, 'oled')">
+                                <div class="component-icon" style="background: #1a1a2e; border: 1px solid var(--tech-green);">OLED</div>
+                                <span class="component-name">OLED</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="led7seg" ondragstart="startDrag(event, 'led7seg')">
+                                <div class="component-icon" style="background: var(--tech-green);">8</div>
+                                <span class="component-name">数码管</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 总线接口 -->
+                    <div class="category-panel expanded" data-category="bus">
+                        <div class="category-header" onclick="toggleCategory('bus')">
+                            <div class="category-icon bus">🔌</div>
+                            <span class="category-name">总线接口</span>
+                            <span class="category-expand">▶</span>
+                        </div>
+                        <div class="category-items">
+                            <div class="component-card" draggable="true" data-type="i2c" ondragstart="startDrag(event, 'i2c')">
+                                <div class="component-icon" style="background: var(--tech-green);">I²C</div>
+                                <span class="component-name">I2C接口</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="spi" ondragstart="startDrag(event, 'spi')">
+                                <div class="component-icon" style="background: var(--tech-blue);">SPI</div>
+                                <span class="component-name">SPI接口</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="uart" ondragstart="startDrag(event, 'uart')">
+                                <div class="component-icon" style="background: var(--tech-orange);">UAR</div>
+                                <span class="component-name">UART接口</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 调试助手 -->
+                    <div class="category-panel expanded" data-category="debug">
+                        <div class="category-header" onclick="toggleCategory('debug')">
+                            <div class="category-icon debug">🔧</div>
+                            <span class="category-name">调试助手</span>
+                            <span class="category-expand">▶</span>
+                        </div>
+                        <div class="category-items">
+                            <div class="component-card" draggable="true" data-type="serial" ondragstart="startDrag(event, 'serial')">
+                                <div class="component-icon" style="background: var(--tech-blue);">串口</div>
+                                <span class="component-name">串口调试器</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 按键输入 -->
+                    <div class="category-panel expanded" data-category="button">
+                        <div class="category-header" onclick="toggleCategory('button')">
+                            <div class="category-icon button">⌨️</div>
+                            <span class="category-name">按键输入</span>
+                            <span class="category-expand">▶</span>
+                        </div>
+                        <div class="category-items">
+                            <div class="component-card" draggable="true" data-type="matrixkey" ondragstart="startDrag(event, 'matrixkey')">
+                                <div class="component-icon" style="background: #495057;">4×4</div>
+                                <span class="component-name">矩阵键盘</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="switch" ondragstart="startDrag(event, 'switch')">
+                                <div class="component-icon" style="background: #6c757d;">🔘</div>
+                                <span class="component-name">按键开关</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="button" ondragstart="startDrag(event, 'button')">
+                                <div class="component-icon" style="background: var(--tech-red);">●</div>
+                                <span class="component-name">按钮</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VCC/GND -->
+                    <div class="category-panel expanded" data-category="power">
+                        <div class="category-header" onclick="toggleCategory('power')">
+                            <div class="category-icon power">⚡</div>
+                            <span class="category-name">VCC/GND</span>
+                            <span class="category-expand">▶</span>
+                        </div>
+                        <div class="category-items">
+                            <div class="component-card" draggable="true" data-type="vcc" ondragstart="startDrag(event, 'vcc')">
+                                <div class="component-icon" style="background: var(--tech-red);">VCC</div>
+                                <span class="component-name">VCC</span>
+                            </div>
+                            <div class="component-card" draggable="true" data-type="gnd" ondragstart="startDrag(event, 'gnd')">
+                                <div class="component-icon" style="background: #2d2d44; border: 1px solid #666;">GND</div>
+                                <span class="component-name">GND</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中央画布 -->
+            <div class="canvas-area" id="canvasArea" ondrop="dropComponent(event)" ondragover="allowDrop(event)" oncontextmenu="showContextMenu(event)">
+                <div class="canvas-grid"></div>
+                <div class="canvas-container" id="canvasContainer">
+                    <svg class="canvas-edges" id="edgesSvg"></svg>
+                    <div id="nodesContainer"></div>
+                </div>
+                <div class="zoom-indicator" id="zoomIndicator">100%</div>
+            </div>
+
+            <!-- 右侧属性面板 -->
+            <div class="properties-panel panel" id="propertiesPanel">
+                <div class="properties-header">
+                    <span>⚙️ 属性面板</span>
+                </div>
+                <div class="properties-content" id="propertiesContent">
+                    <div class="no-selection">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <div>未选中组件</div>
+                        <div style="margin-top: 8px; font-size: 12px;">点击画布中的组件查看属性</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部终端 -->
+        <div class="terminal-panel">
+            <div class="terminal-header">
+                <span class="terminal-title">📝 仿真日志</span>
+                <div class="terminal-actions">
+                    <div class="terminal-btn" onclick="clearTerminal()">清空</div>
+                    <div class="terminal-btn" onclick="toggleTerminal()">折叠</div>
+                </div>
+            </div>
+            <div class="terminal-content" id="terminalContent">
+                <div class="terminal-line">
+                    <span class="terminal-time">[系统]</span>
+                    <span class="terminal-msg info"> 嵌入式仿真平台已加载，请拖拽组件到画布开始设计</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 拖拽预览 -->
+    <div class="drag-preview" id="dragPreview"></div>
+
+    <!-- 右键菜单 -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="pasteComponent()">粘贴</div>
+        <div class="context-menu-item" onclick="selectAll()">全选</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="clearCanvas()">清空画布</div>
+        <div class="context-menu-item" onclick="resetView()">重置视图</div>
+    </div>
+
+    <script>
+        // ==================== 状态管理 ====================
+        const state = {
+            nodes: [],
+            edges: [],
+            selectedNode: null,
+            selectedEdge: null,
+            zoom: 1,
+            pan: { x: 0, y: 0 },
+            simulationRunning: false,
+            simulationPaused: false,
+            history: [],
+            historyIndex: -1,
+            nodeIdCounter: 0,
+            edgeIdCounter: 0,
+            clipboard: null,
+            simulationInterval: null
+        };
+
+        // ==================== 组件定义 ====================
+        const componentDefs = {
+            stm32f103: {
+                name: 'STM32F103',
+                category: 'chip',
+                icon: '🔲',
+                width: 100,
+                height: 80,
+                pins: [
+                    { id: 'vcc', name: 'VCC', type: 'power', pos: { x: 0, y: 20 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 0, y: 60 } },
+                    { id: 'pa0', name: 'PA0', type: 'output', pos: { x: 100, y: 20 } },
+                    { id: 'pa1', name: 'PA1', type: 'output', pos: { x: 100, y: 40 } },
+                    { id: 'pa2', name: 'PA2', type: 'output', pos: { x: 100, y: 60 } }
+                ],
+                properties: { model: 'STM32F103', frequency: '72MHz', voltage: '3.3V' }
+            },
+            stm32f407: {
+                name: 'STM32F407',
+                category: 'chip',
+                icon: '🔲',
+                width: 100,
+                height: 80,
+                pins: [
+                    { id: 'vcc', name: 'VCC', type: 'power', pos: { x: 0, y: 20 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 0, y: 60 } },
+                    { id: 'pa0', name: 'PA0', type: 'output', pos: { x: 100, y: 20 } },
+                    { id: 'pa1', name: 'PA1', type: 'output', pos: { x: 100, y: 40 } },
+                    { id: 'pa2', name: 'PA2', type: 'output', pos: { x: 100, y: 60 } }
+                ],
+                properties: { model: 'STM32F407', frequency: '168MHz', voltage: '3.3V' }
+            },
+            dht11: {
+                name: '温湿度传感器',
+                category: 'sensor',
+                icon: '🌡️',
+                width: 80,
+                height: 60,
+                pins: [
+                    { id: 'vcc', name: 'VCC', type: 'power', pos: { x: 0, y: 15 } },
+                    { id: 'data', name: 'DATA', type: 'output', pos: { x: 80, y: 30 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 0, y: 45 } }
+                ],
+                properties: { temp: '25°C', humidity: '60%', range: '0-50°C' }
+            },
+            light: {
+                name: '光敏传感器',
+                category: 'sensor',
+                icon: '☀️',
+                width: 80,
+                height: 60,
+                pins: [
+                    { id: 'vcc', name: 'VCC', type: 'power', pos: { x: 0, y: 20 } },
+                    { id: 'out', name: 'OUT', type: 'output', pos: { x: 80, y: 30 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 0, y: 40 } }
+                ],
+                properties: { value: '512', range: '0-1023' }
+            },
+            ultrasonic: {
+                name: '超声波传感器',
+                category: 'sensor',
+                icon: '📢',
+                width: 80,
+                height: 60,
+                pins: [
+                    { id: 'vcc', name: 'VCC', type: 'power', pos: { x: 0, y: 15 } },
+                    { id: 'trig', name: 'TRIG', type: 'input', pos: { x: 0, y: 30 } },
+                    { id: 'echo', name: 'ECHO', type: 'output', pos: { x: 80, y: 30 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 0, y: 45 } }
+                ],
+                properties: { distance: '100cm', range: '2-400cm' }
+            },
+            lcd1602: {
+                name: 'LCD1602',
+                category: 'display',
+                icon: 'LCD',
+                width: 120,
+                height: 60,
+                pins: [
+                    { id: 'vcc', name: 'VCC', type: 'power', pos: { x: 0, y: 15 } },
+                    { id: 'sda', name: 'SDA', type: 'input', pos: { x: 0, y: 30 } },
+                    { id: 'scl', name: 'SCL', type: 'input', pos: { x: 0, y: 45 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 120, y: 30 } }
+                ],
+                properties: { text: 'Hello World', backlight: '白色' }
+            },
+            oled: {
+                name: 'OLED',
+                category: 'display',
+                icon: 'OLED',
+                width: 100,
+                height: 70,
+                pins: [
+                    { id: 'vcc', name: 'VCC', type: 'power', pos: { x: 0, y: 20 } },
+                    { id: 'sda', name: 'SDA', type: 'input', pos: { x: 0, y: 35 } },
+                    { id: 'scl', name: 'SCL', type: 'input', pos: { x: 0, y: 50 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 100, y: 35 } }
+                ],
+                properties: { text: 'OLED Display', resolution: '128x64' }
+            },
+            led7seg: {
+                name: '数码管',
+                category: 'display',
+                icon: '8',
+                width: 60,
+                height: 80,
+                pins: [
+                    { id: 'vcc', name: 'VCC', type: 'power', pos: { x: 0, y: 20 } },
+                    { id: 'a', name: 'A', type: 'input', pos: { x: 0, y: 35 } },
+                    { id: 'b', name: 'B', type: 'input', pos: { x: 0, y: 50 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 60, y: 40 } }
+                ],
+                properties: { value: '0', color: '红色' }
+            },
+            i2c: {
+                name: 'I2C接口',
+                category: 'bus',
+                icon: 'I²C',
+                width: 80,
+                height: 50,
+                pins: [
+                    { id: 'sda_in', name: 'SDA_IN', type: 'input', pos: { x: 0, y: 15 } },
+                    { id: 'scl_in', name: 'SCL_IN', type: 'input', pos: { x: 0, y: 35 } },
+                    { id: 'sda_out', name: 'SDA_OUT', type: 'output', pos: { x: 80, y: 15 } },
+                    { id: 'scl_out', name: 'SCL_OUT', type: 'output', pos: { x: 80, y: 35 } }
+                ],
+                properties: { address: '0x3C', speed: '400kHz' }
+            },
+            spi: {
+                name: 'SPI接口',
+                category: 'bus',
+                icon: 'SPI',
+                width: 80,
+                height: 60,
+                pins: [
+                    { id: 'mosi', name: 'MOSI', type: 'input', pos: { x: 0, y: 15 } },
+                    { id: 'miso', name: 'MISO', type: 'output', pos: { x: 80, y: 15 } },
+                    { id: 'sck', name: 'SCK', type: 'input', pos: { x: 0, y: 30 } },
+                    { id: 'cs', name: 'CS', type: 'input', pos: { x: 0, y: 45 } }
+                ],
+                properties: { mode: 'Mode 0', speed: '1MHz' }
+            },
+            uart: {
+                name: 'UART接口',
+                category: 'bus',
+                icon: 'UAR',
+                width: 80,
+                height: 50,
+                pins: [
+                    { id: 'rx', name: 'RX', type: 'input', pos: { x: 0, y: 15 } },
+                    { id: 'tx', name: 'TX', type: 'output', pos: { x: 80, y: 15 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 40, y: 50 } }
+                ],
+                properties: { baudrate: '9600', parity: 'None' }
+            },
+            serial: {
+                name: '串口调试器',
+                category: 'debug',
+                icon: '串口',
+                width: 100,
+                height: 70,
+                pins: [
+                    { id: 'rx', name: 'RX', type: 'input', pos: { x: 0, y: 25 } },
+                    { id: 'tx', name: 'TX', type: 'output', pos: { x: 100, y: 25 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 50, y: 70 } }
+                ],
+                properties: { baudrate: '115200', data: 'Hello' }
+            },
+            matrixkey: {
+                name: '矩阵键盘',
+                category: 'button',
+                icon: '4×4',
+                width: 100,
+                height: 100,
+                pins: [
+                    { id: 'r1', name: 'R1', type: 'output', pos: { x: 0, y: 20 } },
+                    { id: 'r2', name: 'R2', type: 'output', pos: { x: 0, y: 40 } },
+                    { id: 'c1', name: 'C1', type: 'input', pos: { x: 100, y: 20 } },
+                    { id: 'c2', name: 'C2', type: 'input', pos: { x: 100, y: 40 } }
+                ],
+                properties: { keys: '0-9,A-D,*,#' }
+            },
+            switch: {
+                name: '按键开关',
+                category: 'button',
+                icon: '🔘',
+                width: 60,
+                height: 50,
+                pins: [
+                    { id: 'out', name: 'OUT', type: 'output', pos: { x: 60, y: 25 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 0, y: 25 } }
+                ],
+                properties: { state: 'OFF' }
+            },
+            button: {
+                name: '按钮',
+                category: 'button',
+                icon: '●',
+                width: 50,
+                height: 50,
+                pins: [
+                    { id: 'out', name: 'OUT', type: 'output', pos: { x: 50, y: 25 } },
+                    { id: 'gnd', name: 'GND', type: 'ground', pos: { x: 0, y: 25 } }
+                ],
+                properties: { state: '未按下' }
+            },
+            vcc: {
+                name: 'VCC',
+                category: 'power',
+                icon: 'VCC',
+                width: 50,
+                height: 40,
+                pins: [
+                    { id: 'out', name: 'OUT', type: 'power', pos: { x: 50, y: 20 } }
+                ],
+                properties: { voltage: '5V' }
+            },
+            gnd: {
+                name: 'GND',
+                category: 'power',
+                icon: 'GND',
+                width: 50,
+                height: 40,
+                pins: [
+                    { id: 'out', name: 'OUT', type: 'ground', pos: { x: 50, y: 20 } }
+                ],
+                properties: { type: '接地' }
+            }
+        };
+
+        // ==================== 初始化 ====================
+        function init() {
+            setupCanvasEvents();
+            setupKeyboardEvents();
+            addLog('info', '系统初始化完成');
+        }
+
+        // ==================== 拖拽功能 ====================
+        function startDrag(event, type) {
+            event.dataTransfer.setData('componentType', type);
+            event.dataTransfer.effectAllowed = 'copy';
+            
+            // 创建拖拽预览
+            const preview = document.getElementById('dragPreview');
+            const def = componentDefs[type];
+            preview.innerHTML = createNodeHTML({ type, ...def }, true);
+            preview.style.display = 'block';
+            preview.style.width = def.width + 'px';
+            preview.style.height = def.height + 'px';
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+            
+            // 更新预览位置
+            const preview = document.getElementById('dragPreview');
+            preview.style.left = event.clientX - 40 + 'px';
+            preview.style.top = event.clientY - 30 + 'px';
+        }
+
+        function dropComponent(event) {
+            event.preventDefault();
+            document.getElementById('dragPreview').style.display = 'none';
+            
+            const type = event.dataTransfer.getData('componentType');
+            if (!type) return;
+            
+            const def = componentDefs[type];
+            const canvasRect = document.getElementById('canvasArea').getBoundingClientRect();
+            
+            const x = (event.clientX - canvasRect.left - def.width / 2) / state.zoom;
+            const y = (event.clientY - canvasRect.top - def.height / 2) / state.zoom;
+            
+            createNode(type, x, y);
+            addLog('success', '添加组件: ' + def.name);
+        }
+
+        // ==================== 节点操作 ====================
+        function createNode(type, x, y) {
+            const def = componentDefs[type];
+            const node = {
+                id: 'node_' + (++state.nodeIdCounter),
+                type: type,
+                name: def.name,
+                x: x,
+                y: y,
+                width: def.width,
+                height: def.height,
+                pins: def.pins,
+                properties: { ...def.properties }
+            };
+            
+            state.nodes.push(node);
+            saveHistory();
+            renderNodes();
+        }
+
+        function renderNodes() {
+            const container = document.getElementById('nodesContainer');
+            container.innerHTML = '';
+            
+            state.nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = 'canvas-node';
+                div.id = node.id;
+                div.style.left = node.x + 'px';
+                div.style.top = node.y + 'px';
+                div.style.width = node.width + 'px';
+                div.style.height = node.height + 'px';
+                
+                if (state.selectedNode === node.id) {
+                    div.classList.add('selected');
+                }
+                if (state.simulationRunning) {
+                    div.classList.add('running');
+                }
+                
+                div.innerHTML = createNodeHTML(node);
+                div.onclick = (e) => selectNode(node.id, e);
+                div.onmousedown = (e) => startMoveNode(node.id, e);
+                
+                container.appendChild(div);
+            });
+            
+            renderEdges();
+        }
+
+        function createNodeHTML(node, isPreview = false) {
+            const def = componentDefs[node.type] || node;
+            let pinsHTML = '';
+            
+            if (!isPreview && def.pins) {
+                def.pins.forEach(pin => {
+                    const colorClass = pin.type === 'power' ? 'power' : 
+                                       pin.type === 'ground' ? 'ground' : 
+                                       pin.type === 'input' ? 'input' : 'output';
+                    pinsHTML += '<div class="pin ' + colorClass + '" style="left:' + (pin.pos.x - 6) + 'px;top:' + (pin.pos.y - 6) + 'px;" data-pin="' + pin.id + '" onclick="selectPin(\'' + node.id + '\', \'' + pin.id + '\')"></div>';
+                });
+            }
+            
+            let bodyHTML = '';
+            if (node.type === 'lcd1602' || node.type === 'oled') {
+                const text = node.properties?.text || 'Display';
+                bodyHTML = '<div class="node-display">' + text + '</div>';
+            } else if (node.type === 'led7seg') {
+                bodyHTML = '<div class="node-display" style="font-size: 24px;">' + (node.properties?.value || '8') + '</div>';
+            } else {
+                bodyHTML = '<div class="node-icon">' + (def.icon || '📦') + '</div>';
+            }
+            
+            return '<div class="node-header">' + (node.name || def.name) + '</div>' +
+                   '<div class="node-body">' + bodyHTML + '</div>' +
+                   pinsHTML;
+        }
+
+        function selectNode(nodeId, event) {
+            if (event.target.classList.contains('pin')) return;
+            
+            state.selectedNode = nodeId;
+            state.selectedEdge = null;
+            renderNodes();
+            showProperties(nodeId);
+        }
+
+        function selectPin(nodeId, pinId) {
+            // 连线功能（简化实现）
+            addLog('info', '选中引脚: ' + pinId);
+        }
+
+        let movingNode = null;
+        let moveOffset = { x: 0, y: 0 };
+
+        function startMoveNode(nodeId, event) {
+            if (event.target.classList.contains('pin')) return;
+            
+            movingNode = nodeId;
+            const node = state.nodes.find(n => n.id === nodeId);
+            moveOffset.x = event.clientX - node.x * state.zoom;
+            moveOffset.y = event.clientY - node.y * state.zoom;
+            
+            document.addEventListener('mousemove', moveNode);
+            document.addEventListener('mouseup', stopMoveNode);
+        }
+
+        function moveNode(event) {
+            if (!movingNode) return;
+            
+            const node = state.nodes.find(n => n.id === movingNode);
+            node.x = (event.clientX - moveOffset.x) / state.zoom;
+            node.y = (event.clientY - moveOffset.y) / state.zoom;
+            
+            renderNodes();
+        }
+
+        function stopMoveNode() {
+            if (movingNode) {
+                saveHistory();
+                movingNode = null;
+            }
+            document.removeEventListener('mousemove', moveNode);
+            document.removeEventListener('mouseup', stopMoveNode);
+        }
+
+        function deleteSelectedNode() {
+            if (state.selectedNode) {
+                const node = state.nodes.find(n => n.id === state.selectedNode);
+                state.nodes = state.nodes.filter(n => n.id !== state.selectedNode);
+                state.edges = state.edges.filter(e => e.source !== state.selectedNode && e.target !== state.selectedNode);
+                state.selectedNode = null;
+                saveHistory();
+                renderNodes();
+                showProperties(null);
+                addLog('success', '删除组件: ' + node.name);
+            }
+        }
+
+        // ==================== 连线功能 ====================
+        function renderEdges() {
+            const svg = document.getElementById('edgesSvg');
+            svg.innerHTML = '';
+            
+            state.edges.forEach(edge => {
+                const sourceNode = state.nodes.find(n => n.id === edge.source);
+                const targetNode = state.nodes.find(n => n.id === edge.target);
+                
+                if (!sourceNode || !targetNode) return;
+                
+                const sourcePin = sourceNode.pins.find(p => p.id === edge.sourcePin);
+                const targetPin = targetNode.pins.find(p => p.id === edge.targetPin);
+                
+                if (!sourcePin || !targetPin) return;
+                
+                const x1 = sourceNode.x + sourcePin.pos.x;
+                const y1 = sourceNode.y + sourcePin.pos.y;
+                const x2 = targetNode.x + targetPin.pos.x;
+                const y2 = targetNode.y + targetPin.pos.y;
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const midX = (x1 + x2) / 2;
+                path.setAttribute('d', 'M ' + x1 + ' ' + y1 + ' C ' + midX + ' ' + y1 + ', ' + midX + ' ' + y2 + ', ' + x2 + ' ' + y2);
+                path.setAttribute('class', 'edge-line');
+                if (state.selectedEdge === edge.id) {
+                    path.classList.add('selected');
+                }
+                path.onclick = () => selectEdge(edge.id);
+                
+                svg.appendChild(path);
+            });
+        }
+
+        function selectEdge(edgeId) {
+            state.selectedEdge = edgeId;
+            state.selectedNode = null;
+            renderNodes();
+        }
+
+        // ==================== 属性面板 ====================
+        function showProperties(nodeId) {
+            const content = document.getElementById('propertiesContent');
+            
+            if (!nodeId) {
+                content.innerHTML = '<div class="no-selection"><div style="font-size: 48px; margin-bottom: 16px;">📋</div><div>未选中组件</div></div>';
+                return;
+            }
+            
+            const node = state.nodes.find(n => n.id === nodeId);
+            if (!node) return;
+            
+            let html = '<div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">' + node.name + '</div>';
+            
+            // 基本信息
+            html += '<div class="property-group">';
+            html += '<div class="property-label">组件ID</div>';
+            html += '<input class="property-input" value="' + node.id + '" readonly>';
+            html += '</div>';
+            
+            html += '<div class="property-group">';
+            html += '<div class="property-label">类型</div>';
+            html += '<input class="property-input" value="' + node.type + '" readonly>';
+            html += '</div>';
+            
+            // 动态属性
+            Object.keys(node.properties).forEach(key => {
+                html += '<div class="property-group">';
+                html += '<div class="property-label">' + key + '</div>';
+                
+                const value = node.properties[key];
+                if (key === 'voltage' || key === 'backlight' || key === 'color' || key === 'parity' || key === 'mode') {
+                    html += '<select class="property-select" onchange="updateProperty(\'' + nodeId + '\', \'' + key + '\', this.value)">';
+                    const options = {
+                        voltage: ['3.3V', '5V', '12V'],
+                        backlight: ['白色', '蓝色', '绿色'],
+                        color: ['红色', '绿色', '蓝色', '黄色'],
+                        parity: ['None', 'Even', 'Odd'],
+                        mode: ['Mode 0', 'Mode 1', 'Mode 2', 'Mode 3']
+                    };
+                    (options[key] || []).forEach(opt => {
+                        html += '<option value="' + opt + '"' + (value === opt ? ' selected' : '') + '>' + opt + '</option>';
+                    });
+                    html += '</select>';
+                } else if (key === 'frequency' || key === 'baudrate' || key === 'speed') {
+                    html += '<select class="property-select" onchange="updateProperty(\'' + nodeId + '\', \'' + key + '\', this.value)">';
+                    const options = {
+                        frequency: ['72MHz', '168MHz', '48MHz'],
+                        baudrate: ['9600', '19200', '38400', '57600', '115200'],
+                        speed: ['100kHz', '400kHz', '1MHz']
+                    };
+                    (options[key] || []).forEach(opt => {
+                        html += '<option value="' + opt + '"' + (value === opt ? ' selected' : '') + '>' + opt + '</option>';
+                    });
+                    html += '</select>';
+                } else {
+                    html += '<input class="property-input" value="' + value + '" onchange="updateProperty(\'' + nodeId + '\', \'' + key + '\', this.value)">';
+                }
+                html += '</div>';
+            });
+            
+            // 引脚列表
+            if (node.pins && node.pins.length > 0) {
+                html += '<div class="property-group">';
+                html += '<div class="property-label">引脚列表</div>';
+                html += '<table class="property-table"><tr><th>名称</th><th>类型</th></tr>';
+                node.pins.forEach(pin => {
+                    html += '<tr><td>' + pin.name + '</td><td>' + pin.type + '</td></tr>';
+                });
+                html += '</table></div>';
+            }
+            
+            content.innerHTML = html;
+        }
+
+        function updateProperty(nodeId, key, value) {
+            const node = state.nodes.find(n => n.id === nodeId);
+            if (node) {
+                node.properties[key] = value;
+                saveHistory();
+                renderNodes();
+                addLog('info', '更新属性: ' + key + ' = ' + value);
+            }
+        }
+
+        // ==================== 工具栏功能 ====================
+        function undo() {
+            if (state.historyIndex > 0) {
+                state.historyIndex--;
+                restoreHistory();
+                addLog('info', '撤销操作');
+            }
+        }
+
+        function redo() {
+            if (state.historyIndex < state.history.length - 1) {
+                state.historyIndex++;
+                restoreHistory();
+                addLog('info', '重做操作');
+            }
+        }
+
+        function saveHistory() {
+            const snapshot = {
+                nodes: JSON.parse(JSON.stringify(state.nodes)),
+                edges: JSON.parse(JSON.stringify(state.edges))
+            };
+            state.history = state.history.slice(0, state.historyIndex + 1);
+            state.history.push(snapshot);
+            state.historyIndex = state.history.length - 1;
+        }
+
+        function restoreHistory() {
+            const snapshot = state.history[state.historyIndex];
+            state.nodes = JSON.parse(JSON.stringify(snapshot.nodes));
+            state.edges = JSON.parse(JSON.stringify(snapshot.edges));
+            renderNodes();
+        }
+
+        function saveProject() {
+            localStorage.setItem('embeddedSimProject', JSON.stringify({ nodes: state.nodes, edges: state.edges }));
+            showMessage('success', '项目已保存');
+            addLog('success', '项目保存成功');
+        }
+
+        function downloadProject() {
+            const data = JSON.stringify({ nodes: state.nodes, edges: state.edges }, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'embedded_project.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            addLog('success', '项目已下载');
+        }
+
+        function takeScreenshot() {
+            showMessage('success', '截图功能已触发');
+            addLog('info', '画布截图已保存');
+        }
+
+        // ==================== 仿真控制 ====================
+        function startSimulation() {
+            if (state.nodes.length === 0) {
+                showMessage('error', '请先添加组件到画布');
+                return;
+            }
+            
+            state.simulationRunning = true;
+            state.simulationPaused = false;
+            
+            updateSimStatus('running', '运行中');
+            renderNodes();
+            addLog('success', '仿真开始...');
+            
+            // 模拟仿真日志
+            state.simulationInterval = setInterval(() => {
+                if (!state.simulationPaused) {
+                    generateSimLog();
+                    updateNodeValues();
+                }
+            }, 1000);
+        }
+
+        function pauseSimulation() {
+            if (!state.simulationRunning) return;
+            
+            state.simulationPaused = !state.simulationPaused;
+            
+            if (state.simulationPaused) {
+                updateSimStatus('paused', '已暂停');
+                addLog('info', '仿真暂停');
+            } else {
+                updateSimStatus('running', '运行中');
+                addLog('info', '仿真继续');
+            }
+        }
+
+        function stopSimulation() {
+            state.simulationRunning = false;
+            state.simulationPaused = false;
+            
+            if (state.simulationInterval) {
+                clearInterval(state.simulationInterval);
+                state.simulationInterval = null;
+            }
+            
+            updateSimStatus('', '就绪');
+            renderNodes();
+            addLog('info', '仿真停止');
+        }
+
+        function resetCanvas() {
+            if (confirm('确定要清空画布吗？所有组件和连线将被删除。')) {
+                state.nodes = [];
+                state.edges = [];
+                state.selectedNode = null;
+                state.selectedEdge = null;
+                state.history = [];
+                state.historyIndex = -1;
+                renderNodes();
+                showProperties(null);
+                stopSimulation();
+                addLog('success', '画布已重置');
+            }
+        }
+
+        function generateSimLog() {
+            const logs = [
+                '读取温湿度传感器: 25°C, 60%',
+                '光敏传感器数值: 512',
+                '超声波测距: 100cm',
+                '串口发送: Hello World',
+                'LCD显示更新',
+                '按键状态检测',
+                'I2C通信完成',
+                'SPI数据传输'
+            ];
+            const randomLog = logs[Math.floor(Math.random() * logs.length)];
+            addLog('info', randomLog);
+        }
+
+        function updateNodeValues() {
+            state.nodes.forEach(node => {
+                if (node.type === 'dht11') {
+                    node.properties.temp = (20 + Math.random() * 10).toFixed(1) + '°C';
+                    node.properties.humidity = (50 + Math.random() * 20).toFixed(0) + '%';
+                } else if (node.type === 'light') {
+                    node.properties.value = Math.floor(Math.random() * 1024);
+                } else if (node.type === 'ultrasonic') {
+                    node.properties.distance = Math.floor(50 + Math.random() * 150) + 'cm';
+                }
+            });
+            if (state.selectedNode) {
+                showProperties(state.selectedNode);
+            }
+        }
+
+        function updateSimStatus(type, text) {
+            const status = document.getElementById('simStatus');
+            status.className = 'sim-status ' + type;
+            status.innerHTML = '<span>●</span><span>' + text + '</span>';
+        }
+
+        // ==================== 缩放功能 ====================
+        function zoomIn() {
+            state.zoom = Math.min(2, state.zoom + 0.1);
+            applyZoom();
+        }
+
+        function zoomOut() {
+            state.zoom = Math.max(0.5, state.zoom - 0.1);
+            applyZoom();
+        }
+
+        function resetView() {
+            state.zoom = 1;
+            state.pan = { x: 0, y: 0 };
+            applyZoom();
+            addLog('info', '视图已重置');
+        }
+
+        function applyZoom() {
+            const container = document.getElementById('canvasContainer');
+            container.style.transform = 'scale(' + state.zoom + ')';
+            document.getElementById('zoomIndicator').textContent = Math.round(state.zoom * 100) + '%';
+        }
+
+        // ==================== 组件库功能 ====================
+        function toggleCategory(category) {
+            const panel = document.querySelector('.category-panel[data-category="' + category + '"]');
+            panel.classList.toggle('expanded');
+        }
+
+        function searchComponents(keyword) {
+            const cards = document.querySelectorAll('.component-card');
+            const panels = document.querySelectorAll('.category-panel');
+            
+            keyword = keyword.toLowerCase();
+            
+            if (!keyword) {
+                panels.forEach(p => p.classList.add('expanded'));
+                cards.forEach(c => c.style.display = 'flex');
+                return;
+            }
+            
+            panels.forEach(p => p.classList.add('expanded'));
+            
+            cards.forEach(card => {
+                const name = card.querySelector('.component-name').textContent.toLowerCase();
+                const type = card.dataset.type.toLowerCase();
+                card.style.display = (name.includes(keyword) || type.includes(keyword)) ? 'flex' : 'none';
+            });
+        }
+
+        // ==================== 终端功能 ====================
+        function addLog(type, message) {
+            const terminal = document.getElementById('terminalContent');
+            const time = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = '<span class="terminal-time">[' + time + ']</span> <span class="terminal-msg ' + type + '">' + message + '</span>';
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminalContent').innerHTML = '';
+            addLog('info', '终端已清空');
+        }
+
+        function toggleTerminal() {
+            const panel = document.querySelector('.terminal-panel');
+            panel.style.height = panel.style.height === '30px' ? '150px' : '30px';
+        }
+
+        // ==================== 右键菜单 ====================
+        function showContextMenu(event) {
+            event.preventDefault();
+            const menu = document.getElementById('contextMenu');
+            menu.style.display = 'block';
+            menu.style.left = event.clientX + 'px';
+            menu.style.top = event.clientY + 'px';
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        function pasteComponent() {
+            hideContextMenu();
+            if (state.clipboard) {
+                createNode(state.clipboard.type, 100, 100);
+            }
+        }
+
+        function selectAll() {
+            hideContextMenu();
+            addLog('info', '全选功能');
+        }
+
+        function clearCanvas() {
+            hideContextMenu();
+            resetCanvas();
+        }
+
+        // ==================== 事件设置 ====================
+        function setupCanvasEvents() {
+            document.getElementById('canvasArea').addEventListener('click', (e) => {
+                if (e.target.id === 'canvasArea' || e.target.classList.contains('canvas-grid')) {
+                    state.selectedNode = null;
+                    state.selectedEdge = null;
+                    renderNodes();
+                    showProperties(null);
+                }
+            });
+            
+            document.addEventListener('click', hideContextMenu);
+            
+            // 滚轮缩放
+            document.getElementById('canvasArea').addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    zoomIn();
+                } else {
+                    zoomOut();
+                }
+            });
+        }
+
+        function setupKeyboardEvents() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    deleteSelectedNode();
+                }
+                if (e.ctrlKey && e.key === 'z') {
+                    undo();
+                }
+                if (e.ctrlKey && e.key === 'y') {
+                    redo();
+                }
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveProject();
+                }
+            });
+        }
+
+        // ==================== 消息提示 ====================
+        function showMessage(type, text) {
+            const msg = document.createElement('div');
+            msg.className = 'message ' + type;
+            msg.textContent = text;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2000);
+        }
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>

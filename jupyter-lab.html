@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jupyter实验平台</title>
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        /* ==================== 全局样式 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1890ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #ff4d4f;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #262626;
+            --text-secondary: #8c8c8c;
+            --border-color: #d9d9d9;
+            --header-bg: #001529;
+            --header-height: 64px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ==================== 顶部导航栏 ==================== */
+        .header {
+            background: var(--header-bg);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-item {
+            color: rgba(255, 255, 255, 0.65);
+            padding: 0 16px;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-item:hover {
+            color: #fff;
+        }
+
+        .nav-item.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sandbox-badge {
+            background: var(--success-color);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .user-info {
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        /* ==================== 主内容区 ==================== */
+        .main-content {
+            margin-top: var(--header-height);
+            min-height: calc(100vh - var(--header-height));
+            padding: 24px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* ==================== 卡片样式 ==================== */
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        /* ==================== 按钮样式 ==================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #40a9ff;
+            border-color: #40a9ff;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            border-color: var(--error-color);
+            color: #fff;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        /* ==================== 表格样式 ==================== */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #fafafa;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table tr:hover {
+            background: #fafafa;
+        }
+
+        /* ==================== 输入框样式 ==================== */
+        .input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        /* ==================== 标签样式 ==================== */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .tag-blue {
+            background: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+
+        .tag-green {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .tag-orange {
+            background: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+
+        .tag-red {
+            background: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+
+        /* ==================== 进度条样式 ==================== */
+        .progress {
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* ==================== 步骤条样式 ==================== */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: #f0f0f0;
+            color: var(--text-secondary);
+            border: 2px solid var(--border-color);
+        }
+
+        .step.active .step-icon {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .step.finished .step-icon {
+            background: var(--success-color);
+            color: #fff;
+            border-color: var(--success-color);
+        }
+
+        .step-content {
+            margin-left: 8px;
+        }
+
+        .step-title {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .step:not(.active):not(.finished) .step-title {
+            color: var(--text-secondary);
+        }
+
+        .step-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+            margin: 0 16px;
+        }
+
+        .step.finished .step-line {
+            background: var(--success-color);
+        }
+
+        /* ==================== 分屏布局 ==================== */
+        .split-layout {
+            display: flex;
+            height: calc(100vh - var(--header-height) - 48px);
+            gap: 0;
+        }
+
+        .split-left {
+            flex: 1;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .split-right {
+            flex: 1;
+            background: #1e1e1e;
+            overflow: hidden;
+        }
+
+        .split-divider {
+            width: 4px;
+            background: var(--border-color);
+            cursor: col-resize;
+            transition: background 0.3s;
+        }
+
+        .split-divider:hover {
+            background: var(--primary-color);
+        }
+
+        /* ==================== Notebook样式 ==================== */
+        .notebook-container {
+            display: flex;
+            height: calc(100vh - var(--header-height) - 48px);
+        }
+
+        .notebook-sidebar {
+            width: 280px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            overflow: auto;
+        }
+
+        .notebook-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+        }
+
+        .notebook-output {
+            width: 300px;
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            overflow: auto;
+        }
+
+        .cell {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin: 8px 16px;
+            overflow: hidden;
+        }
+
+        .cell-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #fafafa;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cell-type {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .cell-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .cell-content {
+            padding: 12px;
+        }
+
+        .cell-editor {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: vertical;
+            background: #fafafa;
+        }
+
+        .cell-output {
+            background: #f5f5f5;
+            padding: 12px;
+            border-top: 1px solid var(--border-color);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+
+        /* ==================== 终端样式 ==================== */
+        .terminal {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            padding: 12px;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .terminal-line {
+            margin-bottom: 4px;
+        }
+
+        .terminal-prompt {
+            color: #4ec9b0;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #d4d4d4;
+            font-family: inherit;
+            font-size: inherit;
+            width: calc(100% - 100px);
+            outline: none;
+        }
+
+        .terminal-output {
+            color: #9cdcfe;
+        }
+
+        .terminal-error {
+            color: #f14c4c;
+        }
+
+        /* ==================== 模块列表样式 ==================== */
+        .module-category {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .module-category-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .module-category-title:hover {
+            color: var(--primary-color);
+        }
+
+        .module-list {
+            padding: 8px 16px;
+        }
+
+        .module-item {
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .module-item:hover {
+            background: #e6f7ff;
+            color: var(--primary-color);
+        }
+
+        /* ==================== 图表容器 ==================== */
+        .chart-container {
+            width: 100%;
+            height: 300px;
+        }
+
+        /* ==================== 模态框 ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 8px;
+            width: 520px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* ==================== 消息提示 ==================== */
+        .message {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 16px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 3000;
+            animation: slideDown 0.3s ease;
+        }
+
+        .message-success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+
+        .message-error {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+
+        .message-warning {
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            color: #faad14;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* ==================== Dashboard样式 ==================== */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .experiment-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .experiment-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .experiment-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .experiment-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .experiment-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .experiment-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* ==================== 文件上传区域 ==================== */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: #e6f7ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ==================== 模型训练卡片 ==================== */
+        .training-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .training-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .training-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* ==================== 预测结果展示 ==================== */
+        .prediction-result {
+            display: flex;
+            gap: 24px;
+        }
+
+        .prediction-image {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .prediction-image img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .prediction-info {
+            flex: 1;
+        }
+
+        .prediction-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .prediction-label {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .prediction-confidence {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* ==================== 部署列表 ==================== */
+        .deploy-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .deploy-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .deploy-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .deploy-name {
+            font-weight: 600;
+        }
+
+        .deploy-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-logo">
+            <div class="header-logo-icon">JP</div>
+            <span>Jupyter实验平台</span>
+        </div>
+        <nav class="header-nav">
+            <div class="nav-item active" onclick="switchPage('dashboard')">首页</div>
+            <div class="nav-item" onclick="switchPage('lab')">实验工作台</div>
+            <div class="nav-item" onclick="switchPage('train')">模型训练</div>
+            <div class="nav-item" onclick="switchPage('deploy')">模型部署</div>
+            <div class="nav-item" onclick="switchPage('terminal')">终端实训</div>
+        </nav>
+        <div class="header-right">
+            <div class="sandbox-badge">
+                <span>✓</span>
+                <span>沙箱已激活</span>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">张</div>
+                <span>张同学</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- Dashboard首页 -->
+        <div id="page-dashboard" class="page active">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">已完成实验</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">进行中实验</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">已部署模型</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">28</div>
+                    <div class="stat-label">学习时长(小时)</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">实验列表</div>
+                <div class="experiment-grid">
+                    <div class="experiment-card" onclick="switchPage('lab')">
+                        <div class="experiment-title">📊 数据分析入门</div>
+                        <div class="experiment-desc">学习使用Python进行基础数据分析，掌握Pandas和NumPy库的使用方法。</div>
+                        <div class="experiment-meta">
+                            <span class="tag tag-green">已完成</span>
+                            <span>2024-01-15</span>
+                        </div>
+                    </div>
+                    <div class="experiment-card" onclick="switchPage('lab')">
+                        <div class="experiment-title">📈 可视化图表制作</div>
+                        <div class="experiment-desc">使用Matplotlib和Pyecharts创建各种类型的可视化图表。</div>
+                        <div class="experiment-meta">
+                            <span class="tag tag-blue">进行中</span>
+                            <span>2024-01-20</span>
+                        </div>
+                    </div>
+                    <div class="experiment-card" onclick="switchPage('train')">
+                        <div class="experiment-title">🤖 图像分类模型训练</div>
+                        <div class="experiment-desc">使用可视化工具训练图像分类模型，无需编写代码。</div>
+                        <div class="experiment-meta">
+                            <span class="tag tag-orange">待开始</span>
+                            <span>2024-01-25</span>
+                        </div>
+                    </div>
+                    <div class="experiment-card" onclick="switchPage('terminal')">
+                        <div class="experiment-title">⌨️ Linux命令实训</div>
+                        <div class="experiment-desc">通过终端实训掌握Linux常用命令和Shell脚本编写。</div>
+                        <div class="experiment-meta">
+                            <span class="tag tag-blue">进行中</span>
+                            <span>2024-01-18</span>
+                        </div>
+                    </div>
+                    <div class="experiment-card" onclick="switchPage('deploy')">
+                        <div class="experiment-title">🚀 模型部署实践</div>
+                        <div class="experiment-desc">将训练好的模型部署到边缘计算终端，体验端侧推理。</div>
+                        <div class="experiment-meta">
+                            <span class="tag tag-green">已完成</span>
+                            <span>2024-01-22</span>
+                        </div>
+                    </div>
+                    <div class="experiment-card" onclick="switchPage('lab')">
+                        <div class="experiment-title">📝 自然语言处理</div>
+                        <div class="experiment-desc">学习文本处理、分词、情感分析等NLP基础技术。</div>
+                        <div class="experiment-meta">
+                            <span class="tag tag-orange">待开始</span>
+                            <span>2024-02-01</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LabWorkbench实验工作台 -->
+        <div id="page-lab" class="page">
+            <div class="notebook-container">
+                <!-- 左侧预置模块面板 -->
+                <div class="notebook-sidebar">
+                    <div style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">📁 文件列表</div>
+                        <div style="padding: 8px 12px; background: #e6f7ff; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">
+                            <span>📄 数据分析.ipynb</span>
+                        </div>
+                        <div style="padding: 8px 12px; cursor: pointer; margin-bottom: 8px;">
+                            <span>📄 图表可视化.ipynb</span>
+                        </div>
+                        <div style="padding: 8px 12px; cursor: pointer;">
+                            <span>📄 NLP入门.ipynb</span>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 16px;">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">📦 预置模块</div>
+                        
+                        <div class="module-category">
+                            <div class="module-category-title">
+                                <span>📝</span> 字符串处理
+                            </div>
+                            <div class="module-list">
+                                <div class="module-item" onclick="insertModule('string_split')">字符串分割</div>
+                                <div class="module-item" onclick="insertModule('string_replace')">字符串替换</div>
+                                <div class="module-item" onclick="insertModule('string_format')">格式化输出</div>
+                            </div>
+                        </div>
+
+                        <div class="module-category">
+                            <div class="module-category-title">
+                                <span>🌐</span> 数据请求
+                            </div>
+                            <div class="module-list">
+                                <div class="module-item" onclick="insertModule('http_get')">HTTP GET请求</div>
+                                <div class="module-item" onclick="insertModule('http_post')">HTTP POST请求</div>
+                            </div>
+                        </div>
+
+                        <div class="module-category">
+                            <div class="module-category-title">
+                                <span>📊</span> 图表可视化
+                            </div>
+                            <div class="module-list">
+                                <div class="module-item" onclick="insertModule('chart_bar')">柱状图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_line')">折线图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_pie')">饼图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_scatter')">散点图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_radar')">雷达图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_funnel')">漏斗图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_gauge')">仪表盘 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_heatmap')">热力图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_treemap')">树图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_sunburst')">旭日图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_boxplot')">箱线图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_sankey')">桑基图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_graph')">关系图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_wordcloud')">词云图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_candlestick')">K线图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_map')">地图 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_3d')">3D图表 (pyecharts)</div>
+                                <div class="module-item" onclick="insertModule('chart_combo')">组合图表 (pyecharts)</div>
+                            </div>
+                        </div>
+
+                        <div class="module-category">
+                            <div class="module-category-title">
+                                <span>🔧</span> 数据整理
+                            </div>
+                            <div class="module-list">
+                                <div class="module-item" onclick="insertModule('data_clean')">数据清洗</div>
+                                <div class="module-item" onclick="insertModule('data_merge')">数据合并</div>
+                                <div class="module-item" onclick="insertModule('data_group')">数据分组</div>
+                            </div>
+                        </div>
+
+                        <div class="module-category">
+                            <div class="module-category-title">
+                                <span>💬</span> 自然语言分词
+                            </div>
+                            <div class="module-list">
+                                <div class="module-item" onclick="insertModule('jieba_cut')">jieba分词</div>
+                                <div class="module-item" onclick="insertModule('jieba_analyze')">关键词提取</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中间Notebook编辑器 -->
+                <div class="notebook-main">
+                    <div style="padding: 12px 16px; background: #fafafa; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-small" onclick="addCell()">+ 添加单元格</button>
+                            <button class="btn btn-small" onclick="runAllCells()">▶ 运行全部</button>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-small" onclick="importNotebook()">📥 导入ipynb</button>
+                            <button class="btn btn-small" onclick="exportNotebook()">📤 导出ipynb</button>
+                            <button class="btn btn-small btn-danger" onclick="showResetModal()">🔄 重置环境</button>
+                        </div>
+                    </div>
+
+                    <div id="notebookCells" style="flex: 1; overflow: auto; padding: 8px 0;">
+                        <!-- 单元格1 -->
+                        <div class="cell" data-cell-id="1">
+                            <div class="cell-header">
+                                <div class="cell-type">代码单元格 [1]</div>
+                                <div class="cell-actions">
+                                    <button class="btn btn-small btn-primary" onclick="runCell(1)">▶ 运行</button>
+                                    <button class="btn btn-small" onclick="moveCellUp(1)">↑</button>
+                                    <button class="btn btn-small" onclick="moveCellDown(1)">↓</button>
+                                    <button class="btn btn-small btn-danger" onclick="deleteCell(1)">✕</button>
+                                </div>
+                            </div>
+                            <div class="cell-content">
+                                <textarea class="cell-editor" id="cell-editor-1"># 数据分析示例
+import pandas as pd
+import numpy as np
+
+# 创建示例数据
+data = {'name': ['Alice', 'Bob', 'Charlie', 'David'],
+        'age': [25, 30, 35, 40],
+        'score': [85, 90, 78, 92]}
+df = pd.DataFrame(data)
+print(df)</textarea>
+                            </div>
+                            <div class="cell-output" id="cell-output-1" style="display: none;"></div>
+                        </div>
+
+                        <!-- 单元格2 -->
+                        <div class="cell" data-cell-id="2">
+                            <div class="cell-header">
+                                <div class="cell-type">代码单元格 [2]</div>
+                                <div class="cell-actions">
+                                    <button class="btn btn-small btn-primary" onclick="runCell(2)">▶ 运行</button>
+                                    <button class="btn btn-small" onclick="moveCellUp(2)">↑</button>
+                                    <button class="btn btn-small" onclick="moveCellDown(2)">↓</button>
+                                    <button class="btn btn-small btn-danger" onclick="deleteCell(2)">✕</button>
+                                </div>
+                            </div>
+                            <div class="cell-content">
+                                <textarea class="cell-editor" id="cell-editor-2"># 统计分析
+print("平均年龄:", df['age'].mean())
+print("最高分数:", df['score'].max())
+print("分数标准差:", df['score'].std())</textarea>
+                            </div>
+                            <div class="cell-output" id="cell-output-2" style="display: none;"></div>
+                        </div>
+
+                        <!-- 单元格3 -->
+                        <div class="cell" data-cell-id="3">
+                            <div class="cell-header">
+                                <div class="cell-type">Markdown单元格 [3]</div>
+                                <div class="cell-actions">
+                                    <button class="btn btn-small btn-primary" onclick="runCell(3)">▶ 运行</button>
+                                    <button class="btn btn-small" onclick="moveCellUp(3)">↑</button>
+                                    <button class="btn btn-small" onclick="moveCellDown(3)">↓</button>
+                                    <button class="btn btn-small btn-danger" onclick="deleteCell(3)">✕</button>
+                                </div>
+                            </div>
+                            <div class="cell-content">
+                                <textarea class="cell-editor" id="cell-editor-3">## 数据分析总结
+
+本实验展示了如何使用Pandas进行基础数据分析：
+- 数据创建与展示
+- 统计指标计算
+- 数据筛选与排序</textarea>
+                            </div>
+                            <div class="cell-output" id="cell-output-3" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧输出预览区 -->
+                <div class="notebook-output">
+                    <div style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+                        <div style="font-size: 14px; font-weight: 600;">📊 图表预览</div>
+                    </div>
+                    <div id="chartPreview" style="padding: 16px;">
+                        <div id="previewChart" class="chart-container"></div>
+                    </div>
+                    <div style="padding: 16px;">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">📈 图表模板</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                            <button class="btn btn-small" onclick="showChartTemplate('bar')">柱状图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('line')">折线图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('pie')">饼图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('scatter')">散点图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('radar')">雷达图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('funnel')">漏斗图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('gauge')">仪表盘</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('heatmap')">热力图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('treemap')">树图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('sunburst')">旭日图</button>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                            <button class="btn btn-small" onclick="showChartTemplate('boxplot')">箱线图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('parallel')">平行坐标</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('sankey')">桑基图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('graph')">关系图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('wordcloud')">词云图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('effectscatter')">涟漪散点</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('lines')">线图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('themeRiver')">主题河流</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('candlestick')">K线图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('polar')">极坐标图</button>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                            <button class="btn btn-small" onclick="showChartTemplate('bar3d')">3D柱状图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('line3d')">3D折线图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('scatter3d')">3D散点图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('surface3d')">3D曲面图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('map')">地图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('scatterMap')">散点地图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('heatmapMap')">热力地图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('linesMap')">线地图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('combo')">组合图</button>
+                            <button class="btn btn-small" onclick="showChartTemplate('dualAxis')">双轴图</button>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
+                            <span style="color: var(--primary-color);">💡 提示：</span> 点击图表按钮预览效果，支持交互式图表设计
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ModelTrainer模型训练 -->
+        <div id="page-train" class="page">
+            <div class="card">
+                <div class="steps">
+                    <div class="step finished">
+                        <div class="step-icon">1</div>
+                        <div class="step-content">
+                            <div class="step-title">数据上传</div>
+                        </div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step finished">
+                        <div class="step-icon">2</div>
+                        <div class="step-content">
+                            <div class="step-title">数据生产</div>
+                        </div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-icon">3</div>
+                        <div class="step-content">
+                            <div class="step-title">参数配置</div>
+                        </div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">4</div>
+                        <div class="step-content">
+                            <div class="step-title">模型训练</div>
+                        </div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">5</div>
+                        <div class="step-content">
+                            <div class="step-title">模型验证</div>
+                        </div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">6</div>
+                        <div class="step-content">
+                            <div class="step-title">模型部署</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 步骤内容 -->
+                <div id="trainStepContent">
+                    <!-- 步骤1: 数据上传 -->
+                    <div id="train-step-1" class="training-card" style="display: none;">
+                        <div class="training-header">
+                            <div class="card-title">步骤1: 数据上传与预处理</div>
+                            <span class="tag tag-green">已完成</span>
+                        </div>
+                        <div class="upload-area" onclick="uploadData()">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">点击或拖拽上传标注数据 (zip格式)</div>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">数据概览</div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                                <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
+                                    <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">1,200</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">样本数量</div>
+                                </div>
+                                <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
+                                    <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">5</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">标注类别</div>
+                                </div>
+                                <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
+                                    <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">224×224</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">图像尺寸</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤2: 数据生产 -->
+                    <div id="train-step-2" class="training-card" style="display: none;">
+                        <div class="training-header">
+                            <div class="card-title">步骤2: 数据生产</div>
+                            <span class="tag tag-green">已完成</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: 14px; margin-bottom: 8px;">数据集划分比例</div>
+                            <div style="display: flex; gap: 16px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 12px; color: var(--text-secondary);">训练集</label>
+                                    <div class="progress" style="margin-top: 4px;">
+                                        <div class="progress-bar" style="width: 70%;"></div>
+                                    </div>
+                                    <div style="font-size: 12px; margin-top: 4px;">70%</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 12px; color: var(--text-secondary);">验证集</label>
+                                    <div class="progress" style="margin-top: 4px;">
+                                        <div class="progress-bar" style="width: 20%;"></div>
+                                    </div>
+                                    <div style="font-size: 12px; margin-top: 4px;">20%</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 12px; color: var(--text-secondary);">测试集</label>
+                                    <div class="progress" style="margin-top: 4px;">
+                                        <div class="progress-bar" style="width: 10%;"></div>
+                                    </div>
+                                    <div style="font-size: 12px; margin-top: 4px;">10%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: #f6ffed; padding: 12px; border-radius: 4px; border: 1px solid #b7eb8f;">
+                            <div style="color: #52c41a; font-size: 14px;">✓ 数据生产完成，生成训练样本840张，验证样本240张，测试样本120张</div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤3: 参数配置 -->
+                    <div id="train-step-3" class="training-card">
+                        <div class="training-header">
+                            <div class="card-title">步骤3: 训练参数配置</div>
+                            <span class="tag tag-blue">进行中</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                            <div>
+                                <label style="font-size: 14px; margin-bottom: 8px; display: block;">预训练模型</label>
+                                <select class="select" style="width: 100%;" id="pretrainModel">
+                                    <option value="resnet">ResNet50 (分类)</option>
+                                    <option value="mobilenet">MobileNetV2 (分类)</option>
+                                    <option value="yolo">YOLOv5 (检测)</option>
+                                    <option value="efficientnet">EfficientNet (分类)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 14px; margin-bottom: 8px; display: block;">学习率</label>
+                                <input class="input" type="text" value="0.001" id="learningRate">
+                            </div>
+                            <div>
+                                <label style="font-size: 14px; margin-bottom: 8px; display: block;">批次大小</label>
+                                <input class="input" type="text" value="32" id="batchSize">
+                            </div>
+                            <div>
+                                <label style="font-size: 14px; margin-bottom: 8px; display: block;">训练轮次</label>
+                                <input class="input" type="text" value="50" id="epochs">
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+                            <button class="btn" onclick="prevTrainStep()">上一步</button>
+                            <button class="btn btn-primary" onclick="nextTrainStep()">下一步</button>
+                        </div>
+                    </div>
+
+                    <!-- 步骤4: 模型训练 -->
+                    <div id="train-step-4" class="training-card" style="display: none;">
+                        <div class="training-header">
+                            <div class="card-title">步骤4: 模型训练</div>
+                            <span class="tag tag-orange">训练中</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>训练进度</span>
+                                <span id="trainProgress">35%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" id="trainProgressBar" style="width: 35%;"></div>
+                            </div>
+                        </div>
+                        <div class="training-metrics">
+                            <div class="metric-item">
+                                <div class="metric-value" id="trainLoss">0.45</div>
+                                <div class="metric-label">损失值</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="trainAcc">78.5%</div>
+                                <div class="metric-label">准确率</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="trainEpoch">17/50</div>
+                                <div class="metric-label">当前轮次</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="trainTime">12:30</div>
+                                <div class="metric-label">预计时间</div>
+                            </div>
+                        </div>
+                        <div id="trainChart" class="chart-container" style="margin-top: 16px;"></div>
+                        <div style="margin-top: 16px; display: flex; justify-content: center; gap: 8px;">
+                            <button class="btn btn-danger" onclick="stopTraining()">停止训练</button>
+                        </div>
+                    </div>
+
+                    <!-- 步骤5: 模型验证 -->
+                    <div id="train-step-5" class="training-card" style="display: none;">
+                        <div class="training-header">
+                            <div class="card-title">步骤5: 模型验证</div>
+                            <span class="tag tag-green">已完成</span>
+                        </div>
+                        <div class="training-metrics">
+                            <div class="metric-item">
+                                <div class="metric-value" style="color: var(--success-color);">92.5%</div>
+                                <div class="metric-label">验证准确率</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">0.12</div>
+                                <div class="metric-label">验证损失</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">0.95</div>
+                                <div class="metric-label">F1分数</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">89.3%</div>
+                                <div class="metric-label">召回率</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">混淆矩阵</div>
+                            <div id="confusionMatrix" style="height: 200px;"></div>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">单张图片预测验证</div>
+                            <input type="file" id="testImageInput" accept="image/*" style="display: none;" onchange="handleTestImageUpload(event)">
+                            <div class="upload-area" onclick="document.getElementById('testImageInput').click()" style="padding: 20px; cursor: pointer;">
+                                <div class="upload-icon" style="font-size: 32px;">🖼️</div>
+                                <div class="upload-text">点击上传测试图片</div>
+                            </div>
+                            <div id="testImagePreview" style="margin-top: 16px; display: none;">
+                                <div style="display: flex; gap: 20px; align-items: flex-start;">
+                                    <div style="flex: 1; max-width: 300px;">
+                                        <img id="testImageDisplay" style="width: 100%; border-radius: 8px; border: 2px solid var(--primary-color);">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--success-color);">✓ 预测结果</div>
+                                        <div id="testPredictionResults">
+                                            <div style="background: #f6ffed; padding: 16px; border-radius: 8px; border: 1px solid #b7eb8f; margin-bottom: 12px;">
+                                                <div style="font-size: 24px; font-weight: bold; color: var(--success-color);">猫 🐱</div>
+                                                <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">置信度: 96.8%</div>
+                                            </div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">
+                                                <div style="margin-bottom: 4px;">其他可能分类:</div>
+                                                <div>• 狗 🐕 - 2.1%</div>
+                                                <div>• 兔子 🐰 - 0.8%</div>
+                                                <div>• 鸟 🐦 - 0.3%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+                            <button class="btn" onclick="prevTrainStep()">上一步</button>
+                            <button class="btn btn-primary" onclick="nextTrainStep()">下一步</button>
+                        </div>
+                    </div>
+
+                    <!-- 步骤6: 模型部署 -->
+                    <div id="train-step-6" class="training-card" style="display: none;">
+                        <div class="training-header">
+                            <div class="card-title">步骤6: 模型部署</div>
+                            <span class="tag tag-blue">待部署</span>
+                        </div>
+                        <div style="background: #e6f7ff; padding: 16px; border-radius: 8px; border: 1px solid #91d5ff; margin-bottom: 16px;">
+                            <div style="font-size: 14px; color: var(--primary-color); margin-bottom: 8px;">🚀 一键部署到边缘计算终端</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">无需交叉编译，模型自动适配边缘设备</div>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-size: 14px; margin-bottom: 8px; display: block;">选择边缘终端</label>
+                            <select class="select" style="width: 100%;">
+                                <option>边缘终端-A01 (RK3588)</option>
+                                <option>边缘终端-B02 (Jetson Nano)</option>
+                                <option>边缘终端-C03 (树莓派4B)</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+                            <button class="btn" onclick="prevTrainStep()">上一步</button>
+                            <button class="btn btn-success" onclick="deployModel()">部署模型</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ModelDeploy模型部署 -->
+        <div id="page-deploy" class="page">
+            <div class="card">
+                <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+                    <button class="btn btn-primary" onclick="switchDeployTab('manage')">部署管理</button>
+                    <button class="btn" onclick="switchDeployTab('predict')">在线预测</button>
+                </div>
+
+                <!-- 部署管理Tab -->
+                <div id="deploy-tab-manage">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                        <div class="card-title">已部署模型列表</div>
+                        <button class="btn btn-primary" onclick="showNewDeployModal()">+ 新建部署</button>
+                    </div>
+                    <div class="deploy-item">
+                        <div class="deploy-info">
+                            <div class="deploy-icon">🤖</div>
+                            <div>
+                                <div class="deploy-name">图像分类模型-v1</div>
+                                <div class="deploy-status">边缘终端-A01 | ResNet50 | 运行中</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="tag tag-green">在线</span>
+                            <button class="btn btn-small" onclick="testPredict()">测试</button>
+                        </div>
+                    </div>
+                    <div class="deploy-item">
+                        <div class="deploy-info">
+                            <div class="deploy-icon">🔍</div>
+                            <div>
+                                <div class="deploy-name">目标检测模型-v2</div>
+                                <div class="deploy-status">边缘终端-B02 | YOLOv5 | 运行中</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="tag tag-green">在线</span>
+                            <button class="btn btn-small" onclick="testPredict()">测试</button>
+                        </div>
+                    </div>
+                    <div class="deploy-item">
+                        <div class="deploy-info">
+                            <div class="deploy-icon">📊</div>
+                            <div>
+                                <div class="deploy-name">情感分析模型-v1</div>
+                                <div class="deploy-status">边缘终端-C03 | BERT | 已停止</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="tag tag-red">离线</span>
+                            <button class="btn btn-small" onclick="startDeploy()">启动</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 在线预测Tab -->
+                <div id="deploy-tab-predict" style="display: none;">
+                    <div class="card-title">在线预测效果展示</div>
+                    <div class="prediction-result">
+                        <div class="prediction-image">
+                            <div class="upload-area" onclick="uploadPredictImage()" style="padding: 40px;">
+                                <div class="upload-icon">🖼️</div>
+                                <div class="upload-text">上传图片进行预测</div>
+                            </div>
+                            <div id="predictImageContainer" style="margin-top: 16px; display: none;">
+                                <img id="predictImage" style="width: 100%; border-radius: 8px;">
+                            </div>
+                        </div>
+                        <div class="prediction-info">
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">预测结果</div>
+                            <div id="predictResults">
+                                <div class="prediction-item">
+                                    <div class="prediction-label">猫</div>
+                                    <div class="prediction-confidence">92.5%</div>
+                                </div>
+                                <div class="prediction-item">
+                                    <div class="prediction-label">狗</div>
+                                    <div class="prediction-confidence">5.3%</div>
+                                </div>
+                                <div class="prediction-item">
+                                    <div class="prediction-label">兔子</div>
+                                    <div class="prediction-confidence">1.8%</div>
+                                </div>
+                                <div class="prediction-item">
+                                    <div class="prediction-label">鸟</div>
+                                    <div class="prediction-confidence">0.4%</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 16px;">
+                                <button class="btn btn-primary" onclick="runPredict()">开始预测</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TerminalMode终端实训 -->
+        <div id="page-terminal" class="page">
+            <div style="padding: 12px 0; display: flex; gap: 8px;">
+                <button class="btn btn-small" onclick="switchTerminalMode('split')">同屏模式</button>
+                <button class="btn btn-small" onclick="switchTerminalMode('doc')">仅文档模式</button>
+                <button class="btn btn-small" onclick="switchTerminalMode('terminal')">全屏终端</button>
+            </div>
+            <div class="split-layout" id="terminalLayout">
+                <div class="split-left" id="terminalDoc">
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Linux命令实训手册</div>
+                    <div style="font-size: 14px; line-height: 1.8;">
+                        <h3 style="margin-bottom: 12px;">1. 文件与目录操作</h3>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">ls</code> - 列出目录内容</p>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">cd</code> - 切换目录</p>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">pwd</code> - 显示当前目录</p>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">mkdir</code> - 创建目录</p>
+                        <p style="margin-bottom: 16px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">rm</code> - 删除文件</p>
+
+                        <h3 style="margin-bottom: 12px;">2. 文件查看与编辑</h3>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">cat</code> - 查看文件内容</p>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">head</code> - 查看文件开头</p>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">tail</code> - 查看文件结尾</p>
+                        <p style="margin-bottom: 16px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">vim</code> - 编辑文件</p>
+
+                        <h3 style="margin-bottom: 12px;">3. Python脚本执行</h3>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">python train.py</code> - 执行训练脚本</p>
+                        <p style="margin-bottom: 8px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">python analyze.py</code> - 执行分析脚本</p>
+
+                        <h3 style="margin-bottom: 12px;">实训任务</h3>
+                        <p>请尝试以下命令：</p>
+                        <ol style="margin-left: 20px;">
+                            <li>使用 <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">ls</code> 查看当前目录文件</li>
+                            <li>使用 <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">cat data.txt</code> 查看数据文件</li>
+                            <li>使用 <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">python train.py</code> 执行训练脚本</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="split-divider"></div>
+                <div class="split-right" id="terminalPanel">
+                    <div class="terminal" id="terminalContent">
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">student@jupyter:~$</span>
+                            <input class="terminal-input" id="terminalInput" type="text" autofocus onkeypress="handleTerminalInput(event)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 重置环境模态框 -->
+    <div id="resetModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">重置沙箱环境</div>
+                <div class="modal-close" onclick="closeResetModal()">×</div>
+            </div>
+            <div class="modal-body">
+                <div style="color: var(--error-color); font-size: 14px; margin-bottom: 16px;">
+                    ⚠️ 重置将清空所有配置、文件及运行输出，并恢复默认参数。
+                </div>
+                <div style="font-size: 14px; color: var(--text-secondary);">
+                    重置后系统会随机变换模拟的规则参数，支持学员反复进行数据分析训练。
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeResetModal()">取消</button>
+                <button class="btn btn-danger" onclick="confirmReset()">确认重置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建部署模态框 -->
+    <div id="newDeployModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">新建模型部署</div>
+                <div class="modal-close" onclick="closeNewDeployModal()">×</div>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 14px; margin-bottom: 8px; display: block;">应用名称</label>
+                    <input class="input" type="text" placeholder="请输入应用名称">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 14px; margin-bottom: 8px; display: block;">模型类型</label>
+                    <select class="select" style="width: 100%;">
+                        <option>图像分类</option>
+                        <option>目标检测</option>
+                        <option>文本分类</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 14px; margin-bottom: 8px; display: block;">边缘终端标识</label>
+                    <select class="select" style="width: 100%;">
+                        <option>边缘终端-A01</option>
+                        <option>边缘终端-B02</option>
+                        <option>边缘终端-C03</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeNewDeployModal()">取消</button>
+                <button class="btn btn-primary" onclick="createDeploy()">创建部署</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 页面切换 ====================
+        function switchPage(pageName) {
+            // 更新导航栏状态
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 切换页面显示
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('page-' + pageName).classList.add('active');
+
+            // 初始化页面特定功能
+            if (pageName === 'lab') {
+                initNotebook();
+            } else if (pageName === 'train') {
+                initTrainPage();
+            } else if (pageName === 'terminal') {
+                initTerminal();
+            }
+        }
+
+        // ==================== Notebook功能 ====================
+        let notebookState = {
+            cells: [
+                { id: 1, type: 'code', content: '' },
+                { id: 2, type: 'code', content: '' },
+                { id: 3, type: 'markdown', content: '' }
+            ],
+            cellIdCounter: 3
+        };
+
+        function initNotebook() {
+            // 初始化图表预览
+            showChartTemplate('bar');
+        }
+
+        function addCell() {
+            const newId = ++notebookState.cellIdCounter;
+            const cellsContainer = document.getElementById('notebookCells');
+            
+            const cellHtml = '<div class="cell" data-cell-id="' + newId + '">' +
+                '<div class="cell-header">' +
+                '<div class="cell-type">代码单元格 [' + newId + ']</div>' +
+                '<div class="cell-actions">' +
+                '<button class="btn btn-small btn-primary" onclick="runCell(' + newId + ')">▶ 运行</button>' +
+                '<button class="btn btn-small" onclick="moveCellUp(' + newId + ')">↑</button>' +
+                '<button class="btn btn-small" onclick="moveCellDown(' + newId + ')">↓</button>' +
+                '<button class="btn btn-small btn-danger" onclick="deleteCell(' + newId + ')">✕</button>' +
+                '</div>' +
+                '</div>' +
+                '<div class="cell-content">' +
+                '<textarea class="cell-editor" id="cell-editor-' + newId + '" placeholder="输入代码..."></textarea>' +
+                '</div>' +
+                '<div class="cell-output" id="cell-output-' + newId + '" style="display: none;"></div>' +
+                '</div>';
+            
+            cellsContainer.insertAdjacentHTML('beforeend', cellHtml);
+            showMessage('success', '已添加新单元格');
+        }
+
+        function runCell(cellId) {
+            const editor = document.getElementById('cell-editor-' + cellId);
+            const output = document.getElementById('cell-output-' + cellId);
+            const code = editor.value;
+
+            // 模拟执行结果
+            output.style.display = 'block';
+            
+            if (code.includes('pd.DataFrame') || code.includes('pandas')) {
+                output.innerHTML = '   name  age  score\n0  Alice   25     85\n1    Bob   30     90\n2 Charlie   35     78\n3   David   40     92';
+            } else if (code.includes('print') && code.includes('mean')) {
+                output.innerHTML = '平均年龄: 32.5\n最高分数: 92\n分数标准差: 6.5';
+            } else if (code.includes('##')) {
+                output.innerHTML = '<h2 style="color: var(--text-primary);">数据分析总结</h2><p>本实验展示了如何使用Pandas进行基础数据分析...</p>';
+            } else if (code.includes('Bar') || code.includes('bar')) {
+                output.innerHTML = '图表已生成，请查看右侧图表预览区';
+                showChartTemplate('bar');
+            } else if (code.includes('Line') || code.includes('line')) {
+                output.innerHTML = '图表已生成，请查看右侧图表预览区';
+                showChartTemplate('line');
+            } else {
+                output.innerHTML = '执行成功';
+            }
+        }
+
+        function runAllCells() {
+            notebookState.cells.forEach(cell => {
+                runCell(cell.id);
+            });
+            showMessage('success', '所有单元格已执行');
+        }
+
+        function deleteCell(cellId) {
+            const cell = document.querySelector('[data-cell-id="' + cellId + '"]');
+            if (cell) {
+                cell.remove();
+                showMessage('success', '单元格已删除');
+            }
+        }
+
+        function moveCellUp(cellId) {
+            const cell = document.querySelector('[data-cell-id="' + cellId + '"]');
+            const prevCell = cell.previousElementSibling;
+            if (prevCell && prevCell.classList.contains('cell')) {
+                cell.parentNode.insertBefore(cell, prevCell);
+            }
+        }
+
+        function moveCellDown(cellId) {
+            const cell = document.querySelector('[data-cell-id="' + cellId + '"]');
+            const nextCell = cell.nextElementSibling;
+            if (nextCell && nextCell.classList.contains('cell')) {
+                cell.parentNode.insertBefore(nextCell, cell);
+            }
+        }
+
+        function insertModule(moduleType) {
+            const lastCell = document.querySelector('.cell:last-child textarea');
+            if (lastCell) {
+                const moduleCode = getModuleCode(moduleType);
+                lastCell.value = moduleCode;
+                showMessage('success', '已插入模块代码');
+            }
+        }
+
+        function getModuleCode(moduleType) {
+            const modules = {
+                'string_split': '# 字符串分割示例\ntext = "Hello,World,Python"\nresult = text.split(",")\nprint(result)',
+                'string_replace': '# 字符串替换示例\ntext = "Hello World"\nresult = text.replace("World", "Python")\nprint(result)',
+                'string_format': '# 格式化输出示例\nname = "Alice"\nage = 25\nprint(f"姓名: {name}, 年龄: {age}")',
+                'http_get': '# HTTP GET请求示例\nimport requests\nresponse = requests.get("https://api.example.com/data")\nprint(response.json())',
+                'http_post': '# HTTP POST请求示例\nimport requests\ndata = {"key": "value"}\nresponse = requests.post("https://api.example.com/submit", json=data)\nprint(response.json())',
+                'chart_bar': '# 柱状图示例 (pyecharts)\nfrom pyecharts import Bar\nbar = Bar()\nbar.add_xaxis(["A", "B", "C", "D"])\nbar.add_yaxis("数据", [10, 20, 30, 40])\nbar.render()',
+                'chart_line': '# 折线图示例 (pyecharts)\nfrom pyecharts import Line\nline = Line()\nline.add_xaxis(["1月", "2月", "3月", "4月"])\nline.add_yaxis("趋势", [10, 20, 15, 30])\nline.render()',
+                'chart_pie': '# 饼图示例 (pyecharts)\nfrom pyecharts import Pie\npie = Pie()\npie.add("", [("A", 30), ("B", 40), ("C", 20), ("D", 10)])\npie.render()',
+                'chart_scatter': '# 散点图示例 (pyecharts)\nfrom pyecharts import Scatter\nscatter = Scatter()\nscatter.add_xaxis([1, 2, 3, 4, 5])\nscatter.add_yaxis("数据", [10, 20, 15, 30, 25])\nscatter.render()',
+                'chart_radar': '# 雷达图示例 (pyecharts)\nfrom pyecharts import Radar\nradar = Radar()\nradar.add_schema(schema=[{"name": "A", "max": 100}, {"name": "B", "max": 100}])\nradar.add("数据", [80, 90])\nradar.render()',
+                'chart_funnel': '# 漏斗图示例 (pyecharts)\nfrom pyecharts import Funnel\nfunnel = Funnel()\nfunnel.add("转化", [("展示", 100), ("点击", 80), ("访问", 60)])\nfunnel.render()',
+                'chart_gauge': '# 仪表盘示例 (pyecharts)\nfrom pyecharts import Gauge\ngauge = Gauge()\ngauge.add("完成率", [("进度", 85)])\ngauge.render()',
+                'chart_heatmap': '# 热力图示例 (pyecharts)\nfrom pyecharts import HeatMap\nheatmap = HeatMap()\nheatmap.add_xaxis(["A", "B", "C"])\nheatmap.add_yaxis("热力", [[0,0,10], [1,1,20], [2,2,30]])\nheatmap.render()',
+                'chart_treemap': '# 树图示例 (pyecharts)\nfrom pyecharts import TreeMap\ntreemap = TreeMap()\ntreemap.add("层级", [{"name": "A", "value": 10}, {"name": "B", "value": 20}])\ntreemap.render()',
+                'chart_sunburst': '# 旭日图示例 (pyecharts)\nfrom pyecharts import Sunburst\nsunburst = Sunburst()\nsunburst.add("层级", [{"name": "A", "value": 10, "children": [{"name": "A1", "value": 5}]}])\nsunburst.render()',
+                'chart_boxplot': '# 箱线图示例 (pyecharts)\nfrom pyecharts import Boxplot\nboxplot = Boxplot()\nboxplot.add_xaxis(["A", "B", "C"])\nboxplot.add_yaxis("分布", [[10,20,30,40,50], [15,25,35,45,55]])\nboxplot.render()',
+                'chart_sankey': '# 桑基图示例 (pyecharts)\nfrom pyecharts import Sankey\nsankey = Sankey()\nsankey.add("流向", nodes=[{"name": "a"}, {"name": "b"}], links=[{"source": "a", "target": "b", "value": 10}])\nsankey.render()',
+                'chart_graph': '# 关系图示例 (pyecharts)\nfrom pyecharts import Graph\ngraph = Graph()\ngraph.add("关系", nodes=[{"name": "A"}, {"name": "B"}], links=[{"source": "A", "target": "B"}])\ngraph.render()',
+                'chart_wordcloud': '# 词云图示例 (pyecharts)\nfrom pyecharts import WordCloud\nwordcloud = WordCloud()\nwordcloud.add("关键词", [("Python", 100), ("数据", 80), ("分析", 60)])\nwordcloud.render()',
+                'chart_candlestick': '# K线图示例 (pyecharts)\nfrom pyecharts import Kline\nkline = Kline()\nkline.add_xaxis(["周一", "周二", "周三"])\nkline.add_yaxis("股价", [[20,30,18,35], [22,32,20,33]])\nkline.render()',
+                'chart_map': '# 地图示例 (pyecharts)\nfrom pyecharts import Map\nmap_chart = Map()\nmap_chart.add("分布", [("北京", 100), ("上海", 80)], "china")\nmap_chart.render()',
+                'chart_3d': '# 3D图表示例 (pyecharts)\nfrom pyecharts import Bar3D\nbar3d = Bar3D()\nbar3d.add("数据", [[0,0,10], [1,1,20], [2,2,30]])\nbar3d.render()',
+                'chart_combo': '# 组合图表示例 (pyecharts)\nfrom pyecharts import Bar, Line\nfrom pyecharts.charts import Grid\nbar = Bar()\nbar.add_xaxis(["A", "B", "C"])\nbar.add_yaxis("柱状", [10, 20, 30])\nline = Line()\nline.add_xaxis(["A", "B", "C"])\nline.add_yaxis("折线", [15, 25, 35])\ngrid = Grid()\ngrid.add(bar, grid_opts={"left": "5%"})\ngrid.add(line, grid_opts={"right": "5%"})\ngrid.render()',
+                'data_clean': '# 数据清洗示例\nimport pandas as pd\ndf = pd.DataFrame({"A": [1, None, 3], "B": [4, 5, None]})\ndf_clean = df.dropna()\nprint(df_clean)',
+                'data_merge': '# 数据合并示例\nimport pandas as pd\ndf1 = pd.DataFrame({"A": [1, 2], "B": [3, 4]})\ndf2 = pd.DataFrame({"A": [1, 2], "C": [5, 6]})\ndf_merge = pd.merge(df1, df2, on="A")\nprint(df_merge)',
+                'data_group': '# 数据分组示例\nimport pandas as pd\ndf = pd.DataFrame({"A": ["a", "b", "a"], "B": [1, 2, 3]})\ngrouped = df.groupby("A").sum()\nprint(grouped)',
+                'jieba_cut': '# jieba分词示例\nimport jieba\ntext = "自然语言处理很有趣"\nwords = jieba.cut(text)\nprint(list(words))',
+                'jieba_analyze': '# 关键词提取示例\nimport jieba.analyse\ntext = "自然语言处理是人工智能的重要分支"\nkeywords = jieba.analyse.extract_tags(text, topK=5)\nprint(keywords)'
+            };
+            return modules[moduleType] || '# 请输入代码';
+        }
+
+        function importNotebook() {
+            // 创建文件选择器
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.ipynb';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    showMessage('success', '已导入笔记本: ' + file.name);
+                }
+            };
+            input.click();
+        }
+
+        function exportNotebook() {
+            // 模拟导出ipynb文件
+            const notebookData = {
+                nbformat: 4,
+                cells: []
+            };
+            
+            document.querySelectorAll('.cell').forEach(cell => {
+                const cellId = cell.dataset.cellId;
+                const editor = document.getElementById('cell-editor-' + cellId);
+                notebookData.cells.push({
+                    cell_type: 'code',
+                    source: editor.value.split('\n'),
+                    outputs: []
+                });
+            });
+            
+            const blob = new Blob([JSON.stringify(notebookData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'notebook.ipynb';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showMessage('success', '笔记本已导出');
+        }
+
+        function showChartTemplate(chartType) {
+            const chartDom = document.getElementById('previewChart');
+            const myChart = echarts.init(chartDom);
+            
+            const options = {
+                // 基础图表
+                bar: {
+                    title: { text: '柱状图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: { data: ['A', 'B', 'C', 'D', 'E'] },
+                    yAxis: {},
+                    series: [{ name: '数据', type: 'bar', data: [10, 20, 30, 25, 15], itemStyle: { color: '#1890ff' } }]
+                },
+                line: {
+                    title: { text: '折线图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: { data: ['1月', '2月', '3月', '4月', '5月'] },
+                    yAxis: {},
+                    series: [{ name: '趋势', type: 'line', data: [10, 20, 15, 30, 25], smooth: true, itemStyle: { color: '#1890ff' } }]
+                },
+                pie: {
+                    title: { text: '饼图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'pie', radius: '60%', data: [{ value: 30, name: 'A' }, { value: 40, name: 'B' }, { value: 20, name: 'C' }, { value: 10, name: 'D' }] }]
+                },
+                scatter: {
+                    title: { text: '散点图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: {},
+                    yAxis: {},
+                    series: [{ type: 'scatter', symbolSize: 10, data: [[10, 20], [15, 30], [20, 25], [25, 40], [30, 35], [12, 28], [18, 32]] }]
+                },
+                radar: {
+                    title: { text: '雷达图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    radar: { indicator: [{ name: '销售', max: 100 }, { name: '管理', max: 100 }, { name: '技术', max: 100 }, { name: '客服', max: 100 }, { name: '研发', max: 100 }] },
+                    series: [{ type: 'radar', data: [{ value: [80, 90, 70, 85, 75], name: '指标A' }] }]
+                },
+                // 高级图表
+                funnel: {
+                    title: { text: '漏斗图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'funnel', data: [{ value: 100, name: '展示' }, { value: 80, name: '点击' }, { value: 60, name: '访问' }, { value: 40, name: '咨询' }, { value: 20, name: '订单' }] }]
+                },
+                gauge: {
+                    title: { text: '仪表盘', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'gauge', detail: { formatter: '{value}%' }, data: [{ value: 85, name: '完成率' }] }]
+                },
+                heatmap: {
+                    title: { text: '热力图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: { data: ['A', 'B', 'C', 'D', 'E'] },
+                    yAxis: { data: ['1', '2', '3', '4'] },
+                    visualMap: { min: 0, max: 100, calculable: true },
+                    series: [{ type: 'heatmap', data: [[0,0,10],[0,1,20],[0,2,30],[1,0,40],[1,1,50],[1,2,60],[2,0,70],[2,1,80],[2,2,90]] }]
+                },
+                treemap: {
+                    title: { text: '树图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'treemap', data: [{ name: 'A', value: 10 }, { name: 'B', value: 20, children: [{ name: 'B1', value: 8 }, { name: 'B2', value: 12 }] }, { name: 'C', value: 15 }] }]
+                },
+                sunburst: {
+                    title: { text: '旭日图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'sunburst', data: [{ name: 'A', value: 10, children: [{ name: 'A1', value: 5 }, { name: 'A2', value: 5 }] }, { name: 'B', value: 20 }] }]
+                },
+                // 统计图表
+                boxplot: {
+                    title: { text: '箱线图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: { data: ['A', 'B', 'C', 'D'] },
+                    yAxis: {},
+                    series: [{ type: 'boxplot', data: [[10,20,30,40,50], [15,25,35,45,55], [5,15,25,35,45], [20,30,40,50,60]] }]
+                },
+                parallel: {
+                    title: { text: '平行坐标图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    parallelAxis: [{ dim: 0, name: 'A' }, { dim: 1, name: 'B' }, { dim: 2, name: 'C' }, { dim: 3, name: 'D' }],
+                    series: [{ type: 'parallel', data: [[10,20,30,40], [15,25,35,45], [20,30,40,50]] }]
+                },
+                sankey: {
+                    title: { text: '桑基图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'sankey', data: [{ name: 'a' }, { name: 'b' }, { name: 'c' }], links: [{ source: 'a', target: 'b', value: 10 }, { source: 'b', target: 'c', value: 8 }] }]
+                },
+                graph: {
+                    title: { text: '关系图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'graph', layout: 'force', data: [{ name: 'A' }, { name: 'B' }, { name: 'C' }], links: [{ source: 'A', target: 'B' }, { source: 'B', target: 'C' }] }]
+                },
+                // 特殊图表
+                effectscatter: {
+                    title: { text: '涟漪散点图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: {},
+                    yAxis: {},
+                    series: [{ type: 'effectScatter', symbolSize: 15, data: [[10, 20], [15, 30], [20, 25], [25, 40]] }]
+                },
+                lines: {
+                    title: { text: '线图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'lines', coordinateSystem: 'cartesian2d', data: [{ coords: [[0, 0], [10, 20]] }, { coords: [[10, 20], [20, 40]] }] }]
+                },
+                themeRiver: {
+                    title: { text: '主题河流图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    series: [{ type: 'themeRiver', data: [['2015', 10, 'A'], ['2016', 20, 'A'], ['2015', 15, 'B'], ['2016', 25, 'B']] }]
+                },
+                candlestick: {
+                    title: { text: 'K线图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: { data: ['周一', '周二', '周三', '周四', '周五'] },
+                    yAxis: {},
+                    series: [{ type: 'candlestick', data: [[20, 30, 18, 35], [22, 32, 20, 33], [25, 35, 22, 38], [28, 40, 25, 42], [30, 45, 28, 48]] }]
+                },
+                polar: {
+                    title: { text: '极坐标图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    polar: {},
+                    angleAxis: { type: 'value', startAngle: 0 },
+                    radiusAxis: {},
+                    series: [{ type: 'line', coordinateSystem: 'polar', data: [[0, 10], [45, 20], [90, 30], [135, 25], [180, 15]] }]
+                },
+                // 3D图表 (简化展示)
+                bar3d: {
+                    title: { text: '3D柱状图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis3D: { type: 'category', data: ['A', 'B', 'C'] },
+                    yAxis3D: { type: 'category', data: ['1', '2'] },
+                    zAxis3D: { type: 'value' },
+                    grid3D: {},
+                    series: [{ type: 'bar3D', data: [[0,0,10],[0,1,20],[1,0,30],[1,1,40],[2,0,25],[2,1,35]] }]
+                },
+                line3d: {
+                    title: { text: '3D折线图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis3D: { type: 'value' },
+                    yAxis3D: { type: 'value' },
+                    zAxis3D: { type: 'value' },
+                    grid3D: {},
+                    series: [{ type: 'line3D', data: [[0,0,0],[1,1,1],[2,2,2],[3,3,3],[4,4,4]] }]
+                },
+                scatter3d: {
+                    title: { text: '3D散点图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis3D: { type: 'value' },
+                    yAxis3D: { type: 'value' },
+                    zAxis3D: { type: 'value' },
+                    grid3D: {},
+                    series: [{ type: 'scatter3D', symbolSize: 10, data: [[0,0,0],[1,2,3],[2,1,4],[3,3,2],[4,2,5]] }]
+                },
+                surface3d: {
+                    title: { text: '3D曲面图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis3D: { type: 'value' },
+                    yAxis3D: { type: 'value' },
+                    zAxis3D: { type: 'value' },
+                    grid3D: {},
+                    series: [{ type: 'surface', data: [[0,0,0],[1,0,1],[0,1,1],[1,1,2]] }]
+                },
+                // 地图图表 (简化展示)
+                map: {
+                    title: { text: '地图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    geo: { map: 'china', roam: true },
+                    series: [{ type: 'scatter', coordinateSystem: 'geo', data: [{ name: '北京', value: [116.46, 39.92, 100] }] }]
+                },
+                scatterMap: {
+                    title: { text: '散点地图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    geo: { map: 'china', roam: true },
+                    series: [{ type: 'effectScatter', coordinateSystem: 'geo', data: [{ name: '上海', value: [121.48, 31.22, 80] }] }]
+                },
+                heatmapMap: {
+                    title: { text: '热力地图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    geo: { map: 'china', roam: true },
+                    series: [{ type: 'heatmap', coordinateSystem: 'geo', data: [[116.46, 39.92, 100], [121.48, 31.22, 80]] }]
+                },
+                linesMap: {
+                    title: { text: '线地图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    geo: { map: 'china', roam: true },
+                    series: [{ type: 'lines', coordinateSystem: 'geo', data: [{ coords: [[116.46, 39.92], [121.48, 31.22]] }] }]
+                },
+                // 组合图表
+                combo: {
+                    title: { text: '组合图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: { data: ['A', 'B', 'C', 'D', 'E'] },
+                    yAxis: {},
+                    series: [{ type: 'bar', data: [10, 20, 30, 25, 15] }, { type: 'line', data: [15, 25, 35, 30, 20] }]
+                },
+                dualAxis: {
+                    title: { text: '双轴图', textStyle: { color: '#262626' } },
+                    tooltip: {},
+                    xAxis: { data: ['A', 'B', 'C', 'D', 'E'] },
+                    yAxis: [{ type: 'value' }, { type: 'value' }],
+                    series: [{ type: 'bar', data: [10, 20, 30, 25, 15] }, { type: 'line', yAxisIndex: 1, data: [100, 200, 300, 250, 150] }]
+                }
+            };
+            
+            myChart.setOption(options[chartType] || options.bar, true);
+        }
+
+        // ==================== 重置功能 ====================
+        function showResetModal() {
+            document.getElementById('resetModal').style.display = 'flex';
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').style.display = 'none';
+        }
+
+        function confirmReset() {
+            closeResetModal();
+            // 清空所有单元格
+            document.querySelectorAll('.cell-editor').forEach(editor => {
+                editor.value = '';
+            });
+            document.querySelectorAll('.cell-output').forEach(output => {
+                output.style.display = 'none';
+                output.innerHTML = '';
+            });
+            
+            // 显示参数更新提示
+            const newEpochs = Math.floor(Math.random() * 30) + 10;
+            showMessage('success', '环境已重置，参数已更新：训练轮次由10变为' + newEpochs);
+        }
+
+        // ==================== 模型训练功能 ====================
+        let trainStep = 3;
+        let isTraining = false;
+
+        function initTrainPage() {
+            showTrainStep(trainStep);
+        }
+
+        function showTrainStep(step) {
+            for (let i = 1; i <= 6; i++) {
+                const stepCard = document.getElementById('train-step-' + i);
+                if (stepCard) {
+                    stepCard.style.display = i === step ? 'block' : 'none';
+                }
+            }
+            
+            // 更新步骤条状态
+            document.querySelectorAll('.step').forEach((stepEl, index) => {
+                stepEl.classList.remove('active', 'finished');
+                if (index < step - 1) {
+                    stepEl.classList.add('finished');
+                } else if (index === step - 1) {
+                    stepEl.classList.add('active');
+                }
+            });
+
+            // 初始化训练图表
+            if (step === 4) {
+                initTrainChart();
+            } else if (step === 5) {
+                initConfusionMatrix();
+            }
+        }
+
+        function nextTrainStep() {
+            if (trainStep < 6) {
+                trainStep++;
+                showTrainStep(trainStep);
+                
+                if (trainStep === 4) {
+                    startTraining();
+                }
+            }
+        }
+
+        function prevTrainStep() {
+            if (trainStep > 1) {
+                trainStep--;
+                showTrainStep(trainStep);
+            }
+        }
+
+        function startTraining() {
+            isTraining = true;
+            let progress = 0;
+            let epoch = 0;
+            
+            const trainInterval = setInterval(() => {
+                if (!isTraining || progress >= 100) {
+                    clearInterval(trainInterval);
+                    if (progress >= 100) {
+                        showMessage('success', '训练完成！');
+                        setTimeout(() => {
+                            trainStep = 5;
+                            showTrainStep(5);
+                        }, 1000);
+                    }
+                    return;
+                }
+                
+                progress += 2;
+                epoch = Math.floor(progress / 2);
+                
+                document.getElementById('trainProgress').textContent = progress + '%';
+                document.getElementById('trainProgressBar').style.width = progress + '%';
+                document.getElementById('trainEpoch').textContent = epoch + '/50';
+                document.getElementById('trainLoss').textContent = (0.5 - progress * 0.004).toFixed(2);
+                document.getElementById('trainAcc').textContent = (50 + progress * 0.4).toFixed(1) + '%';
+                
+                // 更新图表
+                updateTrainChart(progress);
+            }, 200);
+        }
+
+        function stopTraining() {
+            isTraining = false;
+            showMessage('warning', '训练已停止');
+        }
+
+        let trainChartInstance = null;
+
+        function initTrainChart() {
+            const chartDom = document.getElementById('trainChart');
+            trainChartInstance = echarts.init(chartDom);
+            
+            trainChartInstance.setOption({
+                title: { text: '训练曲线', textStyle: { color: '#262626' } },
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['损失', '准确率'] },
+                xAxis: { type: 'category', data: [] },
+                yAxis: [
+                    { type: 'value', name: '损失' },
+                    { type: 'value', name: '准确率', max: 100 }
+                ],
+                series: [
+                    { name: '损失', type: 'line', data: [], smooth: true },
+                    { name: '准确率', type: 'line', data: [], smooth: true, yAxisIndex: 1 }
+                ]
+            });
+        }
+
+        function updateTrainChart(progress) {
+            if (!trainChartInstance) return;
+            
+            const epochs = [];
+            const losses = [];
+            const accs = [];
+            
+            for (let i = 1; i <= Math.floor(progress / 2); i++) {
+                epochs.push('Epoch ' + i);
+                losses.push((0.5 - i * 0.008).toFixed(2));
+                accs.push((50 + i * 0.8).toFixed(1));
+            }
+            
+            trainChartInstance.setOption({
+                xAxis: { data: epochs },
+                series: [
+                    { data: losses },
+                    { data: accs }
+                ]
+            });
+        }
+
+        function initConfusionMatrix() {
+            const chartDom = document.getElementById('confusionMatrix');
+            const myChart = echarts.init(chartDom);
+            
+            myChart.setOption({
+                tooltip: {},
+                xAxis: { type: 'category', data: ['猫', '狗', '鸟', '兔', '鱼'] },
+                yAxis: { type: 'category', data: ['猫', '狗', '鸟', '兔', '鱼'] },
+                visualMap: { min: 0, max: 100, inRange: { color: ['#f0f0f0', '#1890ff'] } },
+                series: [{
+                    type: 'heatmap',
+                    data: [
+                        [0, 0, 92], [0, 1, 3], [0, 2, 2], [0, 3, 2], [0, 4, 1],
+                        [1, 0, 2], [1, 1, 88], [1, 2, 5], [1, 3, 3], [1, 4, 2],
+                        [2, 0, 1], [2, 1, 2], [2, 2, 95], [2, 3, 1], [2, 4, 1],
+                        [3, 0, 2], [3, 1, 3], [3, 2, 1], [3, 3, 90], [3, 4, 4],
+                        [4, 0, 1], [4, 1, 1], [4, 2, 2], [4, 3, 2], [4, 4, 94]
+                    ],
+                    label: { show: true }
+                }]
+            });
+        }
+
+        function uploadData() {
+            showMessage('success', '数据已上传');
+        }
+
+        function uploadTestImage() {
+            showMessage('success', '测试图片已上传');
+        }
+
+        function handleTestImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // 显示上传的图片
+                    document.getElementById('testImageDisplay').src = e.target.result;
+                    document.getElementById('testImagePreview').style.display = 'block';
+                    
+                    // 显示预测结果（模拟）
+                    showMessage('success', '图片上传成功，模型预测完成！');
+                    
+                    // 添加预测动画效果
+                    const resultsDiv = document.getElementById('testPredictionResults');
+                    resultsDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        resultsDiv.style.transition = 'opacity 0.5s';
+                        resultsDiv.style.opacity = '1';
+                    }, 300);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function deployModel() {
+            showMessage('success', '模型已部署到边缘终端');
+            trainStep = 6;
+            showTrainStep(6);
+        }
+
+        // ==================== 模型部署功能 ====================
+        function switchDeployTab(tabName) {
+            document.getElementById('deploy-tab-manage').style.display = tabName === 'manage' ? 'block' : 'none';
+            document.getElementById('deploy-tab-predict').style.display = tabName === 'predict' ? 'block' : 'none';
+            
+            // 更新按钮状态
+            const buttons = document.querySelectorAll('#page-deploy .btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('btn-primary');
+            });
+            event.target.classList.add('btn-primary');
+        }
+
+        function showNewDeployModal() {
+            document.getElementById('newDeployModal').style.display = 'flex';
+        }
+
+        function closeNewDeployModal() {
+            document.getElementById('newDeployModal').style.display = 'none';
+        }
+
+        function createDeploy() {
+            closeNewDeployModal();
+            showMessage('success', '部署已创建');
+        }
+
+        function testPredict() {
+            switchDeployTab('predict');
+        }
+
+        function startDeploy() {
+            showMessage('success', '部署已启动');
+        }
+
+        function uploadPredictImage() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        document.getElementById('predictImage').src = event.target.result;
+                        document.getElementById('predictImageContainer').style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                    showMessage('success', '图片已上传');
+                }
+            };
+            input.click();
+        }
+
+        function runPredict() {
+            showMessage('success', '预测完成');
+        }
+
+        // ==================== 终端实训功能 ====================
+        function initTerminal() {
+            document.getElementById('terminalInput').focus();
+        }
+
+        function switchTerminalMode(mode) {
+            const doc = document.getElementById('terminalDoc');
+            const terminal = document.getElementById('terminalPanel');
+            const divider = document.querySelector('.split-divider');
+            
+            if (mode === 'split') {
+                doc.style.display = 'block';
+                terminal.style.display = 'block';
+                divider.style.display = 'block';
+                doc.style.flex = '1';
+                terminal.style.flex = '1';
+            } else if (mode === 'doc') {
+                doc.style.display = 'block';
+                doc.style.flex = '1';
+                terminal.style.display = 'none';
+                divider.style.display = 'none';
+            } else if (mode === 'terminal') {
+                doc.style.display = 'none';
+                terminal.style.display = 'block';
+                terminal.style.flex = '1';
+                divider.style.display = 'none';
+            }
+        }
+
+        function handleTerminalInput(event) {
+            if (event.key === 'Enter') {
+                const input = document.getElementById('terminalInput');
+                const command = input.value.trim();
+                input.value = '';
+                
+                if (command) {
+                    addTerminalOutput('student@jupyter:~$ ' + command);
+                    executeCommand(command);
+                }
+            }
+        }
+
+        function addTerminalOutput(text, isError = false) {
+            const terminal = document.getElementById('terminalContent');
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = '<span class="' + (isError ? 'terminal-error' : 'terminal-output') + '">' + text + '</span>';
+            
+            // 移除旧的输入行，添加输出，再添加新的输入行
+            const inputLine = terminal.querySelector('.terminal-line:last-child');
+            terminal.insertBefore(line, inputLine);
+        }
+
+        function executeCommand(command) {
+            const outputs = {
+                'ls': 'data.txt  train.py  analyze.py  config.json',
+                'pwd': '/home/student/workspace',
+                'cat data.txt': '样本数据:\nA: 120\nB: 85\nC: 200\nD: 150',
+                'python train.py': '开始训练...\nEpoch 1/10: loss=0.45, acc=78%\nEpoch 2/10: loss=0.32, acc=85%\n...\n训练完成！准确率: 92.5%',
+                'python analyze.py': '数据分析结果:\n总样本数: 555\n平均值: 138.75\n标准差: 45.2',
+                'help': '可用命令: ls, pwd, cat, python, help',
+                'clear': ''
+            };
+
+            if (command === 'clear') {
+                const terminal = document.getElementById('terminalContent');
+                terminal.innerHTML = '<div class="terminal-line"><span class="terminal-prompt">student@jupyter:~$</span><input class="terminal-input" id="terminalInput" type="text" autofocus onkeypress="handleTerminalInput(event)"></div>';
+                document.getElementById('terminalInput').focus();
+            } else if (outputs[command]) {
+                addTerminalOutput(outputs[command]);
+            } else {
+                addTerminalOutput('命令未找到: ' + command, true);
+            }
+        }
+
+        // ==================== 消息提示 ====================
+        function showMessage(type, text) {
+            const message = document.createElement('div');
+            message.className = 'message message-' + type;
+            message.innerHTML = '<span>' + (type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠') + '</span><span>' + text + '</span>';
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 3000);
+        }
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化图表
+            showChartTemplate('bar');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,659 @@
+/* ========== 工作台页面专用样式 ========== */
+.dashboard-page {
+    min-height: 100vh;
+    background: var(--bg-color);
+    display: grid;
+    grid-template-columns: 240px 1fr;
+}
+
+/* ========== 左侧导航栏 ========== */
+.sidebar {
+    background: var(--sidebar-bg);
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+}
+
+.sidebar-logo {
+    padding: 0 24px;
+    margin-bottom: 36px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-logo-icon {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
+}
+
+.sidebar-logo-text h2 {
+    font-size: 13px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.5px;
+    line-height: 1.35;
+}
+
+.nav-menu {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 12px;
+}
+
+.nav-item {
+    padding: 11px 16px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+}
+
+.nav-item:hover {
+    background: var(--sidebar-hover);
+    color: white;
+}
+
+.nav-item.active {
+    background: var(--sidebar-active);
+    color: white;
+    font-weight: 600;
+}
+
+.nav-icon {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* ========== 主内容区 ========== */
+.main-content {
+    padding: 28px 36px;
+    overflow-y: auto;
+}
+
+/* ========== 顶部通栏 ========== */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-body);
+}
+
+.platform-name {
+    color: var(--primary-blue);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.breadcrumb strong {
+    color: var(--success-green);
+    font-weight: 600;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.search-box {
+    padding: 9px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    background: #F9FAFB;
+    width: 270px;
+    transition: all 0.25s ease;
+    font-family: inherit;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.avatar::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 10px;
+    height: 10px;
+    background: var(--success-green);
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.user-details {
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--text-title);
+}
+
+.user-meta {
+    color: var(--text-body);
+}
+
+/* ========== 欢迎横幅 - 白色卡片 ========== */
+.hero-section {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 42px 46px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.hero-content h1 {
+    font-size: 33px;
+    font-weight: 800;
+    color: var(--text-title);
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.hero-content p {
+    font-size: 15px;
+    color: var(--text-body);
+    line-height: 1.65;
+}
+
+.highlight-text {
+    color: var(--primary-blue);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 14px;
+}
+
+.hero-actions .btn {
+    padding: 13px 28px;
+    font-size: 14px;
+}
+
+/* ========== 课程区域 ========== */
+.courses-section {
+    margin-bottom: 36px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.section-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text-title);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-icon {
+    color: var(--primary-blue);
+    font-size: 23px;
+}
+
+/* 课程布局：左侧课程网格 + 右侧AI卡片 */
+.courses-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.course-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.course-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+}
+
+.course-card.completed::before {
+    background: linear-gradient(180deg, var(--success-green) 0%, var(--success-green-dark) 100%);
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: transparent;
+}
+
+.course-header {
+    margin-bottom: 14px;
+}
+
+.course-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-title);
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.course-meta {
+    font-size: 13px;
+    color: var(--text-body);
+    line-height: 1.6;
+}
+
+.course-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-light);
+}
+
+.course-status {
+    padding: 5px 14px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-progress {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.status-completed {
+    background: #D1FAE5;
+    color: var(--success-green-dark);
+}
+
+.course-time {
+    font-size: 13px;
+    color: var(--text-body);
+}
+
+/* AI智慧学伴大卡片 */
+.ai-assistant-card {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
+    border-radius: var(--radius-lg);
+    padding: 34px 30px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 8px 28px rgba(71, 85, 105, 0.3);
+    min-height: 295px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-assistant-card::before {
+    content: '✨';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 40px;
+    opacity: 0.15;
+}
+
+.ai-header h3 {
+    font-size: 25px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.ai-description {
+    font-size: 14px;
+    line-height: 1.75;
+    opacity: 0.95;
+    margin-bottom: 26px;
+    flex: 1;
+}
+
+.ai-btn {
+    padding: 15px 26px;
+    background: white;
+    color: var(--primary-blue);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-family: inherit;
+}
+
+.ai-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+/* ========== 考试列表和公告区域 ========== */
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 36px;
+}
+
+.exams-section .section-header {
+    margin-bottom: 20px;
+}
+
+.view-all {
+    color: var(--primary-blue);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: gap 0.2s ease;
+}
+
+.view-all:hover {
+    gap: 8px;
+}
+
+.exam-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.exam-item {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 26px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.25s ease;
+}
+
+.exam-item:hover {
+    box-shadow: var(--shadow-md);
+    border-color: transparent;
+}
+
+.exam-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.exam-icon {
+    width: 54px;
+    height: 54px;
+    background: linear-gradient(135deg, rgba(24, 144, 255, 0.1) 0%, rgba(24, 144, 255, 0.2) 100%);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    font-weight: 800;
+    color: var(--primary-blue);
+    flex-shrink: 0;
+}
+
+.exam-info h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-title);
+    margin-bottom: 6px;
+}
+
+.exam-time {
+    font-size: 13px;
+    color: var(--text-body);
+}
+
+.exam-right {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+}
+
+.exam-readers {
+    font-size: 13px;
+    color: var(--text-body);
+    font-weight: 500;
+}
+
+.enter-btn {
+    padding: 12px 26px;
+    background: var(--text-title);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.enter-btn:hover {
+    background: #374151;
+    transform: translateY(-1px);
+}
+
+/* ========== 公告栏 ========== */
+.announcements-section {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.announcement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.announcement-item {
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.announcement-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.announcement-content h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-title);
+    margin-bottom: 6px;
+    line-height: 1.55;
+}
+
+.announcement-date {
+    font-size: 12px;
+    color: var(--text-body);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* ========== 工作台响应式设计 ========== */
+@media (max-width: 1280px) {
+    .courses-layout,
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .courses-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .ai-assistant-card {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 1024px) {
+    .dashboard-page {
+        grid-template-columns: 200px 1fr;
+    }
+    
+    .main-content {
+        padding: 24px 28px;
+    }
+    
+    .hero-section {
+        flex-direction: column;
+        text-align: center;
+        gap: 28px;
+        padding: 36px 32px;
+    }
+    
+    .search-box {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-page {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        display: none;
+    }
+    
+    .main-content {
+        padding: 20px 20px;
+    }
+    
+    .top-bar {
+        flex-direction: column;
+        gap: 18px;
+        align-items: stretch;
+    }
+    
+    .top-bar-right {
+        justify-content: space-between;
+    }
+    
+    .search-box {
+        width: 100%;
+    }
+    
+    .user-info {
+        order: -1;
+    }
+    
+    .courses-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .exam-item {
+        flex-direction: column;
+        gap: 18px;
+        align-items: flex-start;
+    }
+    
+    .exam-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 智慧教学与AI实验平台</title>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/login.css">
+    
+    <!-- SEO优化 -->
+    <meta name="description" content="智慧教学与AI实验平台 - 赋能物联网、嵌入式与人工智能的学习与实践">
+    <meta name="keywords" content="智慧教学, AI实验, 物联网, 嵌入式, 大数据, 人工智能">
+</head>
+<body>
+    <!-- 登录页 -->
+    <div class="login-page">
+        <!-- 左侧区域 (60%) - 品牌展示 -->
+        <div class="login-left">
+            <div class="login-left-content">
+                <!-- 品牌Logo -->
+                <div class="login-brand">
+                    <div class="login-brand-icon">E</div>
+                    <span class="login-brand-text">智慧教学与AI实验平台</span>
+                </div>
+
+                <!-- 宣传语 -->
+                <div class="login-slogan">
+                    <h2>赋能物联网、嵌入式与人工智能的学习与实践</h2>
+                    <p>基于AI助手的智能学习平台，提供物联网、嵌入式开发、大数据分析、人工智能等课程的实验环境与实践指导。</p>
+                    
+                    <!-- 关键词标签 -->
+                    <div class="keywords">
+                        <span class="keyword-tag">物联网</span>
+                        <span class="keyword-tag">嵌入式</span>
+                        <span class="keyword-tag">大数据</span>
+                        <span class="keyword-tag">AI课程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧区域 (40%) - 登录表单 -->
+        <div class="login-right">
+            <div class="login-card">
+                <!-- 标题区 -->
+                <h1>智慧教学与AI实验平台</h1>
+                <p class="subtitle">赋能物联网、嵌入式与人工智能的学习与实践</p>
+                
+                <!-- 表单区 -->
+                <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+                    <!-- 角色选择 -->
+                    <div class="role-selector">
+                        <label class="role-label">选择登录角色</label>
+                        <div class="role-options">
+                            <div class="role-option selected" data-role="student" onclick="selectRole(this)">
+                                <!-- <div class="role-icon">👨‍🎓</div> -->
+                                <div class="role-info">
+                                    <div class="role-name">学生</div>
+                                    <div class="role-desc">学习课程、完成实验</div>
+                                </div>
+                            </div>
+                            <div class="role-option" data-role="teacher" onclick="selectRole(this)">
+                                <!-- <div class="role-icon">👨‍🏫</div> -->
+                                <div class="role-info">
+                                    <div class="role-name">教师</div>
+                                    <div class="role-desc">管理课程、指导学生</div>
+                                </div>
+                            </div>
+                            <div class="role-option" data-role="admin" onclick="selectRole(this)">
+                                <!-- <div class="role-icon">👨‍💼</div> -->
+                                <div class="role-info">
+                                    <div class="role-name">校管理员</div>
+                                    <div class="role-desc">系统管理、数据统计</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户名输入 -->
+                    <div class="input-group">
+                        <input type="text" name="username" placeholder="学号/工号/邮箱" required autocomplete="username" aria-label="用户名">
+                    </div>
+                    
+                    <!-- 密码输入 -->
+                    <div class="input-group">
+                        <input type="password" name="password" id="passwordInput" placeholder="密码" required autocomplete="current-password" aria-label="密码">
+                    </div>
+                    
+                    <!-- 辅助选项 -->
+                    <div class="form-options">
+                        <label>
+                            <input type="checkbox" name="remember" id="rememberMe">
+                            记住我
+                        </label>
+                        <a href="#" onclick="showForgotPassword()">忘记密码？</a>
+                    </div>
+                    
+                    <!-- 登录按钮 -->
+                    <button type="submit" class="btn-primary">登录</button>
+                    
+                    <!-- 第三方登录 -->
+                    <div class="divider">或通过以下方式登录</div>
+                    <div class="social-login">
+                        <button type="button" class="btn-outline" onclick="socialLogin('wechat')">
+                            <span>💬</span>
+                            微信
+                        </button>
+                        <button type="button" class="btn-outline" onclick="socialLogin('work_wechat')">
+                            <span>🏢</span>
+                            企业微信
+                        </button>
+                    </div>
+                    
+                    <!-- 注册引导 -->
+                    <div class="register-hint">
+                        没有账号？<a href="#" onclick="showRegister()">立即注册</a>
+                    </div>
+                </form>
+                
+                <!-- AI助手提示 -->
+                <div class="ai-hint">
+                    <span class="ai-icon">🤖</span>
+                    <span>登录后体验AI编程助手</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="js/app.js"></script>
+    
+    <!-- 角色选择内联脚本 -->
+    <script>
+        // 选择角色函数（内联确保可用）
+        function selectRole(element) {
+            // 移除所有选中状态
+            document.querySelectorAll('.role-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // 添加选中状态
+            element.classList.add('selected');
+            
+            // 更新全局变量
+            if (typeof currentRole !== 'undefined') {
+                currentRole = element.dataset.role;
+            }
+            
+            // 更新用户名placeholder
+            const usernameInput = document.querySelector('input[name="username"]');
+            if (usernameInput) {
+                const placeholders = {
+                    'student': '学号/邮箱',
+                    'teacher': '工号/邮箱',
+                    'admin': '管理员账号/邮箱'
+                };
+                usernameInput.placeholder = placeholders[element.dataset.role];
+            }
+            
+            // 显示选中提示
+            const roleNames = {
+                'student': '学生',
+                'teacher': '教师',
+                'admin': '管理员'
+            };
+            
+            // 创建临时提示（不依赖showNotification）
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 20px;background:#475569;color:#fff;border-radius:8px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:opacity 0.3s;';
+            toast.innerHTML = `<span style="margin-right:8px;">✓</span>已选择${roleNames[element.dataset.role]}角色`;
+            document.body.appendChild(toast);
+            
+            // 3秒后自动消失
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

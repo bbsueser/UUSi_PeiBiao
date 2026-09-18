@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户工作台 - 智联网综合实践平台</title>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* 工作台页面特定样式 */
+        .hero-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+        }
+
+        .hero-content h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+        }
+
+        .hero-content p {
+            font-size: var(--font-size-base);
+            color: var(--text-body);
+            line-height: var(--line-height-relaxed);
+        }
+
+        .highlight-text {
+            color: #F59E0B;
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .btn-hero {
+            padding: var(--space-2) var(--space-4);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .btn-hero:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-hero-outline {
+            padding: var(--space-2) var(--space-4);
+            background: white;
+            color: var(--primary-blue);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .btn-hero-outline:hover {
+            background: var(--bg-body);
+        }
+
+        /* 课程区域 */
+        .courses-section {
+            margin-bottom: var(--space-4);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+        }
+
+        .section-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .section-icon {
+            font-size: 20px;
+        }
+
+        .courses-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-4);
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+        }
+
+        .course-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-slow) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+        }
+
+        .course-card.completed::before {
+            background: linear-gradient(180deg, var(--success) 0%, #059669 100%);
+        }
+
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+
+        .course-header {
+            margin-bottom: var(--space-2);
+        }
+
+        .course-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            line-height: var(--line-height-tight);
+            margin-bottom: var(--space-1);
+        }
+
+        .course-meta {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            line-height: var(--line-height-relaxed);
+        }
+
+        .course-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--space-2);
+            padding-top: var(--space-2);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .course-status {
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .status-progress {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .course-time {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        /* AI智慧学伴卡片 */
+        .ai-assistant-card {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 8px 28px rgba(71, 85, 105, 0.3);
+            min-height: 250px;
+        }
+
+        .ai-header h3 {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-2);
+        }
+
+        .ai-description {
+            font-size: var(--font-size-sm);
+            line-height: var(--line-height-relaxed);
+            opacity: 0.95;
+            margin-bottom: var(--space-3);
+            flex: 1;
+        }
+
+        .ai-btn {
+            padding: var(--space-2) var(--space-4);
+            background: white;
+            color: var(--primary-blue);
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .ai-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        }
+
+        /* 考试列表和公告区域 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .view-all {
+            color: var(--primary-blue);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: gap var(--duration-base) ease;
+        }
+
+        .view-all:hover {
+            gap: var(--space-1);
+        }
+
+        .exam-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .exam-item {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+        }
+
+        .exam-item:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+
+        .exam-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .exam-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(24, 144, 255, 0.1);
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-blue);
+        }
+
+        .exam-info h3 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+
+        .exam-time {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .exam-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .exam-readers {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .enter-btn {
+            padding: var(--space-2) var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            box-shadow: 0 2px 8px rgba(71, 85, 105, 0.3);
+        }
+
+        .enter-btn:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(71, 85, 105, 0.4);
+        }
+
+        /* 公告栏 */
+        .announcements-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+        }
+
+        .announcement-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .announcement-item {
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .announcement-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .announcement-content h4 {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            margin-bottom: 4px;
+            line-height: var(--line-height-relaxed);
+        }
+
+        .announcement-date {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        /* 用户信息 */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .user-meta {
+            font-size: var(--font-size-xs);
+            opacity: 0.8;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .courses-layout,
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .courses-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .ai-assistant-card {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--space-3);
+            }
+            
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .exam-item {
+                flex-direction: column;
+                gap: var(--space-2);
+                align-items: flex-start;
+            }
+            
+            .exam-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="nav-brand-icon">E</div>
+            <span class="nav-brand-text">智联网综合实践平台</span>
+        </div>
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-link active">首页</a>
+            <a href="experiment-hall.html" class="nav-link">实验大厅</a>
+            <a href="exam-hall.html" class="nav-link">考试中心</a>
+            <a href="profile.html" class="nav-link">个人中心</a>
+        </div>
+        <div class="user-info">
+            <div class="user-details">
+                <div class="user-name">魏同学</div>
+                <div class="user-meta">2024级 计算机学院</div>
+            </div>
+            <div class="user-avatar">魏</div>
+        </div>
+    </header>
+
+    <!-- 应用布局 -->
+    <div class="app-layout">
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-item active" data-page="dashboard">
+                    <span class="sidebar-icon">📊</span>
+                    我的工作台
+                </a>
+                <a href="ai-assistant.html" class="sidebar-item" data-page="ai-assistant">
+                    <span class="sidebar-icon">🤖</span>
+                    AI学习助手
+                </a>
+                <a href="experiment-hall.html" class="sidebar-item" data-page="experiment-hall">
+                    <span class="sidebar-icon">🔬</span>
+                    实验大厅
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="simulation">
+                    <span class="sidebar-icon">💻</span>
+                    虚拟仿真实验
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="research">
+                    <span class="sidebar-icon">☁️</span>
+                    科研云服务
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="design">
+                    <span class="sidebar-icon">🎨</span>
+                    创意设计
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="embedded">
+                    <span class="sidebar-icon">🔧</span>
+                    嵌入式实训
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="algorithm">
+                    <span class="sidebar-icon">⚙️</span>
+                    算法演练
+                </a>
+                <a href="exam-hall.html" class="sidebar-item" data-page="exam-hall">
+                    <span class="sidebar-icon">📝</span>
+                    考场大厅
+                </a>
+                <a href="profile.html" class="sidebar-item" data-page="profile">
+                    <span class="sidebar-icon">👤</span>
+                    个人中心
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 欢迎横幅 -->
+            <section class="hero-section">
+                <div class="hero-content">
+                    <h1>你好，魏同学 👋</h1>
+                    <p>欢迎回到智慧学习平台。今日有 <span class="highlight-text">2场考试</span> 待提交，1个新实验课程。</p>
+                </div>
+                <div class="hero-actions">
+                    <button class="btn-hero">
+                        <span>✨</span>
+                        开始复习
+                    </button>
+                    <button class="btn-hero-outline">查看日程</button>
+                </div>
+            </section>
+
+            <!-- 课程区域 -->
+            <section class="courses-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">📚</span>
+                        我正在学习的课程
+                    </h2>
+                </div>
+
+                <div class="courses-layout">
+                    <!-- 左侧：课程网格 -->
+                    <div class="courses-grid">
+                        <!-- 课程卡片 1 -->
+                        <article class="course-card">
+                            <div class="course-header">
+                                <h3 class="course-title">操作系统原理: 进程调度仿真</h3>
+                                <div class="course-meta">
+                                    进程调度 · 优先级抢占模拟
+                                </div>
+                            </div>
+                            <div class="course-footer">
+                                <span class="course-status status-progress">进行中</span>
+                                <span class="course-time">2H 前更新</span>
+                            </div>
+                        </article>
+
+                        <!-- 课程卡片 2 -->
+                        <article class="course-card completed">
+                            <div class="course-header">
+                                <h3 class="course-title">数据库原理: SQL 性能实战</h3>
+                                <div class="course-meta">
+                                    B+ 树索引分析 · 执行计划可视化
+                                </div>
+                            </div>
+                            <div class="course-footer">
+                                <span class="course-status status-completed">已完成</span>
+                                <span class="course-time">2H 前更新</span>
+                            </div>
+                        </article>
+                    </div>
+
+                    <!-- 右侧：AI智慧学伴大卡片 -->
+                    <div class="ai-assistant-card">
+                        <div class="ai-header">
+                            <h3>智慧学伴 AI</h3>
+                        </div>
+                        <div class="ai-description">
+                            随时待命，帮助您快速掌握关键知识点与知识框架。
+                        </div>
+                        <button class="ai-btn">发起对话 START</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 考试列表和公告区域 -->
+            <div class="content-grid">
+                <!-- 考试列表 -->
+                <section class="exams-section">
+                    <div class="section-header">
+                        <h2 class="section-title">即将开始的考试</h2>
+                        <a href="exam-hall.html" class="view-all">查看全部 ALL &gt;</a>
+                    </div>
+
+                    <div class="exam-list">
+                        <div class="exam-item">
+                            <div class="exam-left">
+                                <div class="exam-icon">网</div>
+                                <div class="exam-info">
+                                    <h3>计算机网络期中评估</h3>
+                                    <p class="exam-time">14:00 - 15:30</p>
+                                </div>
+                            </div>
+                            <div class="exam-right">
+                                <span class="exam-readers">48 名已读</span>
+                                <button class="enter-btn">进入考场</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 公告栏 -->
+                <section class="announcements-section">
+                    <div class="section-header">
+                        <h2 class="section-title">公告通知</h2>
+                    </div>
+
+                    <div class="announcement-list">
+                        <div class="announcement-item">
+                            <div class="announcement-content">
+                                <h4>系统更新：知识库离线导入功能已上线。</h4>
+                                <p class="announcement-date">May 30, 2026</p>
+                            </div>
+                        </div>
+                        <div class="announcement-item">
+                            <div class="announcement-content">
+                                <h4>新课程上线：人工智能导论实验模块。</h4>
+                                <p class="announcement-date">May 28, 2026</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="js/app.js"></script>
+</body>
+</html>

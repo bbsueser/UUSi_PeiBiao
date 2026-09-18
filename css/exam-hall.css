@@ -1,0 +1,500 @@
+/* ========== 考试大厅页面专用样式 ========== */
+
+/* ========== 页面标题区 ========== */
+.page-header-section {
+    margin-bottom: 28px;
+}
+
+.page-main-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-title);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.page-main-subtitle {
+    font-size: 15px;
+    color: var(--text-body);
+    line-height: 1.6;
+}
+
+/* ========== 考试类型卡片 ========== */
+.exam-types-section {
+    margin-bottom: 28px;
+}
+
+.exam-type-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.exam-type-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.exam-type-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    transition: all 0.3s ease;
+}
+
+.exam-type-card.regular::before {
+    background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%);
+}
+
+.exam-type-card.certification::before {
+    background: linear-gradient(180deg, #10B981 0%, #059669 100%);
+}
+
+.exam-type-card.competition::before {
+    background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+}
+
+.exam-type-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: transparent;
+}
+
+.exam-type-card:hover::before {
+    width: 8px;
+}
+
+.exam-type-card.active {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+}
+
+.exam-type-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+}
+
+.exam-type-card.regular .exam-type-icon {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+}
+
+.exam-type-card.certification .exam-type-icon {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+}
+
+.exam-type-card.competition .exam-type-icon {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+}
+
+.exam-type-info {
+    flex: 1;
+}
+
+.exam-type-info h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-title);
+    margin-bottom: 6px;
+}
+
+.exam-type-info p {
+    font-size: 13px;
+    color: var(--text-body);
+    line-height: 1.5;
+}
+
+.exam-type-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-color);
+    border-radius: var(--radius-md);
+}
+
+.count-number {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent-red);
+}
+
+.count-label {
+    font-size: 12px;
+    color: var(--text-body);
+    font-weight: 500;
+}
+
+/* ========== 搜索栏 ========== */
+.search-section {
+    margin-bottom: 24px;
+}
+
+.search-bar-container {
+    background: var(--card-bg);
+    padding: 20px 24px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.search-filters {
+    flex: 1;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.search-select {
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: var(--bg-color);
+    color: var(--text-title);
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    min-width: 140px;
+}
+
+.search-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: var(--bg-color);
+    color: var(--text-title);
+    font-family: inherit;
+    transition: all 0.25s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+}
+
+.search-btn {
+    padding: 10px 24px;
+    background: var(--accent-red);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-btn:hover {
+    background: var(--accent-red-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+/* ========== 标签筛选 ========== */
+.filter-tags-section {
+    margin-bottom: 24px;
+}
+
+.filter-tags {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    padding: 10px 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    color: var(--text-body);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: inherit;
+    font-weight: 500;
+}
+
+.filter-tag:hover {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+}
+
+.filter-tag.active {
+    background: var(--accent-red);
+    border-color: var(--accent-red);
+    color: white;
+    font-weight: 600;
+}
+
+/* ========== 考试列表 ========== */
+.exam-list-section {
+    margin-bottom: 36px;
+}
+
+.exam-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.exam-list-item {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.25s ease;
+}
+
+.exam-list-item:hover {
+    box-shadow: var(--shadow-md);
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+.exam-list-item.hidden {
+    display: none;
+}
+
+.exam-list-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+}
+
+.exam-type-badge {
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.exam-type-badge.regular {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: #1D4ED8;
+}
+
+.exam-type-badge.certification {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    color: #059669;
+}
+
+.exam-type-badge.competition {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #D97706;
+}
+
+.exam-list-info {
+    flex: 1;
+}
+
+.exam-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-title);
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.exam-details {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.exam-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-body);
+}
+
+.detail-icon {
+    font-size: 15px;
+}
+
+.exam-list-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+.exam-status {
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-ongoing {
+    background: #FEE2E2;
+    color: var(--accent-red);
+}
+
+.status-upcoming {
+    background: #DBEAFE;
+    color: #1D4ED8;
+}
+
+.status-ended {
+    background: #F3F4F6;
+    color: var(--text-body);
+}
+
+.enter-exam-btn {
+    padding: 12px 28px;
+    background: var(--text-title);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.enter-exam-btn:hover:not(:disabled) {
+    background: #374151;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
+}
+
+.enter-exam-btn:disabled {
+    background: var(--text-body);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.enter-exam-btn.secondary {
+    background: transparent;
+    color: var(--accent-red);
+    border: 2px solid var(--accent-red);
+}
+
+.enter-exam-btn.secondary:hover {
+    background: var(--accent-red);
+    color: white;
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 1280px) {
+    .exam-type-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .exam-details {
+        gap: 14px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .exam-type-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-bar-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-filters {
+        flex-direction: column;
+    }
+    
+    .search-select,
+    .search-input {
+        width: 100%;
+    }
+    
+    .search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .exam-list-item {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
+    .exam-list-left {
+        width: 100%;
+    }
+    
+    .exam-list-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-tags {
+        gap: 8px;
+    }
+    
+    .filter-tag {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    
+    .exam-details {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .exam-list-right {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .enter-exam-btn {
+        width: 100%;
+        text-align: center;
+    }
+}

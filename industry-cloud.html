@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行业云平台 - 智慧教学实验平台</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* 行业云平台专属样式 - 深色风格 */
+        
+        body {
+            background: var(--bg-body);
+        }
+        
+        /* 主布局 */
+        .industry-layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            min-height: calc(100vh - 60px);
+        }
+        
+        /* 行业云侧边栏 */
+        .industry-sidebar {
+            background: linear-gradient(180deg, var(--bg-left-panel) 0%, var(--bg-left-panel-end) 100%);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 60px;
+        }
+        
+        .sidebar-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            padding: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sidebar-group {
+            padding: 8px 0;
+        }
+        
+        .sidebar-group-title {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-group-title:hover {
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .sidebar-item {
+            padding: 10px 16px 10px 36px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sidebar-item:hover {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .sidebar-item.active {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+            border-left: 3px solid #10b981;
+        }
+        
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 16px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-return {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        
+        .btn-return:hover {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        
+        /* 模块内容区 */
+        .module-content {
+            padding: 24px;
+            background: var(--bg-body);
+            min-height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+        
+        .module-header {
+            margin-bottom: 24px;
+        }
+        
+        .module-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-title);
+            margin-bottom: 8px;
+        }
+        
+        .module-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* 统计卡片 */
+        .stat-cards-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+            border: 1px solid var(--border-light);
+        }
+        
+        .stat-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .stat-card-icon.green { background: rgba(16, 185, 129, 0.1); }
+        .stat-card-icon.blue { background: rgba(59, 130, 246, 0.1); }
+        .stat-card-icon.orange { background: rgba(245, 158, 11, 0.1); }
+        .stat-card-icon.red { background: rgba(239, 68, 68, 0.1); }
+        
+        .stat-card-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .stat-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #10b981;
+        }
+        
+        .stat-card-value.warning { color: #f59e0b; }
+        .stat-card-value.danger { color: #ef4444; }
+        .stat-card-value.info { color: #3b82f6; }
+        
+        /* 内容卡片 */
+        .content-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            margin-bottom: 16px;
+        }
+        
+        .content-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-title);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        /* 场景联动样式 */
+        .scene-content {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
+        }
+        
+        .scene-rule-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .scene-rule-card:hover {
+            border-color: #10b981;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+        }
+        
+        .scene-rule-card.active {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .scene-rule-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-title);
+        }
+        
+        .scene-rule-status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        
+        .scene-rule-status.enabled {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .scene-rule-status.disabled {
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--text-secondary);
+        }
+        
+        .scene-rule-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-top: 8px;
+        }
+        
+        /* 标签页 */
+        .tab-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .tab-item {
+            padding: 10px 20px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            background: var(--bg-card);
+            transition: all 0.2s;
+        }
+        
+        .tab-item:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        .tab-item.active {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #10b981;
+            font-weight: 500;
+        }
+        
+        /* 表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background: var(--bg-body);
+            padding: 12px 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .data-table td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--text-body);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .data-table tr:hover {
+            background: rgba(16, 185, 129, 0.02);
+        }
+        
+        /* 按钮样式 */
+        .btn-primary {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        /* 输入框 */
+        .form-input {
+            padding: 10px 14px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-body);
+            background: var(--bg-card);
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        /* 状态标签 */
+        .status-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        
+        .status-tag.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .status-tag.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        
+        .status-tag.danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .status-tag.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        /* 等级标签 */
+        .level-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        
+        .level-tag.urgent {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .level-tag.important {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+        
+        .level-tag.normal {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+        
+        /* 面包屑导航 */
+        .breadcrumb {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        
+        .breadcrumb a {
+            color: #10b981;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 平台状态 */
+        .platform-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--text-secondary);
+        }
+        
+        .platform-status.connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .platform-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        
+        /* 隐藏模块 */
+        .module-hidden {
+            display: none;
+        }
+        
+        /* 星期选择器 */
+        .weekday-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .weekday-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            background: var(--bg-card);
+            transition: all 0.2s;
+        }
+        
+        .weekday-btn:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        .weekday-btn.selected {
+            background: #10b981;
+            color: #ffffff;
+            border-color: #10b981;
+        }
+        
+        /* 任务摘要卡片 */
+        .task-summary-card {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-top: 16px;
+        }
+        
+        .task-summary-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-title);
+        }
+        
+        .task-summary-content {
+            font-size: 13px;
+            color: var(--text-body);
+            line-height: 2;
+        }
+        
+        /* 快捷操作 */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+        
+        .quick-action-btn {
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #10b981;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-action-btn:hover {
+            background: #10b981;
+            color: #ffffff;
+        }
+        
+        /* 事件详情面板 */
+        .event-detail-panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+        }
+        
+        /* 代码块 */
+        .code-block {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 12px;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            line-height: 1.8;
+        }
+        
+        /* 事件内容布局 */
+        .event-content {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 16px;
+        }
+        
+        /* 数据仿真内容 */
+        .simulation-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        /* 设备任务调度内容 */
+        .schedule-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="nav-brand-icon">📚</div>
+            <span class="nav-brand-text">智慧教育综合实训平台</span>
+        </div>
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-link">首页</a>
+            <a href="course-hall.html" class="nav-link">课程大厅</a>
+            <a href="experiment-hall.html" class="nav-link active">实验大厅</a>
+            <a href="exam-hall.html" class="nav-link">考试大厅</a>
+            <a href="task-management.html" class="nav-link">实验任务</a>
+            <a href="ai-assistant.html" class="nav-link">AI技能助手</a>
+        </nav>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 13px; color: rgba(255,255,255,0.8);">魏同学 | STUDENT</span>
+            <div style="font-size: 20px;">👤</div>
+            <div style="font-size: 20px;">🔔</div>
+            <a href="index.html" style="font-size: 20px; color: rgba(255,255,255,0.8);">🚪</a>
+        </div>
+    </header>
+    
+    <!-- 主布局 -->
+    <div class="industry-layout">
+        <!-- 左侧行业云导航 -->
+        <aside class="industry-sidebar">
+            <div class="sidebar-header">
+                <span>☁️</span>
+                行业云平台控制台
+            </div>
+            
+            <div class="sidebar-group">
+                <div class="sidebar-group-title">
+                    📊 平台总览
+                </div>
+            </div>
+            
+            <div class="sidebar-group">
+                <div class="sidebar-group-title">
+                    📡 设备接入 ▼
+                </div>
+                <div class="sidebar-item">📦 产品管理</div>
+                <div class="sidebar-item">🔧 设备管理</div>
+                <div class="sidebar-item">🏷️ 资产管理</div>
+            </div>
+            
+            <div class="sidebar-group">
+                <div class="sidebar-group-title">
+                    🚀 应用接入 ▼
+                </div>
+                <div class="sidebar-item">📁 项目管理</div>
+                <div class="sidebar-item">🎨 2D应用设计</div>
+                <div class="sidebar-item">🎲 3D应用设计</div>
+                <div class="sidebar-item">🔬 虚拟仿真</div>
+            </div>
+            
+            <div class="sidebar-group">
+                <div class="sidebar-group-title">
+                    🔧 设备运维 ▼
+                </div>
+                <div class="sidebar-item">🐛 设备调试</div>
+                <div class="sidebar-item active" onclick="switchModule('simulation')">📈 数据仿真</div>
+                <div class="sidebar-item">🔌 接口调试</div>
+            </div>
+            
+            <div class="sidebar-group">
+                <div class="sidebar-group-title">
+                    📋 设备任务 ▼
+                </div>
+                <div class="sidebar-item" onclick="switchModule('schedule')">📅 任务管理</div>
+                <div class="sidebar-item">📝 任务日志</div>
+            </div>
+            
+            <div class="sidebar-group">
+                <div class="sidebar-group-title">
+                    🔔 事件中心 ▼
+                </div>
+                <div class="sidebar-item" onclick="switchModule('event')">📨 事件管理</div>
+                <div class="sidebar-item">⚡ 触发器管理</div>
+                <div class="sidebar-item" onclick="switchModule('scene')">🔗 场景联动</div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="btn-return" onclick="goBackToExperiment()">
+                    ← 返回课程实训
+                </button>
+            </div>
+        </aside>
+        
+        <!-- 主内容区 -->
+        <div class="module-content">
+            <!-- 模块1：场景联动 -->
+            <div id="sceneModule" class="module-hidden">
+                <div class="breadcrumb">
+                    <a href="dashboard.html">首页</a> > 场景联动
+                    <span class="platform-status connected" style="float: right;">
+                        <span class="dot"></span>
+                        平台通信: 已连接
+                    </span>
+                </div>
+                
+                <div class="module-header">
+                    <div class="module-title">场景联动</div>
+                    <div class="module-desc">配置设备之间的联动规则，当触发条件满足时自动执行预设动作。</div>
+                </div>
+                
+                <!-- 统计卡片 -->
+                <div class="stat-cards-row">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">场景联动总数</div>
+                            <div class="stat-card-value">4</div>
+                        </div>
+                        <div class="stat-card-icon green">🔗</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">已启用</div>
+                            <div class="stat-card-value">3</div>
+                        </div>
+                        <div class="stat-card-icon blue">✅</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">今日触发</div>
+                            <div class="stat-card-value">8</div>
+                        </div>
+                        <div class="stat-card-icon orange">⚡</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">待处理事件</div>
+                            <div class="stat-card-value warning">1</div>
+                        </div>
+                        <div class="stat-card-icon red">⚠️</div>
+                    </div>
+                </div>
+                
+                <!-- 主内容 -->
+                <div class="scene-content">
+                    <!-- 左侧：规则列表 -->
+                    <div class="content-card">
+                        <div class="content-card-title">联动规则列表</div>
+                        
+                        <div class="scene-rule-card active" onclick="selectRule(1)">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="scene-rule-name">温室高温自动通风</div>
+                                <span class="scene-rule-status enabled">已启用</span>
+                            </div>
+                            <div class="scene-rule-info">
+                                场景：智慧温室<br>
+                                触发方式：设备数据触发
+                            </div>
+                        </div>
+                        
+                        <div class="scene-rule-card" onclick="selectRule(2)">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="scene-rule-name">每日定时补光</div>
+                                <span class="scene-rule-status enabled">已启用</span>
+                            </div>
+                            <div class="scene-rule-info">
+                                场景：智慧温室<br>
+                                触发方式：定时触发
+                            </div>
+                        </div>
+                        
+                        <div class="scene-rule-card" onclick="selectRule(3)">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="scene-rule-name">网关离线告警</div>
+                                <span class="scene-rule-status enabled">已启用</span>
+                            </div>
+                            <div class="scene-rule-info">
+                                场景：设备运维<br>
+                                触发方式：设备状态触发
+                            </div>
+                        </div>
+                        
+                        <div class="scene-rule-card" onclick="selectRule(4)">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="scene-rule-name">门禁异常事件联动</div>
+                                <span class="scene-rule-status disabled">未启用</span>
+                            </div>
+                            <div class="scene-rule-info">
+                                场景：智慧园区<br>
+                                触发方式：设备事件触发
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧：配置面板 -->
+                    <div class="content-card">
+                        <div class="content-card-title">规则配置详情</div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <div style="font-size: 14px; font-weight: 500; color: var(--text-title); margin-bottom: 12px;">条件关系</div>
+                            <div style="display: flex; gap: 24px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="conditionRelation" value="any">
+                                    <span style="font-size: 13px; color: var(--text-secondary);">满足部分条件执行</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="conditionRelation" value="all" checked>
+                                    <span style="font-size: 13px; color: #10b981; font-weight: 500;">满足全部条件执行</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <div style="font-size: 14px; font-weight: 500; color: var(--text-title); margin-bottom: 12px;">触发方式</div>
+                            <div class="tab-group">
+                                <div class="tab-item active">设备数据触发</div>
+                                <div class="tab-item">定时触发</div>
+                                <div class="tab-item">设备状态触发</div>
+                                <div class="tab-item">设备事件触发</div>
+                            </div>
+                            
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>设备</th>
+                                        <th>数据项</th>
+                                        <th>比较方式</th>
+                                        <th>阈值</th>
+                                        <th>单位</th>
+                                        <th>持续时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>温湿度传感器</td>
+                                        <td>temperature</td>
+                                        <td>大于</td>
+                                        <td>30</td>
+                                        <td>℃</td>
+                                        <td>60秒</td>
+                                        <td><a href="#" style="color: #ef4444;">删除</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>光照传感器</td>
+                                        <td>light</td>
+                                        <td>小于</td>
+                                        <td>300</td>
+                                        <td>Lux</td>
+                                        <td>30秒</td>
+                                        <td><a href="#" style="color: #ef4444;">删除</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <button class="btn-secondary" style="margin-top: 12px;">+ 添加设备数据条件</button>
+                        </div>
+                        
+                        <div>
+                            <div style="font-size: 14px; font-weight: 500; color: var(--text-title); margin-bottom: 12px;">联动触发记录</div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>记录ID</th>
+                                        <th>触发时间</th>
+                                        <th>规则名称</th>
+                                        <th>触发方式</th>
+                                        <th>执行动作</th>
+                                        <th>执行结果</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>rd-1</td>
+                                        <td>10:42:20</td>
+                                        <td>温室高温自动通风</td>
+                                        <td>设备数据触发</td>
+                                        <td>开启风机</td>
+                                        <td><span class="status-tag success">成功</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>rd-2</td>
+                                        <td>08:00:00</td>
+                                        <td>每日定时补光</td>
+                                        <td>定时触发</td>
+                                        <td>开启补光灯</td>
+                                        <td><span class="status-tag success">成功</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 模块2：数据仿真 -->
+            <div id="simulationModule">
+                <div class="breadcrumb">
+                    <a href="dashboard.html">首页</a> > 数据仿真
+                </div>
+                
+                <div class="module-header">
+                    <div class="module-title">数据仿真</div>
+                    <div class="module-desc">以设备为单位配置物模型属性取值规则，用于产生设备上报数据并查看任务执行结果。</div>
+                </div>
+                
+                <!-- 统计卡片 -->
+                <div class="stat-cards-row">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">仿真任务总数</div>
+                            <div class="stat-card-value">3</div>
+                        </div>
+                        <div class="stat-card-icon green">📊</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">运行中任务</div>
+                            <div class="stat-card-value info">1</div>
+                        </div>
+                        <div class="stat-card-icon blue">🔄</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">已选设备</div>
+                            <div class="stat-card-value">2</div>
+                        </div>
+                        <div class="stat-card-icon orange">🔧</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">今日产生数据</div>
+                            <div class="stat-card-value">128</div>
+                        </div>
+                        <div class="stat-card-icon green">📈</div>
+                    </div>
+                </div>
+                
+                <!-- 主内容 -->
+                <div class="simulation-content">
+                    <!-- 设备选择 -->
+                    <div class="content-card">
+                        <div class="content-card-title">设备选择</div>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                            <button class="btn-secondary">全选</button>
+                            <button class="btn-secondary">反选</button>
+                            <button class="btn-secondary">刷新状态</button>
+                        </div>
+                        
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>选择</th>
+                                    <th>设备名称</th>
+                                    <th>设备编号</th>
+                                    <th>所属产品</th>
+                                    <th>设备类型</th>
+                                    <th>在线状态</th>
+                                    <th>物模型数量</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox" checked></td>
+                                    <td style="font-weight: 500;">温湿度传感器</td>
+                                    <td>temp01</td>
+                                    <td>智慧温室传感器产品</td>
+                                    <td>传感器</td>
+                                    <td><span class="status-tag success">在线</span></td>
+                                    <td>2</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" checked></td>
+                                    <td style="font-weight: 500;">光照传感器</td>
+                                    <td>light01</td>
+                                    <td>智慧温室传感器产品</td>
+                                    <td>传感器</td>
+                                    <td><span class="status-tag success">在线</span></td>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td style="font-weight: 500;">二氧化碳传感器</td>
+                                    <td>co201</td>
+                                    <td>智慧温室传感器产品</td>
+                                    <td>传感器</td>
+                                    <td><span class="status-tag success">在线</span></td>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td style="font-weight: 500;">Modbus网关</td>
+                                    <td>gw01</td>
+                                    <td>智慧网关产品</td>
+                                    <td>网关</td>
+                                    <td><span class="status-tag success">在线</span></td>
+                                    <td>3</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 取值方式 -->
+                    <div class="content-card">
+                        <div class="content-card-title">取值方式配置</div>
+                        
+                        <div class="tab-group">
+                            <div class="tab-item active">固定值</div>
+                            <div class="tab-item">随机值</div>
+                            <div class="tab-item">循环值</div>
+                        </div>
+                        
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; padding: 12px; background: var(--bg-body); border-radius: 6px;">
+                            每次执行任务时，上传固定配置的常量数值
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 120px; font-size: 13px; color: var(--text-secondary); text-align: right;">temperature:</div>
+                                <input type="text" value="26" class="form-input" style="flex: 1;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 120px; font-size: 13px; color: var(--text-secondary); text-align: right;">humidity:</div>
+                                <input type="text" value="60" class="form-input" style="flex: 1;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 120px; font-size: 13px; color: var(--text-secondary); text-align: right;">light:</div>
+                                <input type="text" value="500" class="form-input" style="flex: 1;">
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 14px; font-weight: 500; color: var(--text-title); margin: 20px 0 12px;">执行方式</div>
+                        <div class="tab-group">
+                            <div class="tab-item">单次执行</div>
+                            <div class="tab-item active">循环执行</div>
+                            <div class="tab-item">定时执行</div>
+                        </div>
+                        
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
+                            点击执行后，持续产生设备属性数据。
+                        </div>
+                        
+                        <button class="btn-primary">立即执行</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 模块3：设备任务调度 -->
+            <div id="scheduleModule" class="module-hidden">
+                <div class="breadcrumb">
+                    <a href="dashboard.html">首页</a> > 设备任务调度
+                </div>
+                
+                <div class="module-header">
+                    <div class="module-title">设备任务调度</div>
+                    <div class="module-desc">按设备或产品配置属性下发、服务调用任务，并支持单日、每日、每周、循环间隔等定时执行方式。</div>
+                </div>
+                
+                <!-- 统计卡片 -->
+                <div class="stat-cards-row">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">任务总数</div>
+                            <div class="stat-card-value">4</div>
+                        </div>
+                        <div class="stat-card-icon green">📋</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">启用任务</div>
+                            <div class="stat-card-value">3</div>
+                        </div>
+                        <div class="stat-card-icon blue">✅</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">今日执行</div>
+                            <div class="stat-card-value">16</div>
+                        </div>
+                        <div class="stat-card-icon orange">⚡</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">执行异常</div>
+                            <div class="stat-card-value danger">1</div>
+                        </div>
+                        <div class="stat-card-icon red">⚠️</div>
+                    </div>
+                </div>
+                
+                <!-- 主内容 -->
+                <div class="schedule-content">
+                    <!-- 任务对象选择 -->
+                    <div class="content-card">
+                        <div class="content-card-title">任务对象</div>
+                        
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">选择任务执行的目标对象类型</div>
+                        
+                        <div class="tab-group">
+                            <div class="tab-item">设备</div>
+                            <div class="tab-item active">产品</div>
+                        </div>
+                        
+                        <table class="data-table" style="margin-top: 16px;">
+                            <thead>
+                                <tr>
+                                    <th>选择</th>
+                                    <th>产品名称</th>
+                                    <th>产品类型</th>
+                                    <th>节点类型</th>
+                                    <th>通信协议</th>
+                                    <th>设备数量</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td style="font-weight: 500;">智慧风机控制产品</td>
+                                    <td>执行器产品</td>
+                                    <td>网关子设备</td>
+                                    <td>Modbus</td>
+                                    <td>2</td>
+                                    <td><span class="status-tag success">已启用</span></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td style="font-weight: 500;">智慧温室传感器产品</td>
+                                    <td>传感器产品</td>
+                                    <td>直连设备</td>
+                                    <td>MQTT</td>
+                                    <td>3</td>
+                                    <td><span class="status-tag success">已启用</span></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td style="font-weight: 500;">智慧网关产品</td>
+                                    <td>网关产品</td>
+                                    <td>网关设备</td>
+                                    <td>MQTT</td>
+                                    <td>1</td>
+                                    <td><span class="status-tag success">已启用</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 定时类型配置 -->
+                    <div class="content-card">
+                        <div class="content-card-title">定时类型配置</div>
+                        
+                        <div class="tab-group">
+                            <div class="tab-item">单日</div>
+                            <div class="tab-item">每日</div>
+                            <div class="tab-item active">每周</div>
+                            <div class="tab-item">循环间隔</div>
+                        </div>
+                        
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">执行星期</div>
+                        <div class="weekday-selector">
+                            <div class="weekday-btn">周一</div>
+                            <div class="weekday-btn">周二</div>
+                            <div class="weekday-btn selected">周三</div>
+                            <div class="weekday-btn">周四</div>
+                            <div class="weekday-btn selected">周五</div>
+                            <div class="weekday-btn">周六</div>
+                            <div class="weekday-btn">周日</div>
+                        </div>
+                        
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">执行时间</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="time" value="18:00" class="form-input">
+                            <span style="font-size: 16px;">⏰</span>
+                        </div>
+                        
+                        <!-- 任务规则摘要 -->
+                        <div class="task-summary-card">
+                            <div class="task-summary-header">
+                                <span style="color: #10b981;">ⓘ</span>
+                                任务规则摘要
+                            </div>
+                            <div class="task-summary-content">
+                                执行时间：每周三、周五 <span style="color: #10b981; font-weight: 500;">18:00</span><br>
+                                执行效果：任务触发后，系统将向选定对象下发 'fanStatus = on'，并记录任务执行结果。
+                            </div>
+                        </div>
+                        
+                        <button class="btn-primary" style="margin-top: 16px;">创建任务</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 模块4：事件中心 -->
+            <div id="eventModule" class="module-hidden">
+                <div class="breadcrumb">
+                    <a href="dashboard.html">首页</a> > 事件中心
+                </div>
+                
+                <div class="module-header">
+                    <div class="module-title">事件中心</div>
+                    <div class="module-desc">统一管理设备触发事件，查看已同步到事件中心的物模型事件及处理记录。</div>
+                </div>
+                
+                <!-- 快捷操作 -->
+                <div class="quick-actions">
+                    <button class="quick-action-btn">触发温度过高事件</button>
+                    <button class="quick-action-btn">触发网关离线事件</button>
+                    <button class="quick-action-btn">触发CO₂超限事件</button>
+                    <button class="quick-action-btn">触发烟雾告警事件</button>
+                </div>
+                
+                <!-- 统计卡片 -->
+                <div class="stat-cards-row" style="grid-template-columns: repeat(6, 1fr);">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">事件总数</div>
+                            <div class="stat-card-value">6</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">今日新增</div>
+                            <div class="stat-card-value">6</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">待处理</div>
+                            <div class="stat-card-value warning">3</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">已处理</div>
+                            <div class="stat-card-value">2</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">已同步物模型</div>
+                            <div class="stat-card-value">5</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-card-label">紧急事件</div>
+                            <div class="stat-card-value danger">2</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 主内容 -->
+                <div class="event-content">
+                    <!-- 左侧：事件列表 -->
+                    <div class="content-card">
+                        <div class="content-card-title">事件列表</div>
+                        
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>触发时间</th>
+                                    <th>事件名称</th>
+                                    <th>事件来源</th>
+                                    <th>设备</th>
+                                    <th>事件等级</th>
+                                    <th>处理状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>10:45:20</td>
+                                    <td style="font-weight: 500;">温度过高事件</td>
+                                    <td>物模型事件</td>
+                                    <td>温湿度传感器</td>
+                                    <td><span class="level-tag important">重要</span></td>
+                                    <td><span class="status-tag warning">待处理</span></td>
+                                    <td><a href="#" style="color: #10b981;">查看</a></td>
+                                </tr>
+                                <tr>
+                                    <td>10:46:10</td>
+                                    <td style="font-weight: 500;">网关离线事件</td>
+                                    <td>物模型事件</td>
+                                    <td>Modbus网关</td>
+                                    <td><span class="level-tag urgent">紧急</span></td>
+                                    <td><span class="status-tag info">处理中</span></td>
+                                    <td><a href="#" style="color: #10b981;">查看</a></td>
+                                </tr>
+                                <tr>
+                                    <td>10:47:05</td>
+                                    <td style="font-weight: 500;">CO₂超限事件</td>
+                                    <td>物模型事件</td>
+                                    <td>二氧化碳传感器</td>
+                                    <td><span class="level-tag important">重要</span></td>
+                                    <td><span class="status-tag warning">待处理</span></td>
+                                    <td><a href="#" style="color: #10b981;">查看</a></td>
+                                </tr>
+                                <tr>
+                                    <td>10:48:30</td>
+                                    <td style="font-weight: 500;">风机状态变更</td>
+                                    <td>设备状态事件</td>
+                                    <td>风机</td>
+                                    <td><span class="level-tag normal">一般</span></td>
+                                    <td><span class="status-tag success">已处理</span></td>
+                                    <td><a href="#" style="color: #10b981;">查看</a></td>
+                                </tr>
+                                <tr>
+                                    <td>10:52:12</td>
+                                    <td style="font-weight: 500;">烟雾告警事件</td>
+                                    <td>物模型事件</td>
+                                    <td>烟雾传感器</td>
+                                    <td><span class="level-tag urgent">紧急</span></td>
+                                    <td><span class="status-tag warning">待处理</span></td>
+                                    <td><a href="#" style="color: #10b981;">查看</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 右侧：事件详情 -->
+                    <div class="event-detail-panel">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-light);">
+                            <div>
+                                <div style="font-size: 16px; font-weight: 600; color: var(--text-title);">温度过高事件 <span class="level-tag important">重要</span></div>
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">触发时间：10:45:20</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px;">
+                                <div style="color: var(--text-secondary);">设备名称</div>
+                                <div style="color: var(--text-title); font-weight: 500;">温湿度传感器</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px;">
+                                <div style="color: var(--text-secondary);">设备编号</div>
+                                <div style="color: var(--text-title); font-weight: 500;">temp01</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px;">
+                                <div style="color: var(--text-secondary);">所属产品</div>
+                                <div style="color: var(--text-title); font-weight: 500;">智慧温室传感器产品</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px;">
+                                <div style="color: var(--text-secondary);">同步状态</div>
+                                <div style="color: #10b981; font-weight: 500;">已同步</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px;">
+                                <div style="color: var(--text-secondary);">处理状态</div>
+                                <div style="color: #f59e0b; font-weight: 500;">待处理</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">触发条件</div>
+                            <div style="background: var(--bg-body); border-radius: 6px; padding: 12px; font-size: 13px; color: var(--text-body); font-family: 'Courier New', monospace;">
+                                temperature > 30 ℃
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">事件内容</div>
+                            <div style="font-size: 13px; color: var(--text-body); line-height: 1.6;">
+                                温湿度传感器上报温度 32.4℃，超过设定阈值 30 ℃。
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">处理建议</div>
+                            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 12px; font-size: 13px; color: #b45309; line-height: 1.6;">
+                                请检查温室通风设备状态，必要时开启风机。
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">原始数据</div>
+                            <div class="code-block">
+<pre>{
+  "deviceId": "temp01",
+  "event": "temperatureHigh",
+  "temperature": 32.4,
+  "humidity": 58,
+  "threshold": 30,
+  "time": "10:45:20"
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 模块切换
+        function switchModule(moduleName) {
+            // 隐藏所有模块
+            document.getElementById('sceneModule').classList.add('module-hidden');
+            document.getElementById('simulationModule').classList.add('module-hidden');
+            document.getElementById('scheduleModule').classList.add('module-hidden');
+            document.getElementById('eventModule').classList.add('module-hidden');
+            
+            // 显示指定模块
+            document.getElementById(moduleName + 'Module').classList.remove('module-hidden');
+            
+            // 更新侧边栏激活状态
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const activeItem = document.querySelector(`.sidebar-item[onclick="switchModule('${moduleName}')"]`);
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
+        }
+        
+        // 规则选择
+        function selectRule(ruleId) {
+            document.querySelectorAll('.scene-rule-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+        
+        // 返回实验大厅
+        function goBackToExperiment() {
+            window.location.href = 'experiment-hall.html';
+        }
+        
+        // 初始化：默认显示数据仿真模块
+        switchModule('simulation');
+    </script>
+</body>
+</html>

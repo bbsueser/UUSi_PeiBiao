@@ -1,0 +1,195 @@
+/* ========== 全局设计系统 (Design System) ========== */
+:root {
+    /* 配色方案 - 统一深蓝灰风格 (稳重专业) */
+    --bg-color: #F3F4F6;
+    --primary-color: #475569;
+    --primary-hover: #64748B;
+    --primary-active: #334155;
+    --accent-red: #EF4444;
+    --accent-red-dark: #DC2626;
+    --success-green: #10B981;
+    --success-green-dark: #059669;
+    
+    /* 深蓝灰主色调（与登录页一致） */
+    --primary-blue: #475569;
+    --primary-blue-hover: #64748B;
+    --primary-blue-active: #334155;
+    
+    /* 卡片和文字 */
+    --card-bg: #FFFFFF;
+    --text-title: #111827;
+    --text-body: #6B7280;
+    --text-light: #D1D5DB;
+    
+    /* 边框和阴影 */
+    --border-color: #E5E7EB;
+    --border-light: #F3F4F6;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    
+    /* 圆角 */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+    
+    /* 侧边栏 */
+    --sidebar-bg: #1F2937;
+    --sidebar-hover: rgba(255, 255, 255, 0.08);
+    --sidebar-active: rgba(255, 255, 255, 0.12);
+}
+
+/* ========== 基础重置 ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== 通用工具类 ========== */
+.page {
+    display: none;
+    min-height: 100vh;
+}
+
+.page.active {
+    display: block;
+}
+
+/* 按钮基础样式 */
+.btn {
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.25);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(24, 144, 255, 0.35);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success-green) 0%, var(--success-green-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.btn-success:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-title);
+    border: 2px solid var(--border-color);
+}
+
+.btn-outline:hover {
+    border-color: var(--text-title);
+    background: #F9FAFB;
+}
+
+.btn-white {
+    background: white;
+    color: var(--primary-color);
+}
+
+/* 输入框基础样式 */
+.input-field {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--text-title);
+    font-family: inherit;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.input-field::placeholder {
+    color: #9CA3AF;
+}
+
+/* 卡片基础样式 */
+.card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: transparent;
+}
+
+/* 状态指示器动画 */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success-green);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* 响应式断点参考 */
+@media (max-width: 1280px) {
+    html { font-size: 15px; }
+}
+
+@media (max-width: 1024px) {
+    html { font-size: 14px; }
+}
+
+@media (max-width: 768px) {
+    html { font-size: 13px; }
+}

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员工作台 - 智联网综合实践平台</title>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* 管理员工作台专用样式 - 仅保留页面特有的样式 */
+        
+        /* 统计卡片区域 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+        
+        .stat-icon.users { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); }
+        .stat-icon.courses { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+        .stat-icon.experiments { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+        .stat-icon.system { background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); }
+        
+        .stat-content h3 {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+        
+        .stat-content p {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+        
+        /* 系统管理区域 */
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        .management-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+        }
+        
+        .management-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .management-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+        
+        .management-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: var(--bg-body);
+        }
+        
+        .management-card-title {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+        
+        .management-card-content {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        .management-card-actions {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-3);
+        }
+        
+        .btn-management {
+            padding: var(--space-1) var(--space-2);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+        }
+        
+        .btn-management:hover {
+            background: var(--primary-blue-hover);
+        }
+        
+        /* 系统状态 */
+        .system-status {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            margin-bottom: var(--space-4);
+        }
+        
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+        }
+        
+        .status-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+        
+        .status-items {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-2);
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2);
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10B981;
+        }
+        
+        .status-indicator.warning { background: #F59E0B; }
+        .status-indicator.error { background: #EF4444; }
+        
+        .status-name {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+        }
+        
+        .status-value {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+        }
+        
+        /* ========== 响应式设计 ========== */
+        @media (max-width: 1400px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .management-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .management-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                padding-top: 80px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-items {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-icon">🎓</span>
+            <span class="brand-text">智联网综合实践平台</span>
+        </div>
+        <div class="nav-menu">
+            <a href="admin-dashboard.html" class="nav-link active">工作台</a>
+            <a href="user-management.html" class="nav-link">用户</a>
+            <a href="course-hall.html" class="nav-link">课程</a>
+            <a href="experiment-hall.html" class="nav-link">实验</a>
+            <a href="ai-assistant.html" class="nav-link">AI</a>
+        </div>
+        <div class="nav-user">
+            <div class="user-avatar">管</div>
+            <span style="font-size: var(--font-size-sm); color: var(--text-secondary);">欢迎，管理员</span>
+        </div>
+    </nav>
+    
+    <!-- 页面容器 -->
+    <div class="page-container">
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="admin-dashboard.html" class="sidebar-item active">
+                    <span class="sidebar-icon">📊</span>
+                    管理工作台
+                </a>
+                <a href="user-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">👥</span>
+                    用户管理
+                </a>
+                <a href="course-hall.html" class="sidebar-item">
+                    <span class="sidebar-icon">📚</span>
+                    课程管理
+                </a>
+                <a href="experiment-hall.html" class="sidebar-item">
+                    <span class="sidebar-icon">🔬</span>
+                    实验管理
+                </a>
+                <a href="system-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚙️</span>
+                    系统设置
+                </a>
+                <a href="ai-assistant.html" class="sidebar-item">
+                    <span class="sidebar-icon">🤖</span>
+                    AI学习助手
+                </a>
+                <a href="ai-analysis.html" class="sidebar-item">
+                    <span class="sidebar-icon">📈</span>
+                    数据分析
+                </a>
+                <a href="profile.html" class="sidebar-item">
+                    <span class="sidebar-icon">👤</span>
+                    个人中心
+                </a>
+            </div>
+        </aside>
+        
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1 class="page-title">管理员工作台</h1>
+                <p class="page-subtitle">欢迎回来！这是您的系统管理概览</p>
+            </div>
+            
+            <!-- 统计数据卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon users">👥</div>
+                    <div class="stat-content">
+                        <h3>1,256</h3>
+                        <p>注册用户</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon courses">📚</div>
+                    <div class="stat-content">
+                        <h3>48</h3>
+                        <p>在线课程</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon experiments">🔬</div>
+                    <div class="stat-content">
+                        <h3>128</h3>
+                        <p>实验项目</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon system">⚙️</div>
+                    <div class="stat-content">
+                        <h3>99.9%</h3>
+                        <p>系统可用率</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统状态 -->
+            <div class="system-status">
+                <div class="status-header">
+                    <h2 class="status-title">系统运行状态</h2>
+                    <span style="font-size: var(--font-size-sm); color: var(--text-secondary);">最后更新: 2024-01-15 10:30</span>
+                </div>
+                <div class="status-items">
+                    <div class="status-item">
+                        <div class="status-indicator"></div>
+                        <span class="status-name">服务器状态</span>
+                        <span class="status-value">正常运行</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-indicator"></div>
+                        <span class="status-name">数据库连接</span>
+                        <span class="status-value">已连接</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-indicator"></div>
+                        <span class="status-name">API服务</span>
+                        <span class="status-value">在线</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-indicator warning"></div>
+                        <span class="status-name">存储空间</span>
+                        <span class="status-value">78%已用</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统管理区域 -->
+            <div class="management-grid">
+                <div class="management-card">
+                    <div class="management-card-header">
+                        <div class="management-card-icon">👥</div>
+                        <span class="management-card-title">用户管理</span>
+                    </div>
+                    <div class="management-card-content">
+                        管理系统用户账号，包括学生、教师和管理员。支持批量导入、权限分配、账号审核等功能。
+                    </div>
+                    <div class="management-card-actions">
+                        <button class="btn-management">用户列表</button>
+                        <button class="btn-management">添加用户</button>
+                    </div>
+                </div>
+                <div class="management-card">
+                    <div class="management-card-header">
+                        <div class="management-card-icon">📚</div>
+                        <span class="management-card-title">课程管理</span>
+                    </div>
+                    <div class="management-card-content">
+                        管理平台课程内容，包括课程审核、课程分类、课程推荐等功能。
+                    </div>
+                    <div class="management-card-actions">
+                        <button class="btn-management">课程列表</button>
+                        <button class="btn-management">添加课程</button>
+                    </div>
+                </div>
+                <div class="management-card">
+                    <div class="management-card-header">
+                        <div class="management-card-icon">🔬</div>
+                        <span class="management-card-title">实验管理</span>
+                    </div>
+                    <div class="management-card-content">
+                        管理实验项目和实验环境，包括实验审核、资源配置、实验监控等功能。
+                    </div>
+                    <div class="management-card-actions">
+                        <button class="btn-management">实验列表</button>
+                        <button class="btn-management">添加实验</button>
+                    </div>
+                </div>
+                <div class="management-card">
+                    <div class="management-card-header">
+                        <div class="management-card-icon">⚙️</div>
+                        <span class="management-card-title">系统设置</span>
+                    </div>
+                    <div class="management-card-content">
+                        配置系统参数，包括基础设置、安全设置、通知设置等功能。
+                    </div>
+                    <div class="management-card-actions">
+                        <button class="btn-management">基础设置</button>
+                        <button class="btn-management">安全设置</button>
+                    </div>
+                </div>
+                <div class="management-card">
+                    <div class="management-card-header">
+                        <div class="management-card-icon">📊</div>
+                        <span class="management-card-title">数据统计</span>
+                    </div>
+                    <div class="management-card-content">
+                        查看平台运营数据，包括用户活跃度、课程完成率、实验使用情况等统计报表。
+                    </div>
+                    <div class="management-card-actions">
+                        <button class="btn-management">查看报表</button>
+                        <button class="btn-management">导出数据</button>
+                    </div>
+                </div>
+                <div class="management-card">
+                    <div class="management-card-header">
+                        <div class="management-card-icon">🔒</div>
+                        <span class="management-card-title">权限管理</span>
+                    </div>
+                    <div class="management-card-content">
+                        管理用户权限和角色，包括角色定义、权限分配、访问控制等功能。
+                    </div>
+                    <div class="management-card-actions">
+                        <button class="btn-management">角色管理</button>
+                        <button class="btn-management">权限配置</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // 设置角色信息
+        localStorage.setItem('userRole', 'admin');
+        localStorage.setItem('userName', '管理员');
+        
+        // 侧边栏点击事件
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

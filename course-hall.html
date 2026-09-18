@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程大厅 - 智联网综合实践平台</title>
+
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* 课程大厅特定样式 - 仅保留页面特有的样式 */
+        
+        /* 课程卡片网格 */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--space-4);
+        }
+
+        /* 课程卡片 */
+        .course-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-slow) ease;
+            cursor: pointer;
+        }
+
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+
+        .course-header {
+            margin-bottom: var(--space-2);
+        }
+
+        .course-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-1);
+            line-height: var(--line-height-tight);
+        }
+
+        .course-meta {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .course-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .course-body {
+            margin-bottom: var(--space-2);
+        }
+
+        .course-info {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-2);
+        }
+
+        .course-info-item {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+        }
+
+        .course-info-label {
+            color: var(--text-secondary);
+            margin-right: 4px;
+        }
+
+        /* 课程类型标签 */
+        .course-tags {
+            display: flex;
+            gap: var(--space-1);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-2);
+        }
+
+        .course-tag {
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .course-tag.required {
+            background: rgba(24, 144, 255, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .course-tag.elective {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .course-tag.lab {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .course-tag.practice {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        /* 进度条 */
+        .progress-section {
+            margin-top: var(--space-2);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-1);
+        }
+
+        .progress-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .progress-value {
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            color: var(--primary-blue);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-body);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-blue-hover));
+            border-radius: var(--radius-full);
+            transition: width var(--duration-slow) ease;
+        }
+
+        /* 课程卡片底部 */
+        .course-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--space-2);
+            border-top: 1px solid var(--border-light);
+            margin-top: var(--space-2);
+        }
+
+        .course-teacher {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .course-action {
+            padding: 6px var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .course-action:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .course-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="nav-brand-icon">E</div>
+            <span class="nav-brand-text">智联网综合实践平台</span>
+        </div>
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-link">首页</a>
+            <a href="experiment-hall.html" class="nav-link">实验大厅</a>
+            <a href="course-hall.html" class="nav-link active">课程大厅</a>
+            <a href="exam-hall.html" class="nav-link">考试中心</a>
+            <a href="profile.html" class="nav-link">个人中心</a>
+        </div>
+        <div class="user-info">
+            <div class="user-details">
+                <div class="user-name">魏同学</div>
+                <div class="user-meta">2024级 计算机学院</div>
+            </div>
+            <div class="user-avatar">魏</div>
+        </div>
+    </header>
+
+    <!-- 应用布局 -->
+    <div class="app-layout">
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <span class="sidebar-icon">📊</span>
+                    我的工作台
+                </a>
+                <a href="ai-assistant.html" class="sidebar-item" data-page="ai-assistant">
+                    <span class="sidebar-icon">🤖</span>
+                    AI学习助手
+                </a>
+                <a href="experiment-hall.html" class="sidebar-item" data-page="experiment-hall">
+                    <span class="sidebar-icon">🔬</span>
+                    实验大厅
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="simulation">
+                    <span class="sidebar-icon">💻</span>
+                    虚拟仿真实验
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="research">
+                    <span class="sidebar-icon">☁️</span>
+                    科研云服务
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="design">
+                    <span class="sidebar-icon">🎨</span>
+                    创意设计
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="embedded">
+                    <span class="sidebar-icon">🔧</span>
+                    嵌入式实训
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="algorithm">
+                    <span class="sidebar-icon">⚙️</span>
+                    算法演练
+                </a>
+                <a href="exam-hall.html" class="sidebar-item" data-page="exam-hall">
+                    <span class="sidebar-icon">📝</span>
+                    考场大厅
+                </a>
+                <a href="profile.html" class="sidebar-item" data-page="profile">
+                    <span class="sidebar-icon">👤</span>
+                    个人中心
+                </a>
+            </div>
+        </aside>
+
+            <!-- 主内容区 -->
+            <main class="main-content">
+                <!-- 页面标题 -->
+                <div class="page-header">
+                    <h1 class="page-title">📚 课程大厅</h1>
+                    <p class="page-subtitle">探索丰富的课程资源，开启您的学习之旅</p>
+                </div>
+
+                <!-- 搜索栏 -->
+                <div class="search-bar">
+                    <div class="search-input-group">
+                        <select class="search-select" id="majorFilter">
+                            <option value="">全部专业</option>
+                            <option value="cs">计算机科学与技术</option>
+                            <option value="se">软件工程</option>
+                            <option value="ai">人工智能</option>
+                            <option value="ds">数据科学</option>
+                            <option value="is">信息安全</option>
+                        </select>
+                        <select class="search-select" id="typeFilter">
+                            <option value="">全部类型</option>
+                            <option value="required">必修课</option>
+                            <option value="elective">选修课</option>
+                            <option value="lab">实验课</option>
+                            <option value="practice">实训课</option>
+                        </select>
+                        <input type="text" class="search-input" id="searchInput" placeholder="搜索课程名称、教师...">
+                    </div>
+                    <button class="search-btn" onclick="searchCourses()">
+                        🔍 搜索
+                    </button>
+                </div>
+
+                <!-- 标签筛选区 -->
+                <div class="filter-tags">
+                    <button class="filter-tag active" data-filter="all" onclick="filterByTag('all', this)">全部</button>
+                    <button class="filter-tag" data-filter="required" onclick="filterByTag('required', this)">必修课</button>
+                    <button class="filter-tag" data-filter="elective" onclick="filterByTag('elective', this)">选修课</button>
+                    <button class="filter-tag" data-filter="lab" onclick="filterByTag('lab', this)">实验课</button>
+                    <button class="filter-tag" data-filter="practice" onclick="filterByTag('practice', this)">实训课</button>
+                    <button class="filter-tag" data-filter="hot" onclick="filterByTag('hot', this)">热门课程</button>
+                    <button class="filter-tag" data-filter="new" onclick="filterByTag('new', this)">最新上线</button>
+                </div>
+
+                <!-- 课程卡片网格 -->
+                <div class="course-grid" id="courseGrid">
+                    <!-- 课程卡片 1 -->
+                    <div class="course-card" data-type="required" data-major="cs">
+                        <div class="course-header">
+                            <h3 class="course-title">操作系统原理与实践</h3>
+                            <div class="course-meta">
+                                <span class="course-meta-item">👨‍🏫 李明教授</span>
+                                <span class="course-meta-item">🕐 2024春季</span>
+                            </div>
+                        </div>
+                        <div class="course-body">
+                            <div class="course-info">
+                                <div class="course-info-item">
+                                    <span class="course-info-label">学分:</span>4.0
+                                </div>
+                                <div class="course-info-item">
+                                    <span class="course-info-label">课时:</span>64学时
+                                </div>
+                            </div>
+                            <div class="course-tags">
+                                <span class="course-tag required">必修课</span>
+                                <span class="course-tag lab">实验课</span>
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">学习进度</span>
+                                    <span class="progress-value">75%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-teacher">
+                                <span>👨‍🏫</span> 李明教授
+                            </div>
+                            <button class="course-action">继续学习</button>
+                        </div>
+                    </div>
+
+                    <!-- 课程卡片 2 -->
+                    <div class="course-card" data-type="required" data-major="cs">
+                        <div class="course-header">
+                            <h3 class="course-title">计算机网络技术</h3>
+                            <div class="course-meta">
+                                <span class="course-meta-item">👨‍🏫 王强教授</span>
+                                <span class="course-meta-item">🕐 2024春季</span>
+                            </div>
+                        </div>
+                        <div class="course-body">
+                            <div class="course-info">
+                                <div class="course-info-item">
+                                    <span class="course-info-label">学分:</span>3.5
+                                </div>
+                                <div class="course-info-item">
+                                    <span class="course-info-label">课时:</span>56学时
+                                </div>
+                            </div>
+                            <div class="course-tags">
+                                <span class="course-tag required">必修课</span>
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">学习进度</span>
+                                    <span class="progress-value">45%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 45%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-teacher">
+                                <span>👨‍🏫</span> 王强教授
+                            </div>
+                            <button class="course-action">继续学习</button>
+                        </div>
+                    </div>
+
+                    <!-- 课程卡片 3 -->
+                    <div class="course-card" data-type="elective" data-major="ai">
+                        <div class="course-header">
+                            <h3 class="course-title">人工智能导论</h3>
+                            <div class="course-meta">
+                                <span class="course-meta-item">👩‍🏫 张华副教授</span>
+                                <span class="course-meta-item">🕐 2024春季</span>
+                            </div>
+                        </div>
+                        <div class="course-body">
+                            <div class="course-info">
+                                <div class="course-info-item">
+                                    <span class="course-info-label">学分:</span>3.0
+                                </div>
+                                <div class="course-info-item">
+                                    <span class="course-info-label">课时:</span>48学时
+                                </div>
+                            </div>
+                            <div class="course-tags">
+                                <span class="course-tag elective">选修课</span>
+                                <span class="course-tag lab">实验课</span>
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">学习进度</span>
+                                    <span class="progress-value">20%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 20%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-teacher">
+                                <span>👩‍🏫</span> 张华副教授
+                            </div>
+                            <button class="course-action">继续学习</button>
+                        </div>
+                    </div>
+
+                    <!-- 课程卡片 4 -->
+                    <div class="course-card" data-type="practice" data-major="se">
+                        <div class="course-header">
+                            <h3 class="course-title">软件工程实训</h3>
+                            <div class="course-meta">
+                                <span class="course-meta-item">👨‍🏫 刘伟讲师</span>
+                                <span class="course-meta-item">🕐 2024春季</span>
+                            </div>
+                        </div>
+                        <div class="course-body">
+                            <div class="course-info">
+                                <div class="course-info-item">
+                                    <span class="course-info-label">学分:</span>2.0
+                                </div>
+                                <div class="course-info-item">
+                                    <span class="course-info-label">课时:</span>32学时
+                                </div>
+                            </div>
+                            <div class="course-tags">
+                                <span class="course-tag practice">实训课</span>
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">学习进度</span>
+                                    <span class="progress-value">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-teacher">
+                                <span>👨‍🏫</span> 刘伟讲师
+                            </div>
+                            <button class="course-action">开始学习</button>
+                        </div>
+                    </div>
+
+                    <!-- 课程卡片 5 -->
+                    <div class="course-card" data-type="elective" data-major="ds">
+                        <div class="course-header">
+                            <h3 class="course-title">大数据分析与挖掘</h3>
+                            <div class="course-meta">
+                                <span class="course-meta-item">👨‍🏫 陈刚教授</span>
+                                <span class="course-meta-item">🕐 2024春季</span>
+                            </div>
+                        </div>
+                        <div class="course-body">
+                            <div class="course-info">
+                                <div class="course-info-item">
+                                    <span class="course-info-label">学分:</span>3.0
+                                </div>
+                                <div class="course-info-item">
+                                    <span class="course-info-label">课时:</span>48学时
+                                </div>
+                            </div>
+                            <div class="course-tags">
+                                <span class="course-tag elective">选修课</span>
+                                <span class="course-tag lab">实验课</span>
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">学习进度</span>
+                                    <span class="progress-value">60%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-teacher">
+                                <span>👨‍🏫</span> 陈刚教授
+                            </div>
+                            <button class="course-action">继续学习</button>
+                        </div>
+                    </div>
+
+                    <!-- 课程卡片 6 -->
+                    <div class="course-card" data-type="required" data-major="is">
+                        <div class="course-header">
+                            <h3 class="course-title">网络安全技术</h3>
+                            <div class="course-meta">
+                                <span class="course-meta-item">👩‍🏫 赵敏教授</span>
+                                <span class="course-meta-item">🕐 2024春季</span>
+                            </div>
+                        </div>
+                        <div class="course-body">
+                            <div class="course-info">
+                                <div class="course-info-item">
+                                    <span class="course-info-label">学分:</span>4.0
+                                </div>
+                                <div class="course-info-item">
+                                    <span class="course-info-label">课时:</span>64学时
+                                </div>
+                            </div>
+                            <div class="course-tags">
+                                <span class="course-tag required">必修课</span>
+                                <span class="course-tag practice">实训课</span>
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">学习进度</span>
+                                    <span class="progress-value">30%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 30%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-teacher">
+                                <span>👩‍🏫</span> 赵敏教授
+                            </div>
+                            <button class="course-action">继续学习</button>
+                        </div>
+                    </div>
+
+                    <!-- 课程卡片 7 -->
+                    <div class="course-card" data-type="elective" data-major="ai">
+                        <div class="course-header">
+                            <h3 class="course-title">机器学习算法与实践</h3>
+                            <div class="course-meta">
+                                <span class="course-meta-item">👨‍🏫 孙磊教授</span>
+                                <span class="course-meta-item">🕐 2024春季</span>
+                            </div>
+                        </div>
+                        <div class="course-body">
+                            <div class="course-info">
+                                <div class="course-info-item">
+                                    <span class="course-info-label">学分:</span>3.5
+                                </div>
+                                <div class="course-info-item">
+                                    <span class="course-info-label">课时:</span>56学时
+                                </div>
+                            </div>
+                            <div class="course-tags">
+                                <span class="course-tag elective">选修课</span>
+                                <span class="course-tag lab">实验课</span>
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">学习进度</span>
+                                    <span class="progress-value">85%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-teacher">
+                                <span>👨‍🏫</span> 孙磊教授
+                            </div>
+                            <button class="course-action">继续学习</button>
+                        </div>
+                    </div>
+
+                    <!-- 课程卡片 8 -->
+                    <div class="course-card" data-type="lab" data-major="cs">
+                        <div class="course-header">
+                            <h3 class="course-title">数据库系统实验</h3>
+                            <div class="course-meta">
+                                <span class="course-meta-item">👨‍🏫 周杰讲师</span>
+                                <span class="course-meta-item">🕐 2024春季</span>
+                            </div>
+                        </div>
+                        <div class="course-body">
+                            <div class="course-info">
+                                <div class="course-info-item">
+                                    <span class="course-info-label">学分:</span>2.0
+                                </div>
+                                <div class="course-info-item">
+                                    <span class="course-info-label">课时:</span>32学时
+                                </div>
+                            </div>
+                            <div class="course-tags">
+                                <span class="course-tag lab">实验课</span>
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">学习进度</span>
+                                    <span class="progress-value">50%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 50%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-teacher">
+                                <span>👨‍🏫</span> 周杰讲师
+                            </div>
+                            <button class="course-action">继续学习</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="js/app.js"></script>
+    <script>
+        // 标签筛选功能
+        function filterByTag(tag, element) {
+            // 更新标签状态
+            document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+
+            // 筛选课程卡片
+            const cards = document.querySelectorAll('.course-card');
+            cards.forEach(card => {
+                if (tag === 'all') {
+                    card.style.display = 'block';
+                } else if (tag === 'hot' || tag === 'new') {
+                    // 热门和最新课程暂时显示所有
+                    card.style.display = 'block';
+                } else {
+                    const cardType = card.getAttribute('data-type');
+                    card.style.display = cardType === tag ? 'block' : 'none';
+                }
+            });
+        }
+
+        // 搜索功能
+        function searchCourses() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const majorFilter = document.getElementById('majorFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            const cards = document.querySelectorAll('.course-card');
+            cards.forEach(card => {
+                const title = card.querySelector('.course-title').textContent.toLowerCase();
+                const teacher = card.querySelector('.course-teacher').textContent.toLowerCase();
+                const cardMajor = card.getAttribute('data-major');
+                const cardType = card.getAttribute('data-type');
+
+                let show = true;
+
+                // 文本搜索
+                if (searchText && !title.includes(searchText) && !teacher.includes(searchText)) {
+                    show = false;
+                }
+
+                // 专业筛选
+                if (majorFilter && cardMajor !== majorFilter) {
+                    show = false;
+                }
+
+                // 类型筛选
+                if (typeFilter && cardType !== typeFilter) {
+                    show = false;
+                }
+
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        // 回车键搜索
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchCourses();
+            }
+        });
+
+        // 下拉框变化时自动搜索
+        document.getElementById('majorFilter').addEventListener('change', searchCourses);
+        document.getElementById('typeFilter').addEventListener('change', searchCourses);
+    </script>
+</body>
+</html>

@@ -1,0 +1,3852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI学伴对话 - 智联网综合实践平台</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* AI学伴页面专属样式 */
+        .ai-content-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            flex: 1;
+            min-height: 0;
+            gap: 0;
+            height: 100%;
+        }
+
+        /* 左侧指令库面板 */
+        .command-panel {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .command-panel-header {
+            padding: var(--space-3);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .command-panel-header h2 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .command-search {
+            margin-top: var(--space-2);
+        }
+
+        .command-search input {
+            width: 100%;
+            padding: var(--space-1) var(--space-2);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-family);
+        }
+
+        .command-search input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        /* 树形指令库 */
+        .command-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-2);
+        }
+
+        .tree-category {
+            margin-bottom: var(--space-1);
+        }
+
+        .tree-category-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-2);
+            cursor: pointer;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            transition: all var(--duration-base);
+        }
+
+        .tree-category-header:hover {
+            background: var(--bg-body);
+        }
+
+        .tree-category-header .arrow {
+            transition: transform var(--duration-base);
+            font-size: 10px;
+        }
+
+        .tree-category.expanded .tree-category-header .arrow {
+            transform: rotate(90deg);
+        }
+
+        .tree-category-icon {
+            font-size: 16px;
+        }
+
+        .tree-items {
+            display: none;
+            padding-left: var(--space-3);
+        }
+
+        .tree-category.expanded .tree-items {
+            display: block;
+        }
+
+        .tree-item {
+            padding: var(--space-1) var(--space-2);
+            margin: 2px 0;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            transition: all var(--duration-base);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .tree-item:hover {
+            background: rgba(71, 85, 105, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .tree-item::before {
+            content: "•";
+            color: var(--text-disabled);
+        }
+
+        /* 对话区域 */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-body);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        /* AI教师助手快捷入口 */
+        .ai-shortcuts {
+            padding: var(--space-3) var(--space-4);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-light);
+            flex-shrink: 0;
+        }
+
+        .shortcuts-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-2);
+        }
+
+        .shortcut-card {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #64748b 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            cursor: pointer;
+            transition: all var(--duration-slow);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shortcut-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity var(--duration-base);
+        }
+
+        .shortcut-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .shortcut-card:hover::before {
+            opacity: 1;
+        }
+
+        .shortcut-card:nth-child(2) {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .shortcut-card:nth-child(3) {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .shortcut-card:nth-child(4) {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .shortcut-icon {
+            font-size: 24px;
+            margin-bottom: var(--space-1);
+        }
+
+        .shortcut-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .shortcut-desc {
+            font-size: var(--font-size-xs);
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        /* 对话消息区 */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-4);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            min-height: 0;
+        }
+
+        /* 欢迎消息 */
+        .welcome-message {
+            text-align: center;
+            padding: var(--space-5);
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: var(--space-3);
+        }
+
+        .welcome-title {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+        }
+
+        .welcome-text {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-4);
+            line-height: var(--line-height-relaxed);
+        }
+
+        .preset-prompts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            justify-content: center;
+        }
+
+        .preset-prompt {
+            padding: var(--space-1) var(--space-3);
+            background: var(--bg-card);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all var(--duration-base);
+        }
+
+        .preset-prompt:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.05);
+        }
+
+        /* 消息样式 */
+        .message {
+            display: flex;
+            gap: var(--space-3);
+            max-width: 800px;
+            margin-bottom: var(--space-3);
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+            margin-left: auto;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, var(--primary-blue), #64748b);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #475569, #64748b);
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-bubble {
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-relaxed);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border: 2px solid transparent;
+        }
+
+        .message.ai .message-bubble {
+            background: var(--bg-card);
+            color: var(--text-body);
+            border: 2px solid var(--border-light);
+        }
+
+        .message.user .message-bubble {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .message-time {
+            font-size: var(--font-size-xs);
+            color: var(--text-disabled);
+            margin-top: 4px;
+        }
+
+        .message.user .message-time {
+            text-align: right;
+        }
+
+        /* AI消息中的图片 */
+        .message-image {
+            margin-top: var(--space-2);
+            border-radius: var(--radius-base);
+            overflow: hidden;
+        }
+
+        .message-image img {
+            max-width: 100%;
+            display: block;
+        }
+
+        /* 代码块 */
+        .message-code {
+            background: #1e293b;
+            border-radius: var(--radius-base);
+            margin-top: var(--space-2);
+            overflow: hidden;
+        }
+
+        .message-code-header {
+            background: #334155;
+            padding: var(--space-1) var(--space-2);
+            font-size: var(--font-size-xs);
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-code pre {
+            padding: var(--space-2);
+            margin: 0;
+            font-size: var(--font-size-sm);
+            color: #e2e8f0;
+            overflow-x: auto;
+            font-family: var(--code-font);
+        }
+
+        /* 输入区域 */
+        .chat-input-area {
+            padding: var(--space-3) var(--space-4);
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            flex-shrink: 0;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: var(--space-2);
+            align-items: flex-end;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .chat-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: var(--space-2) var(--space-3);
+            padding-right: 100px;
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-xl);
+            font-size: var(--font-size-base);
+            font-family: var(--font-family);
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            transition: all var(--duration-base);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+        }
+
+        .chat-input-actions {
+            position: absolute;
+            right: var(--space-2);
+            bottom: var(--space-1);
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        .input-action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all var(--duration-base);
+        }
+
+        .input-action-btn:hover {
+            background: var(--bg-body);
+            color: var(--primary-blue);
+        }
+
+        .send-btn {
+            padding: var(--space-2) var(--space-4);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-xl);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-family: var(--font-family);
+        }
+
+        .send-btn:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 历史记录侧边栏 */
+        .history-sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .history-header {
+            padding: var(--space-3);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-header h3 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .new-chat-btn {
+            padding: 6px var(--space-2);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            font-family: var(--font-family);
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-2);
+        }
+
+        .history-item {
+            padding: var(--space-2);
+            margin-bottom: var(--space-1);
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            transition: all var(--duration-base);
+            border: 1px solid transparent;
+        }
+
+        .history-item:hover {
+            background: var(--bg-body);
+            border-color: var(--border-light);
+        }
+
+        .history-item.active {
+            background: rgba(71, 85, 105, 0.1);
+            border-color: var(--primary-blue);
+        }
+
+        .history-item-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item-preview {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item-time {
+            font-size: var(--font-size-xs);
+            color: var(--text-disabled);
+            margin-top: 4px;
+        }
+
+        /* 表单模态框样式 */
+        .form-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: var(--z-modal);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-modal.active {
+            display: flex;
+        }
+
+        .form-modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .form-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .form-modal-header h3 {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .form-modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-base);
+            transition: all var(--duration-base);
+        }
+
+        .form-modal-close:hover {
+            background: var(--bg-body);
+            color: var(--text-title);
+        }
+
+        .form-modal-body {
+            padding: var(--space-4);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-3);
+        }
+
+        .form-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            margin-bottom: var(--space-1);
+        }
+
+        .required {
+            color: #EF4444;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--space-2);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-family);
+            transition: all var(--duration-base);
+            background: var(--bg-body);
+            color: var(--text-body);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: var(--space-2);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-family);
+            background: var(--bg-body);
+            color: var(--text-body);
+            cursor: pointer;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: var(--space-2);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-family);
+            min-height: 80px;
+            resize: vertical;
+            background: var(--bg-body);
+            color: var(--text-body);
+        }
+
+        .form-row {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .form-input-small {
+            flex: 1;
+            padding: var(--space-2);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-family);
+            background: var(--bg-body);
+            color: var(--text-body);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .form-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-cancel {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-family);
+            background: white;
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all var(--duration-base);
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-body);
+        }
+
+        .btn-submit {
+            padding: var(--space-2) var(--space-3);
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-family);
+            background: var(--primary-blue);
+            color: white;
+            cursor: pointer;
+            transition: all var(--duration-base);
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        /* 结果模态框样式 */
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: var(--z-modal);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-modal.active {
+            display: flex;
+        }
+
+        .result-modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            max-width: 800px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .result-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .result-modal-header h3 {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .result-modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-base);
+            transition: all var(--duration-base);
+        }
+
+        .result-modal-close:hover {
+            background: var(--bg-body);
+            color: var(--text-title);
+        }
+
+        .result-modal-body {
+            padding: var(--space-4);
+            line-height: var(--line-height-relaxed);
+            color: var(--text-body);
+        }
+
+        .result-section {
+            margin-bottom: var(--space-3);
+        }
+
+        .result-section-title {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+            padding-bottom: var(--space-1);
+            border-bottom: 2px solid var(--primary-blue);
+        }
+
+        .result-section-content {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+        }
+
+        .result-list {
+            list-style: none;
+            padding-left: var(--space-2);
+        }
+
+        .result-list li {
+            padding: var(--space-1) 0;
+            position: relative;
+        }
+
+        .result-list li::before {
+            content: "•";
+            color: var(--primary-blue);
+            font-weight: bold;
+            position: absolute;
+            left: -12px;
+        }
+
+        .result-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-copy, .btn-download, .btn-close {
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-family);
+            cursor: pointer;
+            transition: all var(--duration-base);
+        }
+
+        .btn-copy {
+            border: 1px solid var(--border-base);
+            background: white;
+            color: var(--text-body);
+        }
+
+        .btn-copy:hover {
+            background: var(--bg-body);
+        }
+
+        .btn-download {
+            border: none;
+            background: #10B981;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #059669;
+        }
+
+        .btn-close {
+            border: none;
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-close:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        /* 生成过程模态框 */
+        .generate-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: var(--z-modal);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .generate-modal.active {
+            display: flex;
+        }
+
+        .generate-modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .generate-icon {
+            font-size: 48px;
+            margin-bottom: var(--space-3);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .generate-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+        }
+
+        .generate-progress {
+            height: 4px;
+            background: var(--bg-body);
+            border-radius: var(--radius-full);
+            margin: var(--space-3) 0;
+            overflow: hidden;
+        }
+
+        .generate-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue), #64748b);
+            border-radius: var(--radius-full);
+            transition: width 0.3s ease;
+        }
+
+        .generate-status {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .generate-close {
+            margin-top: var(--space-4);
+            padding: var(--space-2) var(--space-4);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            font-family: var(--font-family);
+            display: none;
+        }
+
+        .generate-modal.completed .generate-close {
+            display: inline-block;
+        }
+
+        /* 打字动画 */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: var(--space-2);
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-disabled);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        /* AI页面顶部操作栏 */
+        .ai-top-bar {
+            background: var(--bg-card);
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ai-top-bar h1 {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .ai-top-bar-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .btn-outline {
+            padding: var(--space-1) var(--space-3);
+            background: transparent;
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            cursor: pointer;
+            font-family: var(--font-family);
+            transition: all var(--duration-base);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .btn-primary {
+            padding: var(--space-1) var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            font-family: var(--font-family);
+            transition: all var(--duration-base);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .ai-content-layout {
+                grid-template-columns: 240px 1fr;
+            }
+            
+            .history-sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ai-content-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .command-panel {
+                display: none;
+            }
+            
+            .shortcuts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="nav-brand-icon">E</div>
+            <span class="nav-brand-text">智联网综合实践平台</span>
+        </div>
+        <div class="nav-menu">
+            <a href="#" class="nav-link">首页</a>
+            <a href="#" class="nav-link active">AI学伴</a>
+            <a href="#" class="nav-link">帮助中心</a>
+        </div>
+    </header>
+
+    <!-- 应用布局 -->
+    <div class="app-layout">
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <span class="sidebar-icon">📊</span>
+                    我的工作台
+                </a>
+                <a href="ai-assistant.html" class="sidebar-item active" data-page="ai-assistant">
+                    <span class="sidebar-icon">🤖</span>
+                    AI学习助手
+                </a>
+                <a href="experiment-hall.html" class="sidebar-item" data-page="experiment-hall">
+                    <span class="sidebar-icon">🔬</span>
+                    实验大厅
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="simulation">
+                    <span class="sidebar-icon">💻</span>
+                    虚拟仿真实验
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="research">
+                    <span class="sidebar-icon">☁️</span>
+                    科研云服务
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="design">
+                    <span class="sidebar-icon">🎨</span>
+                    创意设计
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="embedded">
+                    <span class="sidebar-icon">🔧</span>
+                    嵌入式实训
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="algorithm">
+                    <span class="sidebar-icon">⚙️</span>
+                    算法演练
+                </a>
+                <a href="exam-hall.html" class="sidebar-item" data-page="exam-hall">
+                    <span class="sidebar-icon">📝</span>
+                    考场大厅
+                </a>
+                <a href="profile.html" class="sidebar-item" data-page="profile">
+                    <span class="sidebar-icon">👤</span>
+                    个人中心
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+            <!-- 顶部栏 -->
+            <div class="ai-top-bar">
+                <h1>
+                    <span>🎓</span>
+                    AI学伴对话
+                </h1>
+                <div class="ai-top-bar-actions">
+                    <button class="btn-outline" onclick="toggleHistory()">
+                        📜 历史记录
+                    </button>
+                    <button class="btn-primary" onclick="newChat()">
+                        ✨ 新对话
+                    </button>
+                </div>
+            </div>
+
+            <!-- 内容布局 -->
+            <div class="ai-content-layout">
+                <!-- 左侧指令库面板 -->
+                <aside class="command-panel">
+                    <div class="command-panel-header">
+                        <h2>
+                            <span>📚</span>
+                            预置指令库
+                        </h2>
+                        <div class="command-search">
+                            <input type="text" placeholder="搜索指令..." id="commandSearch">
+                        </div>
+                    </div>
+                    <div class="command-tree" id="commandTree">
+                        <!-- 预置指令库内容将根据角色动态生成 -->
+                    </div>
+                </aside>
+
+                <!-- 对话区域 -->
+                <div class="chat-area">
+                    <!-- AI教师助手快捷入口（仅教师角色显示） -->
+                    <div class="ai-shortcuts" id="teacherShortcuts" style="display: none;">
+                        <div class="shortcuts-title">🚀 AI教师助手快捷入口</div>
+                        <div class="shortcuts-grid">
+                            <div class="shortcut-card" onclick="openGenerator('curriculum')">
+                                <div class="shortcut-icon">📋</div>
+                                <div class="shortcut-title">课程标准定制</div>
+                                <div class="shortcut-desc">智能生成课程标准</div>
+                            </div>
+                            <div class="shortcut-card" onclick="openGenerator('syllabus')">
+                                <div class="shortcut-icon">📖</div>
+                                <div class="shortcut-title">教材大纲设计</div>
+                                <div class="shortcut-desc">快速构建教学大纲</div>
+                            </div>
+                            <div class="shortcut-card" onclick="openGenerator('question')">
+                                <div class="shortcut-icon">📝</div>
+                                <div class="shortcut-title">题库设计</div>
+                                <div class="shortcut-desc">自动生成练习题</div>
+                            </div>
+                            <div class="shortcut-card" onclick="openGenerator('ppt')">
+                                <div class="shortcut-icon">📊</div>
+                                <div class="shortcut-title">PPT生成</div>
+                                <div class="shortcut-desc">一键生成课件</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 消息区域 -->
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- 欢迎消息 -->
+                        <div class="welcome-message" id="welcomeMessage">
+                            <div class="welcome-icon">🎓</div>
+                            <h2 class="welcome-title" id="welcomeTitle">欢迎使用AI学习助手</h2>
+                            <p class="welcome-text" id="welcomeText">
+                                我是您的智能学习助手，可以帮助您解答物联网、传感器、嵌入式开发等相关问题。
+                                请选择下方预置提示词，或直接输入您的问题开始对话。
+                            </p>
+                            <div class="preset-prompts" id="presetPrompts">
+                                <!-- 预置提示词将根据角色动态生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 示例对话 1 -->
+                        <div class="message user" style="display: none;" id="example1">
+                            <div class="message-avatar">张</div>
+                            <div class="message-content">
+                                <div class="message-bubble">什么是物联网？</div>
+                                <div class="message-time">14:30</div>
+                            </div>
+                        </div>
+
+                        <div class="message ai" style="display: none;" id="example1Response">
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    <p><strong>物联网（Internet of Things，IoT）</strong>是指通过信息传感设备，按约定的协议，将任何物体与网络相连接，物体通过信息传播媒介进行信息交换和通信，以实现智能化识别、定位、跟踪、监控和管理的一种网络。</p>
+                                    
+                                    <p style="margin-top: 12px;"><strong>物联网的三层架构：</strong></p>
+                                    <ul style="margin-left: 20px; margin-top: 8px;">
+                                        <li><strong>感知层：</strong>负责信息采集和物体识别（传感器、RFID、摄像头等）</li>
+                                        <li><strong>网络层：</strong>负责信息传输和处理（互联网、移动网络、WiFi等）</li>
+                                        <li><strong>应用层：</strong>负责行业应用和信息服务（智能家居、智慧城市、工业监控等）</li>
+                                    </ul>
+
+                                    <p style="margin-top: 12px;"><strong>典型应用场景：</strong></p>
+                                    <ul style="margin-left: 20px; margin-top: 8px;">
+                                        <li>智能家居：智能灯光、智能门锁、智能家电</li>
+                                        <li>智慧城市：智能交通、环境监测、公共安全</li>
+                                        <li>工业物联网：设备监控、生产优化、预测维护</li>
+                                        <li>智慧医疗：远程监护、医疗设备管理</li>
+                                    </ul>
+
+                                    <div class="message-image" style="margin-top: 12px;">
+                                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=200&fit=crop" alt="物联网架构示意图" style="width: 100%; border-radius: 8px;">
+                                    </div>
+                                </div>
+                                <div class="message-time">14:31</div>
+                            </div>
+                        </div>
+
+                        <!-- 示例对话 2 -->
+                        <div class="message user" style="display: none;" id="example2">
+                            <div class="message-avatar">张</div>
+                            <div class="message-content">
+                                <div class="message-bubble">MQTT协议的工作原理是什么？</div>
+                                <div class="message-time">14:35</div>
+                            </div>
+                        </div>
+
+                        <div class="message ai" style="display: none;" id="example2Response">
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    <p><strong>MQTT（Message Queuing Telemetry Transport）</strong>是一种轻量级的发布/订阅消息传输协议，专为物联网设备设计。</p>
+                                    
+                                    <p style="margin-top: 12px;"><strong>工作原理：</strong></p>
+                                    <ol style="margin-left: 20px; margin-top: 8px;">
+                                        <li><strong>Broker（代理服务器）：</strong>负责接收和分发消息</li>
+                                        <li><strong>Publisher（发布者）：</strong>设备向特定主题发布消息</li>
+                                        <li><strong>Subscriber（订阅者）：</strong>设备订阅特定主题接收消息</li>
+                                    </ol>
+
+                                    <div class="message-code" style="margin-top: 12px;">
+                                        <div class="message-code-header">
+                                            <span>Python MQTT示例代码</span>
+                                            <button onclick="copyCode(this)" style="background: none; border: none; color: #94a3b8; cursor: pointer;">复制</button>
+                                        </div>
+                                        <pre><code>import paho.mqtt.client as mqtt
+
+# 连接到MQTT Broker
+client = mqtt.Client()
+client.connect("broker.hivemq.com", 1883, 60)
+
+# 发布消息
+client.publish("sensor/temperature", "25.5°C")
+
+# 订阅主题
+client.subscribe("sensor/temperature")</code></pre>
+                                    </div>
+
+                                    <p style="margin-top: 12px;"><strong>MQTT特点：</strong></p>
+                                    <ul style="margin-left: 20px; margin-top: 8px;">
+                                        <li>轻量级：协议头部最小仅2字节</li>
+                                        <li>可靠传输：支持QoS质量等级（0、1、2）</li>
+                                        <li>低功耗：适合资源受限的设备</li>
+                                        <li>实时性：支持实时消息推送</li>
+                                    </ul>
+                                </div>
+                                <div class="message-time">14:36</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 输入区域 -->
+                    <div class="chat-input-area">
+                        <div class="chat-input-container">
+                            <div class="chat-input-wrapper">
+                                <textarea 
+                                    class="chat-input" 
+                                    id="chatInput" 
+                                    placeholder="输入您的问题，按 Enter 发送..."
+                                    rows="1"
+                                ></textarea>
+                                <div class="chat-input-actions">
+                                    <button class="input-action-btn" title="上传图片">🖼️</button>
+                                    <button class="input-action-btn" title="上传文件">📎</button>
+                                </div>
+                            </div>
+                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                                <span>发送</span>
+                                <span>➤</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 历史记录侧边栏 -->
+                <aside class="history-sidebar" id="historySidebar">
+                    <div class="history-header">
+                        <h3>对话历史</h3>
+                        <button class="new-chat-btn" onclick="newChat()">+ 新对话</button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <!-- 对话历史内容将根据角色动态生成 -->
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <!-- 课程标准制定表单模态框 -->
+    <div class="form-modal" id="curriculumFormModal">
+        <div class="form-modal-content">
+            <div class="form-modal-header">
+                <h3>📋 课程标准定制</h3>
+                <button class="form-modal-close" onclick="closeFormModal('curriculum')">×</button>
+            </div>
+            <div class="form-modal-body">
+                <div class="form-group">
+                    <label class="form-label">课程名称 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="curriculumName" placeholder="如：物联网技术基础">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">课程类型 <span class="required">*</span></label>
+                    <select class="form-select" id="curriculumType">
+                        <option value="">请选择课程类型</option>
+                        <option value="专业必修课">专业必修课</option>
+                        <option value="专业选修课">专业选修课</option>
+                        <option value="公共必修课">公共必修课</option>
+                        <option value="公共选修课">公共选修课</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">授课对象 <span class="required">*</span></label>
+                    <select class="form-select" id="curriculumTarget">
+                        <option value="">请选择授课对象</option>
+                        <option value="本科生">本科生</option>
+                        <option value="研究生">研究生</option>
+                        <option value="高职学生">高职学生</option>
+                        <option value="企业培训">企业培训</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">学时安排</label>
+                    <div class="form-row">
+                        <input type="number" class="form-input-small" id="curriculumHours" placeholder="总学时">
+                        <input type="number" class="form-input-small" id="curriculumTheoryHours" placeholder="理论学时">
+                        <input type="number" class="form-input-small" id="curriculumPracticeHours" placeholder="实践学时">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">课程目标</label>
+                    <textarea class="form-textarea" id="curriculumGoal" placeholder="描述课程的教学目标和培养目标"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">核心知识点</label>
+                    <textarea class="form-textarea" id="curriculumKeyPoints" placeholder="列出课程的核心知识点，如：物联网架构、传感器原理、通信协议等"></textarea>
+                </div>
+            </div>
+            <div class="form-modal-footer">
+                <button class="btn-cancel" onclick="closeFormModal('curriculum')">取消</button>
+                <button class="btn-submit" onclick="submitCurriculumForm()">生成课程标准</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 教材大纲设计表单模态框 -->
+    <div class="form-modal" id="syllabusFormModal">
+        <div class="form-modal-content">
+            <div class="form-modal-header">
+                <h3>📖 教材大纲设计</h3>
+                <button class="form-modal-close" onclick="closeFormModal('syllabus')">×</button>
+            </div>
+            <div class="form-modal-body">
+                <div class="form-group">
+                    <label class="form-label">教材名称 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="syllabusName" placeholder="如：物联网技术实践教程">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">适用课程 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="syllabusCourse" placeholder="关联的课程名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">章节数量</label>
+                    <input type="number" class="form-input" id="syllabusChapters" placeholder="如：8" value="8">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">内容重点</label>
+                    <textarea class="form-textarea" id="syllabusFocus" placeholder="描述教材内容的重点方向，如：注重实践操作、强调案例分析等"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">参考教材</label>
+                    <textarea class="form-textarea" id="syllabusReference" placeholder="列出参考教材名称，用于内容借鉴"></textarea>
+                </div>
+            </div>
+            <div class="form-modal-footer">
+                <button class="btn-cancel" onclick="closeFormModal('syllabus')">取消</button>
+                <button class="btn-submit" onclick="submitSyllabusForm()">生成教材大纲</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 题库设计表单模态框 -->
+    <div class="form-modal" id="questionFormModal">
+        <div class="form-modal-content">
+            <div class="form-modal-header">
+                <h3>📝 题库设计</h3>
+                <button class="form-modal-close" onclick="closeFormModal('question')">×</button>
+            </div>
+            <div class="form-modal-body">
+                <div class="form-group">
+                    <label class="form-label">题库名称 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="questionBankName" placeholder="如：物联网基础测试题库">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">题目类型 <span class="required">*</span></label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="questionTypeSingle" checked> 单选题
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="questionTypeMulti" checked> 多选题
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="questionTypeJudge" checked> 判断题
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="questionTypeFill"> 填空题
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="questionTypeShort"> 简答题
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">题目数量</label>
+                    <div class="form-row">
+                        <input type="number" class="form-input-small" id="questionCountSingle" placeholder="单选数量" value="20">
+                        <input type="number" class="form-input-small" id="questionCountMulti" placeholder="多选数量" value="10">
+                        <input type="number" class="form-input-small" id="questionCountJudge" placeholder="判断数量" value="15">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">知识点范围</label>
+                    <textarea class="form-textarea" id="questionTopics" placeholder="列出题目涉及的知识点，如：物联网架构、传感器原理、MQTT协议等"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">难度分布</label>
+                    <div class="form-row">
+                        <input type="number" class="form-input-small" id="questionDifficultyEasy" placeholder="简单%" value="30">
+                        <input type="number" class="form-input-small" id="questionDifficultyMedium" placeholder="中等%" value="50">
+                        <input type="number" class="form-input-small" id="questionDifficultyHard" placeholder="困难%" value="20">
+                    </div>
+                </div>
+            </div>
+            <div class="form-modal-footer">
+                <button class="btn-cancel" onclick="closeFormModal('question')">取消</button>
+                <button class="btn-submit" onclick="submitQuestionForm()">生成题库</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PPT生成表单模态框 -->
+    <div class="form-modal" id="pptFormModal">
+        <div class="form-modal-content">
+            <div class="form-modal-header">
+                <h3>📊 PPT课件生成</h3>
+                <button class="form-modal-close" onclick="closeFormModal('ppt')">×</button>
+            </div>
+            <div class="form-modal-body">
+                <div class="form-group">
+                    <label class="form-label">课件主题 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="pptTheme" placeholder="如：物联网三层架构详解">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">课件类型 <span class="required">*</span></label>
+                    <select class="form-select" id="pptType">
+                        <option value="">请选择课件类型</option>
+                        <option value="理论讲解">理论讲解</option>
+                        <option value="案例分析">案例分析</option>
+                        <option value="实验指导">实验指导</option>
+                        <option value="项目汇报">项目汇报</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">幻灯片数量</label>
+                    <input type="number" class="form-input" id="pptSlides" placeholder="如：15" value="15">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">内容要点</label>
+                    <textarea class="form-textarea" id="pptContent" placeholder="列出课件的主要内容要点"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">设计风格</label>
+                    <select class="form-select" id="pptStyle">
+                        <option value="简约商务">简约商务</option>
+                        <option value="科技风格">科技风格</option>
+                        <option value="教育风格">教育风格</option>
+                        <option value="创意活泼">创意活泼</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">是否包含动画</label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="pptAnimation"> 添加动画效果
+                    </label>
+                </div>
+            </div>
+            <div class="form-modal-footer">
+                <button class="btn-cancel" onclick="closeFormModal('ppt')">取消</button>
+                <button class="btn-submit" onclick="submitPptForm()">生成PPT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 生成结果展示模态框 -->
+    <div class="result-modal" id="resultModal" style="display: none;">
+        <div class="result-modal-content">
+            <div class="result-modal-header">
+                <h3 id="resultTitle">生成结果</h3>
+                <button class="result-modal-close" onclick="closeResultModal()">×</button>
+            </div>
+            <div class="result-modal-body" id="resultContent">
+                <!-- 结果内容将动态填充 -->
+            </div>
+            <div class="result-modal-footer">
+                <button class="btn-copy" onclick="copyResult()">复制内容</button>
+                <button class="btn-download" onclick="downloadResult()">下载文件</button>
+                <button class="btn-close" onclick="closeResultModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 生成过程模态框 -->
+    <div class="generate-modal" id="generateModal">
+        <div class="generate-modal-content">
+            <div class="generate-icon" id="generateIcon">📋</div>
+            <h3 class="generate-title" id="generateTitle">正在生成课程标准...</h3>
+            <div class="generate-progress">
+                <div class="generate-progress-bar" id="generateProgressBar" style="width: 0%"></div>
+            </div>
+            <p class="generate-status" id="generateStatus">正在分析课程需求...</p>
+            <button class="generate-close" onclick="closeGenerator()">完成</button>
+        </div>
+    </div>
+
+    <!-- 引入导航激活脚本 -->
+    <script src="js/navigation-activate.js"></script>
+    
+    <script>
+        // 获取用户角色
+        const userRole = localStorage.getItem('userRole') || 'student';
+        const userName = localStorage.getItem('userName') || (userRole === 'teacher' ? '王老师' : '魏同学');
+        
+        // 根据角色设置AI助手名称（页面标题）
+        const aiAssistantNames = {
+            'student': 'AI学习助手',
+            'teacher': 'AI教师助手',
+            'admin': 'AI管理助手'
+        };
+        
+        // 根据角色设置欢迎语
+        const welcomeMessages = {
+            'student': '我是您的智能学习助手，可以帮助您解答物联网、传感器、嵌入式开发等相关问题。请选择下方预置提示词，或直接输入您的问题开始对话。',
+            'teacher': '我是您的AI教师助手，可以帮助您进行课程标准定制、教材大纲设计、题库设计、PPT生成等教学辅助工作。',
+            'admin': '我是您的AI管理助手，可以帮助您进行系统管理、数据分析、用户管理等操作。'
+        };
+        
+        // 根据角色设置快捷入口标题
+        const shortcutsTitles = {
+            'student': '🚀 AI学习助手快捷入口',
+            'teacher': '🚀 AI教师助手快捷入口',
+            'admin': '🚀 AI管理助手快捷入口'
+        };
+        
+        // 页面加载时更新标题和内容
+        document.addEventListener('DOMContentLoaded', function() {
+            // 更新页面标题
+            document.title = aiAssistantNames[userRole] + ' - 智联网综合实践平台';
+            
+            // 更新顶部标题（AI学习助手对话）
+            const topTitle = document.querySelector('.ai-top-bar h1');
+            if (topTitle) {
+                topTitle.innerHTML = `<span>🎓</span>${aiAssistantNames[userRole]}对话`;
+            }
+            
+            // 更新顶部导航链接文字
+            const topNavLink = document.querySelector('.nav-link.active');
+            if (topNavLink) {
+                topNavLink.textContent = aiAssistantNames[userRole];
+            }
+            
+            // 更新快捷入口标题
+            const shortcutsTitle = document.querySelector('.shortcuts-title');
+            if (shortcutsTitle) {
+                shortcutsTitle.textContent = shortcutsTitles[userRole];
+            }
+            
+            // 更新欢迎消息
+            const welcomeText = document.querySelector('.welcome-text');
+            if (welcomeText) {
+                welcomeText.textContent = welcomeMessages[userRole];
+            }
+            
+            // 更新欢迎标题
+            const welcomeTitle = document.querySelector('.welcome-title');
+            if (welcomeTitle) {
+                welcomeTitle.textContent = `欢迎使用${aiAssistantNames[userRole]}`;
+            }
+            
+            // 更新用户头像显示
+            const userAvatars = document.querySelectorAll('.message.user .message-avatar');
+            userAvatars.forEach(avatar => {
+                avatar.textContent = userName.charAt(0);
+            });
+            
+            // 根据角色显示/隐藏不同的快捷入口
+            if (userRole === 'teacher') {
+                // 教师显示教师助手快捷入口
+                const teacherShortcuts = document.getElementById('teacherShortcuts');
+                if (teacherShortcuts) {
+                    teacherShortcuts.style.display = 'block';
+                }
+            } else {
+                // 学生和管理员隐藏教师助手快捷入口
+                const teacherShortcuts = document.getElementById('teacherShortcuts');
+                if (teacherShortcuts) {
+                    teacherShortcuts.style.display = 'none';
+                }
+            }
+            
+            // 根据角色生成预置指令库
+            generateCommandLibrary(userRole);
+            
+            // 根据角色生成对话历史
+            generateHistoryList(userRole);
+            
+            // 根据角色生成欢迎消息和预置提示词
+            generateWelcomeMessage(userRole);
+        });
+        
+        // 根据角色生成预置指令库
+        function generateCommandLibrary(role) {
+            const commandTree = document.getElementById('commandTree');
+            
+            // 学生预置指令库
+            const studentCommands = [
+                {
+                    category: '物联网基础',
+                    icon: '🌐',
+                    expanded: true,
+                    items: [
+                        '什么是物联网？',
+                        '物联网的三层架构是什么？',
+                        '物联网有哪些典型应用场景？',
+                        '物联网的发展历程和未来趋势是什么？'
+                    ]
+                },
+                {
+                    category: '传感器知识',
+                    icon: '📡',
+                    items: [
+                        '常见传感器类型有哪些？',
+                        '温度传感器的工作原理是什么？',
+                        '如何选择合适的传感器？',
+                        '传感器数据采集方法有哪些？'
+                    ]
+                },
+                {
+                    category: '通信协议',
+                    icon: '🔌',
+                    items: [
+                        'MQTT协议的工作原理是什么？',
+                        'HTTP和MQTT有什么区别？',
+                        'CoAP协议的特点是什么？',
+                        '物联网中常用的无线通信技术有哪些？'
+                    ]
+                },
+                {
+                    category: '嵌入式开发',
+                    icon: '💻',
+                    items: [
+                        'Arduino开发入门指南',
+                        'STM32开发环境搭建步骤',
+                        '嵌入式系统中断处理机制',
+                        'GPIO编程基础知识'
+                    ]
+                },
+                {
+                    category: '数据处理',
+                    icon: '📊',
+                    items: [
+                        '物联网数据清洗方法有哪些？',
+                        '时序数据库的特点和使用场景',
+                        '边缘计算在物联网中的应用',
+                        '数据可视化最佳实践'
+                    ]
+                },
+                {
+                    category: '安全与隐私',
+                    icon: '🔒',
+                    items: [
+                        '物联网安全威胁有哪些？',
+                        '物联网数据加密方法',
+                        '设备身份认证机制',
+                        '隐私保护最佳实践'
+                    ]
+                }
+            ];
+            
+            // 教师预置指令库
+            const teacherCommands = [
+                {
+                    category: '课程标准制定',
+                    icon: '📋',
+                    expanded: true,
+                    items: [
+                        '如何制定一门新课程的标准？',
+                        '课程标准应包含哪些内容？',
+                        '如何设计课程的教学目标？',
+                        '课程学时如何合理分配？'
+                    ]
+                },
+                {
+                    category: '教材大纲设计',
+                    icon: '📖',
+                    items: [
+                        '教材大纲设计的基本原则',
+                        '如何规划教材章节结构？',
+                        '教材内容如何与课程对接？',
+                        '如何设计教材的实践环节？'
+                    ]
+                },
+                {
+                    category: '题库设计',
+                    icon: '📝',
+                    items: [
+                        '如何设计高质量的选择题？',
+                        '题库难度如何合理分布？',
+                        '如何设计实践操作类题目？',
+                        '题目如何覆盖核心知识点？'
+                    ]
+                },
+                {
+                    category: 'PPT课件制作',
+                    icon: '📊',
+                    items: [
+                        'PPT课件设计的基本原则',
+                        '如何设计课件的视觉风格？',
+                        '课件内容如何精简呈现？',
+                        '如何添加有效的动画效果？'
+                    ]
+                },
+                {
+                    category: '教学方法',
+                    icon: '🎓',
+                    items: [
+                        '如何提高课堂互动性？',
+                        '项目式教学如何实施？',
+                        '如何设计有效的实验环节？',
+                        '线上线下混合教学如何开展？'
+                    ]
+                },
+                {
+                    category: '学生评价',
+                    icon: '📈',
+                    items: [
+                        '如何设计合理的考核方式？',
+                        '平时成绩如何科学评定？',
+                        '如何进行有效的学情分析？',
+                        '如何提供个性化的学习建议？'
+                    ]
+                }
+            ];
+            
+            // 管理员预置指令库
+            const adminCommands = [
+                {
+                    category: '系统管理',
+                    icon: '⚙️',
+                    expanded: true,
+                    items: [
+                        '如何进行系统配置？',
+                        '系统日志如何分析？',
+                        '如何监控系统运行状态？',
+                        '系统备份策略有哪些？'
+                    ]
+                },
+                {
+                    category: '用户管理',
+                    icon: '👥',
+                    items: [
+                        '如何批量导入用户？',
+                        '用户权限如何设置？',
+                        '如何处理用户账号问题？',
+                        '用户数据如何统计分析？'
+                    ]
+                },
+                {
+                    category: '数据分析',
+                    icon: '📊',
+                    items: [
+                        '平台使用数据如何分析？',
+                        '如何生成运营报表？',
+                        '关键指标如何监控？',
+                        '数据趋势如何预测？'
+                    ]
+                }
+            ];
+            
+            // 根据角色选择指令库
+            const commands = role === 'teacher' ? teacherCommands : (role === 'admin' ? adminCommands : studentCommands);
+            
+            // 生成HTML
+            let html = '';
+            commands.forEach(cat => {
+                html += `
+                    <div class="tree-category ${cat.expanded ? 'expanded' : ''}">
+                        <div class="tree-category-header" onclick="toggleCategory(this)">
+                            <span class="arrow">▶</span>
+                            <span class="tree-category-icon">${cat.icon}</span>
+                            ${cat.category}
+                        </div>
+                        <div class="tree-items">
+                            ${cat.items.map(item => `<div class="tree-item" onclick="useCommand('${item}')">${item}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            commandTree.innerHTML = html;
+        }
+        
+        // 根据角色生成对话历史
+        function generateHistoryList(role) {
+            const historyList = document.getElementById('historyList');
+            
+            // 学生对话历史
+            const studentHistory = [
+                { title: '物联网基础概念', preview: '什么是物联网？', time: '今天 14:30', active: true },
+                { title: '传感器选型问题', preview: '如何选择合适的传感器？', time: '今天 11:20' },
+                { title: 'MQTT协议学习', preview: 'MQTT协议的工作原理', time: '昨天 16:45' },
+                { title: '嵌入式开发入门', preview: 'Arduino开发入门指南', time: '昨天 09:15' },
+                { title: '数据处理方法', preview: '物联网数据清洗方法', time: '3天前' }
+            ];
+            
+            // 教师对话历史
+            const teacherHistory = [
+                { title: '课程标准制定', preview: '如何制定课程标准？', time: '今天 15:20', active: true },
+                { title: '教材大纲设计', preview: '教材章节结构规划', time: '今天 10:30' },
+                { title: '题库设计讨论', preview: '如何设计高质量选择题？', time: '昨天 14:00' },
+                { title: 'PPT课件制作', preview: '课件视觉风格设计', time: '昨天 09:45' },
+                { title: '教学方法探讨', preview: '如何提高课堂互动性？', time: '2天前' },
+                { title: '学生评价方案', preview: '考核方式设计讨论', time: '3天前' }
+            ];
+            
+            // 管理员对话历史
+            const adminHistory = [
+                { title: '系统配置讨论', preview: '如何进行系统配置？', time: '今天 16:00', active: true },
+                { title: '用户管理问题', preview: '批量导入用户方法', time: '今天 11:30' },
+                { title: '数据分析需求', preview: '平台使用数据分析', time: '昨天 15:20' },
+                { title: '运营报表生成', preview: '如何生成运营报表？', time: '2天前' }
+            ];
+            
+            // 根据角色选择历史
+            const history = role === 'teacher' ? teacherHistory : (role === 'admin' ? adminHistory : studentHistory);
+            
+            // 生成HTML
+            let html = '';
+            history.forEach(item => {
+                html += `
+                    <div class="history-item ${item.active ? 'active' : ''}">
+                        <div class="history-item-title">${item.title}</div>
+                        <div class="history-item-preview">${item.preview}</div>
+                        <div class="history-item-time">${item.time}</div>
+                    </div>
+                `;
+            });
+            
+            historyList.innerHTML = html;
+        }
+        
+        // 根据角色生成欢迎消息和预置提示词
+        function generateWelcomeMessage(role) {
+            const welcomeTitle = document.getElementById('welcomeTitle');
+            const welcomeText = document.getElementById('welcomeText');
+            const presetPrompts = document.getElementById('presetPrompts');
+            
+            if (role === 'teacher') {
+                welcomeTitle.textContent = '欢迎使用AI教师助手';
+                welcomeText.textContent = '我是您的智能教学助手，可以帮助您制定课程标准、设计教材大纲、生成题库和制作PPT课件。请选择下方预置提示词，或直接输入您的需求开始对话。';
+                
+                // 教师预置提示词
+                presetPrompts.innerHTML = `
+                    <button class="preset-prompt" onclick="useCommand('如何制定课程标准？')">课程标准制定</button>
+                    <button class="preset-prompt" onclick="useCommand('教材大纲设计的基本原则是什么？')">教材大纲设计</button>
+                    <button class="preset-prompt" onclick="useCommand('如何设计高质量的题库？')">题库设计方法</button>
+                    <button class="preset-prompt" onclick="useCommand('PPT课件制作的设计原则有哪些？')">PPT课件制作</button>
+                `;
+            } else if (role === 'admin') {
+                welcomeTitle.textContent = '欢迎使用AI管理助手';
+                welcomeText.textContent = '我是您的智能管理助手，可以帮助您进行系统配置、用户管理、数据分析等工作。请选择下方预置提示词，或直接输入您的需求开始对话。';
+                
+                // 管理员预置提示词
+                presetPrompts.innerHTML = `
+                    <button class="preset-prompt" onclick="useCommand('如何进行系统配置？')">系统配置</button>
+                    <button class="preset-prompt" onclick="useCommand('如何批量导入用户？')">用户管理</button>
+                    <button class="preset-prompt" onclick="useCommand('如何生成运营报表？')">数据分析</button>
+                    <button class="preset-prompt" onclick="useCommand('如何监控平台运行状态？')">状态监控</button>
+                `;
+            } else {
+                welcomeTitle.textContent = '欢迎使用AI学伴';
+                welcomeText.textContent = '我是您的智能学习助手，可以帮助您解答物联网、传感器、嵌入式开发等相关问题。请选择下方预置提示词，或直接输入您的问题开始对话。';
+                
+                // 学生预置提示词
+                presetPrompts.innerHTML = `
+                    <button class="preset-prompt" onclick="useCommand('什么是物联网？')">什么是物联网？</button>
+                    <button class="preset-prompt" onclick="useCommand('物联网的三层架构是什么？')">物联网三层架构</button>
+                    <button class="preset-prompt" onclick="useCommand('常见传感器类型有哪些？')">常见传感器类型</button>
+                    <button class="preset-prompt" onclick="useCommand('MQTT协议的工作原理是什么？')">MQTT协议原理</button>
+                `;
+            }
+        }
+        
+        // 对话历史
+        let messages = [];
+        let isTyping = false;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chatInput');
+            
+            // 自动调整输入框高度
+            chatInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+            
+            // Enter发送消息
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // 显示示例对话（可选）
+            // setTimeout(showExampleDialogs, 2000);
+        });
+
+        // 显示示例对话
+        function showExampleDialogs() {
+            document.getElementById('welcomeMessage').style.display = 'none';
+            document.getElementById('example1').style.display = 'flex';
+            document.getElementById('example1Response').style.display = 'flex';
+            
+            setTimeout(() => {
+                document.getElementById('example2').style.display = 'flex';
+                document.getElementById('example2Response').style.display = 'flex';
+            }, 1000);
+        }
+
+        // 切换指令分类
+        function toggleCategory(header) {
+            const category = header.parentElement;
+            category.classList.toggle('expanded');
+        }
+
+        // 使用预置指令 - 点击后自动发送
+        function useCommand(command) {
+            document.getElementById('chatInput').value = command;
+            // 自动发送消息
+            sendMessage();
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || isTyping) return;
+            
+            // 隐藏欢迎消息
+            document.getElementById('welcomeMessage').style.display = 'none';
+            
+            // 添加用户消息
+            addMessage('user', message);
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // 模拟AI回复
+            isTyping = true;
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = generateAIResponse(message);
+                addMessage('ai', response.text, response.image, response.code);
+                isTyping = false;
+            }, 1500 + Math.random() * 1000);
+        }
+
+        // 添加消息
+        function addMessage(type, text, image = null, code = null) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            let content = `
+                <div class="message-avatar">${type === 'ai' ? 'AI' : '张'}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${formatMessage(text)}</div>
+            `;
+            
+            if (image) {
+                // SVG 直接嵌入，其他图片使用 img 标签
+                if (image.startsWith('<svg')) {
+                    content += `<div class="message-image" style="border-radius: 8px; overflow: hidden;">${image}</div>`;
+                } else {
+                    content += `<div class="message-image"><img src="${image}" alt="配图"></div>`;
+                }
+            }
+            
+            if (code) {
+                content += `
+                    <div class="message-code">
+                        <div class="message-code-header">
+                            <span>${code.language}</span>
+                            <button onclick="copyCode(this)">复制</button>
+                        </div>
+                        <pre><code>${code.content}</code></pre>
+                    </div>
+                `;
+            }
+            
+            content += `<div class="message-time">${time}</div></div>`;
+            
+            messageDiv.innerHTML = content;
+            messagesContainer.appendChild(messageDiv);
+            // 平滑滚动到最新消息
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // 格式化消息
+        function formatMessage(text) {
+            return text.replace(/\n/g, '<br>');
+        }
+
+        // 显示打字指示器
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            // 平滑滚动到打字指示器
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // 隐藏打字指示器
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        // 生成物联网架构图 SVG
+        function generateIoTArchitectureSVG() {
+            return `<svg width="100%" height="280" viewBox="0 0 500 280" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <!-- 标题 -->
+                <text x="250" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">物联网三层架构图</text>
+                
+                <!-- 应用层 -->
+                <rect x="50" y="45" width="400" height="60" rx="8" fill="#7b68ee" opacity="0.9"/>
+                <text x="250" y="70" text-anchor="middle" fill="white" font-size="14" font-weight="bold">应用层 (Application Layer)</text>
+                <text x="250" y="90" text-anchor="middle" fill="#e6e6e6" font-size="11">云计算 | 大数据分析 | AI | 智能应用</text>
+                
+                <!-- 连接箭头 -->
+                <path d="M250 105 L250 120" stroke="#00d4aa" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                <polygon points="245,120 255,120 250,130" fill="#00d4aa"/>
+                
+                <!-- 网络层 -->
+                <rect x="50" y="135" width="400" height="60" rx="8" fill="#00a8ff" opacity="0.9"/>
+                <text x="250" y="160" text-anchor="middle" fill="white" font-size="14" font-weight="bold">网络层 (Network Layer)</text>
+                <text x="250" y="180" text-anchor="middle" fill="#e6e6e6" font-size="11">5G/4G | WiFi | 蓝牙 | ZigBee | LoRa</text>
+                
+                <!-- 连接箭头 -->
+                <path d="M250 195 L250 210" stroke="#00d4aa" stroke-width="3" fill="none"/>
+                <polygon points="245,210 255,210 250,220" fill="#00d4aa"/>
+                
+                <!-- 感知层 -->
+                <rect x="50" y="225" width="400" height="60" rx="8" fill="#00d4aa" opacity="0.9"/>
+                <text x="250" y="250" text-anchor="middle" fill="white" font-size="14" font-weight="bold">感知层 (Perception Layer)</text>
+                <text x="250" y="270" text-anchor="middle" fill="#e6e6e6" font-size="11">传感器 | RFID | 二维码 | 摄像头 | GPS</text>
+                
+                <!-- 数据流动箭头 -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#00d4aa"/>
+                    </marker>
+                </defs>
+                
+                <!-- 左侧数据流 -->
+                <path d="M80 285 L80 45" stroke="#ffa502" stroke-width="2" stroke-dasharray="5,3" fill="none" opacity="0.6"/>
+                <text x="30" y="165" fill="#ffa502" font-size="10" transform="rotate(-90, 30, 165)">数据上传</text>
+                
+                <!-- 右侧控制流 -->
+                <path d="M420 45 L420 285" stroke="#ff4757" stroke-width="2" stroke-dasharray="5,3" fill="none" opacity="0.6"/>
+                <text x="470" y="165" fill="#ff4757" font-size="10" transform="rotate(90, 470, 165)">控制下发</text>
+            </svg>`;
+        }
+
+        // 生成物联网三层详细架构图 SVG
+        function generateIoTLayerDiagramSVG() {
+            return `<svg width="100%" height="350" viewBox="0 0 600 350" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <!-- 标题 -->
+                <text x="300" y="25" text-anchor="middle" fill="#00a8ff" font-size="18" font-weight="bold">物联网三层架构详解</text>
+                
+                <!-- 应用层区域 -->
+                <rect x="30" y="45" width="540" height="90" rx="10" fill="#7b68ee" opacity="0.15" stroke="#7b68ee" stroke-width="2"/>
+                <rect x="30" y="45" width="140" height="90" rx="10" fill="#7b68ee" opacity="0.9"/>
+                <text x="100" y="75" text-anchor="middle" fill="white" font-size="13" font-weight="bold">应用层</text>
+                <text x="100" y="95" text-anchor="middle" fill="#e6e6e6" font-size="10">Application</text>
+                <text x="100" y="115" text-anchor="middle" fill="#00d4aa" font-size="10">🧠 大脑</text>
+                
+                <!-- 应用层组件 -->
+                <rect x="180" y="55" width="80" height="35" rx="6" fill="#252536" stroke="#7b68ee"/>
+                <text x="220" y="78" text-anchor="middle" fill="#e6e6e6" font-size="10">云计算</text>
+                <rect x="270" y="55" width="80" height="35" rx="6" fill="#252536" stroke="#7b68ee"/>
+                <text x="310" y="78" text-anchor="middle" fill="#e6e6e6" font-size="10">大数据</text>
+                <rect x="360" y="55" width="80" height="35" rx="6" fill="#252536" stroke="#7b68ee"/>
+                <text x="400" y="78" text-anchor="middle" fill="#e6e6e6" font-size="10">AI分析</text>
+                <rect x="450" y="55" width="110" height="35" rx="6" fill="#252536" stroke="#7b68ee"/>
+                <text x="505" y="78" text-anchor="middle" fill="#e6e6e6" font-size="10">业务应用</text>
+                
+                <text x="300" y="115" text-anchor="middle" fill="#8c9eb0" font-size="10">数据处理 · 智能决策 · 服务呈现</text>
+                
+                <!-- 网络层区域 -->
+                <rect x="30" y="145" width="540" height="90" rx="10" fill="#00a8ff" opacity="0.15" stroke="#00a8ff" stroke-width="2"/>
+                <rect x="30" y="145" width="140" height="90" rx="10" fill="#00a8ff" opacity="0.9"/>
+                <text x="100" y="175" text-anchor="middle" fill="white" font-size="13" font-weight="bold">网络层</text>
+                <text x="100" y="195" text-anchor="middle" fill="#e6e6e6" font-size="10">Network</text>
+                <text x="100" y="215" text-anchor="middle" fill="#ffa502" font-size="10">⚡ 神经</text>
+                
+                <!-- 网络层组件 -->
+                <rect x="180" y="155" width="60" height="35" rx="6" fill="#252536" stroke="#00a8ff"/>
+                <text x="210" y="178" text-anchor="middle" fill="#e6e6e6" font-size="10">5G/4G</text>
+                <rect x="250" y="155" width="60" height="35" rx="6" fill="#252536" stroke="#00a8ff"/>
+                <text x="280" y="178" text-anchor="middle" fill="#e6e6e6" font-size="10">WiFi</text>
+                <rect x="320" y="155" width="60" height="35" rx="6" fill="#252536" stroke="#00a8ff"/>
+                <text x="350" y="178" text-anchor="middle" fill="#e6e6e6" font-size="10">蓝牙</text>
+                <rect x="390" y="155" width="70" height="35" rx="6" fill="#252536" stroke="#00a8ff"/>
+                <text x="425" y="178" text-anchor="middle" fill="#e6e6e6" font-size="10">ZigBee</text>
+                <rect x="470" y="155" width="90" height="35" rx="6" fill="#252536" stroke="#00a8ff"/>
+                <text x="515" y="178" text-anchor="middle" fill="#e6e6e6" font-size="10">LoRa/NB</text>
+                
+                <text x="300" y="215" text-anchor="middle" fill="#8c9eb0" font-size="10">数据传输 · 协议转换 · 网络接入</text>
+                
+                <!-- 感知层区域 -->
+                <rect x="30" y="245" width="540" height="90" rx="10" fill="#00d4aa" opacity="0.15" stroke="#00d4aa" stroke-width="2"/>
+                <rect x="30" y="245" width="140" height="90" rx="10" fill="#00d4aa" opacity="0.9"/>
+                <text x="100" y="275" text-anchor="middle" fill="white" font-size="13" font-weight="bold">感知层</text>
+                <text x="100" y="295" text-anchor="middle" fill="#e6e6e6" font-size="10">Perception</text>
+                <text x="100" y="315" text-anchor="middle" fill="#ff4757" font-size="10">👁️ 五官</text>
+                
+                <!-- 感知层组件 -->
+                <rect x="180" y="255" width="70" height="35" rx="6" fill="#252536" stroke="#00d4aa"/>
+                <text x="215" y="278" text-anchor="middle" fill="#e6e6e6" font-size="10">传感器</text>
+                <rect x="260" y="255" width="60" height="35" rx="6" fill="#252536" stroke="#00d4aa"/>
+                <text x="290" y="278" text-anchor="middle" fill="#e6e6e6" font-size="10">RFID</text>
+                <rect x="330" y="255" width="70" height="35" rx="6" fill="#252536" stroke="#00d4aa"/>
+                <text x="365" y="278" text-anchor="middle" fill="#e6e6e6" font-size="10">二维码</text>
+                <rect x="410" y="255" width="70" height="35" rx="6" fill="#252536" stroke="#00d4aa"/>
+                <text x="445" y="278" text-anchor="middle" fill="#e6e6e6" font-size="10">摄像头</text>
+                <rect x="490" y="255" width="70" height="35" rx="6" fill="#252536" stroke="#00d4aa"/>
+                <text x="525" y="278" text-anchor="middle" fill="#e6e6e6" font-size="10">GPS</text>
+                
+                <text x="300" y="315" text-anchor="middle" fill="#8c9eb0" font-size="10">数据采集 · 物体识别 · 状态感知</text>
+                
+                <!-- 数据流箭头 -->
+                <defs>
+                    <marker id="dataArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#ffa502"/>
+                    </marker>
+                </defs>
+                
+                <!-- 上行数据流 -->
+                <line x1="15" y1="335" x2="15" y2="55" stroke="#ffa502" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#dataArrow)"/>
+                <text x="5" y="200" fill="#ffa502" font-size="9" transform="rotate(-90, 5, 200)">↑ 数据上传</text>
+                
+                <!-- 下行控制流 -->
+                <line x1="585" y1="55" x2="585" y2="335" stroke="#ff4757" stroke-width="2" stroke-dasharray="4,2"/>
+                <text x="595" y="200" fill="#ff4757" font-size="9" transform="rotate(90, 595, 200)">↓ 控制下发</text>
+            </svg>`;
+        }
+
+        // ========== 教师角色 SVG 图表生成函数 ==========
+
+        // 生成课程标准制定流程图
+        function generateCurriculumFlowSVG() {
+            return `<svg width="100%" height="320" viewBox="0 0 500 320" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <text x="250" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">课程标准制定流程</text>
+                
+                <!-- 步骤1 -->
+                <rect x="50" y="50" width="400" height="50" rx="8" fill="#7b68ee" opacity="0.9"/>
+                <text x="70" y="80" fill="white" font-size="14" font-weight="bold">① 课程定位分析</text>
+                <text x="280" y="80" fill="#e6e6e6" font-size="11">明确地位 → 确定对象 → 分析需求</text>
+                
+                <!-- 箭头 -->
+                <polygon points="250,100 245,110 255,110" fill="#00d4aa"/>
+                <line x1="250" y1="110" x2="250" y2="120" stroke="#00d4aa" stroke-width="2"/>
+                
+                <!-- 步骤2 -->
+                <rect x="50" y="120" width="400" height="50" rx="8" fill="#00a8ff" opacity="0.9"/>
+                <text x="70" y="150" fill="white" font-size="14" font-weight="bold">② 知识体系构建</text>
+                <text x="280" y="150" fill="#e6e6e6" font-size="11">梳理知识点 → 设计结构 → 确定策略</text>
+                
+                <!-- 箭头 -->
+                <polygon points="250,170 245,180 255,180" fill="#00d4aa"/>
+                <line x1="250" y1="180" x2="250" y2="190" stroke="#00d4aa" stroke-width="2"/>
+                
+                <!-- 步骤3 -->
+                <rect x="50" y="190" width="400" height="50" rx="8" fill="#00d4aa" opacity="0.9"/>
+                <text x="70" y="220" fill="white" font-size="14" font-weight="bold">③ 学时分配规划</text>
+                <text x="280" y="220" fill="#e6e6e6" font-size="11">分配学时 → 安排进度 → 预留机动</text>
+                
+                <!-- 箭头 -->
+                <polygon points="250,240 245,250 255,250" fill="#ffa502"/>
+                <line x1="250" y1="250" x2="250" y2="260" stroke="#ffa502" stroke-width="2"/>
+                
+                <!-- 步骤4 -->
+                <rect x="50" y="260" width="400" height="50" rx="8" fill="#ffa502" opacity="0.9"/>
+                <text x="70" y="290" fill="white" font-size="14" font-weight="bold">④ 考核方式设计</text>
+                <text x="280" y="290" fill="#e6e6e6" font-size="11">设计考核 → 确定标准 → 建立监控</text>
+            </svg>`;
+        }
+
+        // 生成课程结构图
+        function generateCurriculumStructureSVG() {
+            return `<svg width="100%" height="380" viewBox="0 0 600 380" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <text x="300" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">物联网通信协议课程结构</text>
+                
+                <!-- 课程信息卡片 -->
+                <rect x="30" y="45" width="250" height="100" rx="8" fill="#252536" stroke="#7b68ee"/>
+                <text x="50" y="70" fill="#7b68ee" font-size="12" font-weight="bold">📋 课程基本信息</text>
+                <text x="50" y="90" fill="#e6e6e6" font-size="10">课程名称: 物联网通信协议与应用</text>
+                <text x="50" y="105" fill="#e6e6e6" font-size="10">课程代码: IoT-COM-301</text>
+                <text x="50" y="120" fill="#e6e6e6" font-size="10">学分学时: 3学分 / 48学时</text>
+                <text x="50" y="135" fill="#00d4aa" font-size="10">理论32学时 + 实验16学时</text>
+                
+                <!-- 课程目标卡片 -->
+                <rect x="320" y="45" width="250" height="100" rx="8" fill="#252536" stroke="#00a8ff"/>
+                <text x="340" y="70" fill="#00a8ff" font-size="12" font-weight="bold">🎯 课程目标</text>
+                <text x="340" y="90" fill="#e6e6e6" font-size="10">知识: 掌握MQTT/CoAP/HTTP协议</text>
+                <text x="340" y="105" fill="#e6e6e6" font-size="10">能力: 协议选型与开发实践</text>
+                <text x="340" y="120" fill="#e6e6e6" font-size="10">素质: 工程思维与团队协作</text>
+                
+                <!-- 知识点模块 -->
+                <text x="300" y="165" text-anchor="middle" fill="#ffa502" font-size="14" font-weight="bold">📚 核心知识点模块</text>
+                
+                <rect x="30" y="180" width="170" height="55" rx="6" fill="#7b68ee" opacity="0.8"/>
+                <text x="115" y="200" text-anchor="middle" fill="white" font-size="11" font-weight="bold">模块一</text>
+                <text x="115" y="220" text-anchor="middle" fill="#e6e6e6" font-size="10">协议概述与分类</text>
+                
+                <rect x="220" y="180" width="170" height="55" rx="6" fill="#00a8ff" opacity="0.8"/>
+                <text x="305" y="200" text-anchor="middle" fill="white" font-size="11" font-weight="bold">模块二</text>
+                <text x="305" y="220" text-anchor="middle" fill="#e6e6e6" font-size="10">MQTT协议实践</text>
+                
+                <rect x="410" y="180" width="170" height="55" rx="6" fill="#00d4aa" opacity="0.8"/>
+                <text x="495" y="200" text-anchor="middle" fill="white" font-size="11" font-weight="bold">模块三</text>
+                <text x="495" y="220" text-anchor="middle" fill="#e6e6e6" font-size="10">CoAP协议实践</text>
+                
+                <rect x="30" y="245" width="170" height="55" rx="6" fill="#ffa502" opacity="0.8"/>
+                <text x="115" y="265" text-anchor="middle" fill="white" font-size="11" font-weight="bold">模块四</text>
+                <text x="115" y="285" text-anchor="middle" fill="#e6e6e6" font-size="10">HTTP/HTTPS应用</text>
+                
+                <rect x="220" y="245" width="170" height="55" rx="6" fill="#ff4757" opacity="0.8"/>
+                <text x="305" y="265" text-anchor="middle" fill="white" font-size="11" font-weight="bold">模块五</text>
+                <text x="305" y="285" text-anchor="middle" fill="#e6e6e6" font-size="10">蓝牙/ZigBee/LoRa</text>
+                
+                <rect x="410" y="245" width="170" height="55" rx="6" fill="#8b5cf6" opacity="0.8"/>
+                <text x="495" y="265" text-anchor="middle" fill="white" font-size="11" font-weight="bold">模块六</text>
+                <text x="495" y="285" text-anchor="middle" fill="#e6e6e6" font-size="10">协议选型对比</text>
+                
+                <!-- 学时分配 -->
+                <rect x="30" y="310" width="550" height="60" rx="8" fill="#252536" stroke="#00a8ff"/>
+                <text x="50" y="335" fill="#00a8ff" font-size="12" font-weight="bold">📊 学时分配</text>
+                <rect x="50" y="350" width="160" height="15" rx="4" fill="#7b68ee"/>
+                <text x="130" y="362" text-anchor="middle" fill="white" font-size="9">理论 32学时</text>
+                <rect x="220" y="350" width="80" height="15" rx="4" fill="#00d4aa"/>
+                <text x="260" y="362" text-anchor="middle" fill="white" font-size="9">实验 16学时</text>
+            </svg>`;
+        }
+
+        // 生成教材大纲原则图
+        function generateSyllabusPrincipleSVG() {
+            return `<svg width="100%" height="280" viewBox="0 0 500 280" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <text x="250" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">教材大纲设计五大原则</text>
+                
+                <!-- 五边形布局 -->
+                <polygon points="250,60 350,120 320,220 180,220 150,120" fill="none" stroke="#00a8ff" stroke-width="2" opacity="0.5"/>
+                
+                <!-- 原则节点 -->
+                <circle cx="250" cy="60" r="35" fill="#7b68ee"/>
+                <text x="250" y="55" text-anchor="middle" fill="white" font-size="11" font-weight="bold">科学性</text>
+                <text x="250" y="70" text-anchor="middle" fill="#e6e6e6" font-size="9">准确完整</text>
+                
+                <circle cx="350" cy="120" r="35" fill="#00a8ff"/>
+                <text x="350" y="115" text-anchor="middle" fill="white" font-size="11" font-weight="bold">系统性</text>
+                <text x="350" y="130" text-anchor="middle" fill="#e6e6e6" font-size="9">层次分明</text>
+                
+                <circle cx="320" cy="220" r="35" fill="#00d4aa"/>
+                <text x="320" y="215" text-anchor="middle" fill="white" font-size="11" font-weight="bold">实用性</text>
+                <text x="320" y="230" text-anchor="middle" fill="#e6e6e6" font-size="9">贴近应用</text>
+                
+                <circle cx="180" cy="220" r="35" fill="#ffa502"/>
+                <text x="180" y="215" text-anchor="middle" fill="white" font-size="11" font-weight="bold">创新性</text>
+                <text x="180" y="230" text-anchor="middle" fill="#e6e6e6" font-size="9">融入新技</text>
+                
+                <circle cx="150" cy="120" r="35" fill="#ff4757"/>
+                <text x="150" y="115" text-anchor="middle" fill="white" font-size="11" font-weight="bold">可读性</text>
+                <text x="150" y="130" text-anchor="middle" fill="#e6e6e6" font-size="9">简洁直观</text>
+                
+                <!-- 连接线 -->
+                <line x1="250" y1="95" x2="315" y2="120" stroke="#00d4aa" stroke-width="1" opacity="0.6"/>
+                <line x1="315" y2="155" x2="285" y2="185" stroke="#00d4aa" stroke-width="1" opacity="0.6"/>
+                <line x1="285" y1="220" x2="215" y2="220" stroke="#00d4aa" stroke-width="1" opacity="0.6"/>
+                <line x1="215" y1="185" x2="185" y2="155" stroke="#00d4aa" stroke-width="1" opacity="0.6"/>
+                <line x1="185" y1="120" x2="215" y2="95" stroke="#00d4aa" stroke-width="1" opacity="0.6"/>
+            </svg>`;
+        }
+
+        // 生成教材大纲树状图
+        function generateSyllabusTreeSVG() {
+            return `<svg width="100%" height="400" viewBox="0 0 600 400" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <text x="300" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">物联网技术教材大纲结构</text>
+                
+                <!-- 根节点 -->
+                <rect x="200" y="45" width="200" height="35" rx="6" fill="#7b68ee"/>
+                <text x="300" y="68" text-anchor="middle" fill="white" font-size="12" font-weight="bold">物联网技术基础与实践</text>
+                
+                <!-- 主干连接线 -->
+                <line x1="300" y1="80" x2="300" y2="95" stroke="#00a8ff" stroke-width="2"/>
+                
+                <!-- 章节节点 - 第一行 -->
+                <rect x="30" y="100" width="130" height="30" rx="4" fill="#00a8ff"/>
+                <text x="95" y="120" text-anchor="middle" fill="white" font-size="10">第一章 概述</text>
+                
+                <rect x="180" y="100" width="130" height="30" rx="4" fill="#00a8ff"/>
+                <text x="245" y="120" text-anchor="middle" fill="white" font-size="10">第二章 架构</text>
+                
+                <rect x="330" y="100" width="130" height="30" rx="4" fill="#00a8ff"/>
+                <text x="395" y="120" text-anchor="middle" fill="white" font-size="10">第三章 传感器</text>
+                
+                <rect x="480" y="100" width="130" height="30" rx="4" fill="#00a8ff"/>
+                <text x="545" y="120" text-anchor="middle" fill="white" font-size="10">第四章 协议</text>
+                
+                <!-- 连接线 -->
+                <line x1="95" y1="130" x2="95" y2="145" stroke="#00d4aa" stroke-width="1"/>
+                <line x1="245" y1="130" x2="245" y2="145" stroke="#00d4aa" stroke-width="1"/>
+                <line x1="395" y1="130" x2="395" y2="145" stroke="#00d4aa" stroke-width="1"/>
+                <line x1="545" y1="130" x2="545" y2="145" stroke="#00d4aa" stroke-width="1"/>
+                
+                <!-- 小节节点 -->
+                <rect x="15" y="150" width="110" height="22" rx="3" fill="#252536" stroke="#00a8ff"/>
+                <text x="70" y="165" text-anchor="middle" fill="#e6e6e6" font-size="9">1.1 定义与发展</text>
+                
+                <rect x="15" y="175" width="110" height="22" rx="3" fill="#252536" stroke="#00a8ff"/>
+                <text x="70" y="190" text-anchor="middle" fill="#e6e6e6" font-size="9">1.2 应用领域</text>
+                
+                <rect x="165" y="150" width="110" height="22" rx="3" fill="#252536" stroke="#00a8ff"/>
+                <text x="220" y="165" text-anchor="middle" fill="#e6e6e6" font-size="9">2.1 三层架构</text>
+                
+                <rect x="165" y="175" width="110" height="22" rx="3" fill="#252536" stroke="#00a8ff"/>
+                <text x="220" y="190" text-anchor="middle" fill="#e6e6e6" font-size="9">2.2 各层详解</text>
+                
+                <rect x="315" y="150" width="110" height="22" rx="3" fill="#252536" stroke="#00a8ff"/>
+                <text x="370" y="165" text-anchor="middle" fill="#e6e6e6" font-size="9">3.1 传感器概述</text>
+                
+                <rect x="315" y="175" width="110" height="22" rx="3" fill="#252536" stroke="#00a8ff"/>
+                <text x="370" y="190" text-anchor="middle" fill="#e6e6e6" font-size="9">3.2 类型与应用</text>
+                
+                <rect x="465" y="150" width="110" height="22" rx="3" fill="#252536" stroke="#00a8ff"/>
+                <text x="520" y="165" text-anchor="middle" fill="#e6e6e6" font-size="9">4.1 MQTT协议</text>
+                
+                <rect x="465" y="175" width="110" height="22" rx="3" fill="#252536" stroke="#00a8ff"/>
+                <text x="520" y="190" text-anchor="middle" fill="#e6e6e6" font-size="9">4.2 CoAP协议</text>
+                
+                <!-- 章节节点 - 第二行 -->
+                <rect x="30" y="210" width="130" height="30" rx="4" fill="#00d4aa"/>
+                <text x="95" y="230" text-anchor="middle" fill="white" font-size="10">第五章 嵌入式</text>
+                
+                <rect x="180" y="210" width="130" height="30" rx="4" fill="#00d4aa"/>
+                <text x="245" y="230" text-anchor="middle" fill="white" font-size="10">第六章 数据处理</text>
+                
+                <rect x="330" y="210" width="130" height="30" rx="4" fill="#00d4aa"/>
+                <text x="395" y="230" text-anchor="middle" fill="white" font-size="10">第七章 应用开发</text>
+                
+                <rect x="480" y="210" width="130" height="30" rx="4" fill="#00d4aa"/>
+                <text x="545" y="230" text-anchor="middle" fill="white" font-size="10">第八章 综合案例</text>
+                
+                <!-- 连接线 -->
+                <line x1="95" y1="240" x2="95" y2="255" stroke="#ffa502" stroke-width="1"/>
+                <line x1="245" y1="240" x2="245" y2="255" stroke="#ffa502" stroke-width="1"/>
+                <line x1="395" y1="240" x2="395" y2="255" stroke="#ffa502" stroke-width="1"/>
+                <line x1="545" y1="240" x2="545" y2="255" stroke="#ffa502" stroke-width="1"/>
+                
+                <!-- 小节节点 - 第二行 -->
+                <rect x="15" y="260" width="110" height="22" rx="3" fill="#252536" stroke="#00d4aa"/>
+                <text x="70" y="275" text-anchor="middle" fill="#e6e6e6" font-size="9">5.1 Arduino</text>
+                
+                <rect x="15" y="285" width="110" height="22" rx="3" fill="#252536" stroke="#00d4aa"/>
+                <text x="70" y="300" text-anchor="middle" fill="#e6e6e6" font-size="9">5.2 ESP32</text>
+                
+                <rect x="165" y="260" width="110" height="22" rx="3" fill="#252536" stroke="#00d4aa"/>
+                <text x="220" y="275" text-anchor="middle" fill="#e6e6e6" font-size="9">6.1 数据采集</text>
+                
+                <rect x="165" y="285" width="110" height="22" rx="3" fill="#252536" stroke="#00d4aa"/>
+                <text x="220" y="300" text-anchor="middle" fill="#e6e6e6" font-size="9">6.2 数据分析</text>
+                
+                <rect x="315" y="260" width="110" height="22" rx="3" fill="#252536" stroke="#00d4aa"/>
+                <text x="370" y="275" text-anchor="middle" fill="#e6e6e6" font-size="9">7.1 智能家居</text>
+                
+                <rect x="315" y="285" width="110" height="22" rx="3" fill="#252536" stroke="#00d4aa"/>
+                <text x="370" y="300" text-anchor="middle" fill="#e6e6e6" font-size="9">7.2 智慧农业</text>
+                
+                <rect x="465" y="260" width="110" height="22" rx="3" fill="#252536" stroke="#00d4aa"/>
+                <text x="520" y="275" text-anchor="middle" fill="#e6e6e6" font-size="9">8.1 监测系统</text>
+                
+                <rect x="465" y="285" width="110" height="22" rx="3" fill="#252536" stroke="#00d4aa"/>
+                <text x="520" y="300" text-anchor="middle" fill="#e6e6e6" font-size="9">8.2 照明系统</text>
+                
+                <!-- 页数统计 -->
+                <rect x="30" y="330" width="550" height="60" rx="8" fill="#252536" stroke="#ffa502"/>
+                <text x="50" y="355" fill="#ffa502" font-size="12" font-weight="bold">📖 预计页数分布</text>
+                <text x="50" y="375" fill="#e6e6e6" font-size="10">概述20页 | 架构30页 | 传感器40页 | 协议50页 | 嵌入式40页 | 数据30页 | 应用40页 | 案例50页</text>
+            </svg>`;
+        }
+
+        // 生成题库设计图
+        function generateQuestionBankDesignSVG() {
+            return `<svg width="100%" height="300" viewBox="0 0 500 300" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <text x="250" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">高质量题库设计要素</text>
+                
+                <!-- 题型多样化 -->
+                <rect x="30" y="50" width="220" height="80" rx="8" fill="#7b68ee" opacity="0.8"/>
+                <text x="140" y="75" text-anchor="middle" fill="white" font-size="12" font-weight="bold">📝 题型多样化</text>
+                <text x="140" y="95" text-anchor="middle" fill="#e6e6e6" font-size="10">单选 | 多选 | 判断</text>
+                <text x="140" y="115" text-anchor="middle" fill="#e6e6e6" font-size="10">填空 | 简答 | 实操</text>
+                
+                <!-- 难度梯度化 -->
+                <rect x="260" y="50" width="220" height="80" rx="8" fill="#00a8ff" opacity="0.8"/>
+                <text x="370" y="75" text-anchor="middle" fill="white" font-size="12" font-weight="bold">📊 难度梯度化</text>
+                <rect x="280" y="90" width="60" height="20" rx="4" fill="#00d4aa"/>
+                <text x="310" y="105" text-anchor="middle" fill="white" font-size="9">简单30%</text>
+                <rect x="350" y="90" width="100" height="20" rx="4" fill="#ffa502"/>
+                <text x="400" y="105" text-anchor="middle" fill="white" font-size="9">中等50%</text>
+                <rect x="460" y="90" width="40" height="20" rx="4" fill="#ff4757"/>
+                <text x="480" y="105" text-anchor="middle" fill="white" font-size="9">困难20%</text>
+                
+                <!-- 知识覆盖 -->
+                <rect x="30" y="140" width="220" height="80" rx="8" fill="#00d4aa" opacity="0.8"/>
+                <text x="140" y="165" text-anchor="middle" fill="white" font-size="12" font-weight="bold">📚 知识覆盖全面</text>
+                <text x="140" y="185" text-anchor="middle" fill="#e6e6e6" font-size="10">覆盖所有核心知识点</text>
+                <text x="140" y="205" text-anchor="middle" fill="#e6e6e6" font-size="10">重点内容多设题目</text>
+                
+                <!-- 题目质量 -->
+                <rect x="260" y="140" width="220" height="80" rx="8" fill="#ffa502" opacity="0.8"/>
+                <text x="370" y="165" text-anchor="middle" fill="white" font-size="12" font-weight="bold">✅ 题目质量高</text>
+                <text x="370" y="185" text-anchor="middle" fill="#e6e6e6" font-size="10">题干表述清晰准确</text>
+                <text x="370" y="205" text-anchor="middle" fill="#e6e6e6" font-size="10">答案解析详细完整</text>
+                
+                <!-- 实用性 -->
+                <rect x="145" y="230" width="220" height="60" rx="8" fill="#ff4757" opacity="0.8"/>
+                <text x="255" y="255" text-anchor="middle" fill="white" font-size="12" font-weight="bold">💡 实用性强</text>
+                <text x="255" y="275" text-anchor="middle" fill="#e6e6e6" font-size="10">贴近实际应用 | 便于教学考核</text>
+            </svg>`;
+        }
+
+        // 生成题库分布图
+        function generateQuestionBankDistributionSVG() {
+            return `<svg width="100%" height="350" viewBox="0 0 600 350" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <text x="300" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">物联网基础题库分布</text>
+                
+                <!-- 题型分布饼图 -->
+                <text x="150" y="55" text-anchor="middle" fill="#ffa502" font-size="12" font-weight="bold">题型分布</text>
+                
+                <!-- 饼图 -->
+                <circle cx="150" cy="130" r="60" fill="#7b68ee"/>
+                <path d="M150,130 L150,70 A60,60 0 0,1 210,130 Z" fill="#00a8ff"/>
+                <path d="M150,130 L210,130 A60,60 0 0,1 150,190 Z" fill="#00d4aa"/>
+                <path d="M150,130 L150,190 A60,60 0 0,1 90,130 Z" fill="#ffa502"/>
+                <path d="M150,130 L90,130 A60,60 0 0,1 150,70 Z" fill="#ff4757"/>
+                
+                <!-- 题型标注 -->
+                <text x="150" y="85" text-anchor="middle" fill="white" font-size="9">单选40%</text>
+                <text x="195" y="130" text-anchor="middle" fill="white" font-size="9">多选20%</text>
+                <text x="150" y="175" text-anchor="middle" fill="white" font-size="9">判断20%</text>
+                <text x="105" y="130" text-anchor="middle" fill="white" font-size="9">简答10%</text>
+                <text x="150" y="130" text-anchor="middle" fill="white" font-size="9">实操10%</text>
+                
+                <!-- 知识点分布 -->
+                <text x="450" y="55" text-anchor="middle" fill="#ffa502" font-size="12" font-weight="bold">知识点覆盖</text>
+                
+                <!-- 横向条形图 -->
+                <rect x="320" y="70" width="30" height="25" rx="4" fill="#7b68ee"/>
+                <rect x="320" y="70" width="150" height="25" rx="4" fill="#7b68ee" opacity="0.3"/>
+                <text x="330" y="88" fill="white" font-size="10">概述 15题</text>
+                
+                <rect x="320" y="100" width="40" height="25" rx="4" fill="#00a8ff"/>
+                <rect x="320" y="100" width="200" height="25" rx="4" fill="#00a8ff" opacity="0.3"/>
+                <text x="330" y="118" fill="white" font-size="10">架构 20题</text>
+                
+                <rect x="320" y="130" width="50" height="25" rx="4" fill="#00d4aa"/>
+                <rect x="320" y="130" width="250" height="25" rx="4" fill="#00d4aa" opacity="0.3"/>
+                <text x="330" y="148" fill="white" font-size="10">传感器 25题</text>
+                
+                <rect x="320" y="160" width="40" height="25" rx="4" fill="#ffa502"/>
+                <rect x="320" y="160" width="200" height="25" rx="4" fill="#ffa502" opacity="0.3"/>
+                <text x="330" y="178" fill="white" font-size="10">协议 20题</text>
+                
+                <rect x="320" y="190" width="30" height="25" rx="4" fill="#ff4757"/>
+                <rect x="320" y="190" width="150" height="25" rx="4" fill="#ff4757" opacity="0.3"/>
+                <text x="330" y="208" fill="white" font-size="10">嵌入式 15题</text>
+                
+                <rect x="320" y="220" width="10" height="25" rx="4" fill="#8b5cf6"/>
+                <rect x="320" y="220" width="50" height="25" rx="4" fill="#8b5cf6" opacity="0.3"/>
+                <text x="330" y="238" fill="white" font-size="10">案例 5题</text>
+                
+                <!-- 题库统计 -->
+                <rect x="30" y="260" width="550" height="80" rx="8" fill="#252536" stroke="#00a8ff"/>
+                <text x="50" y="285" fill="#00a8ff" font-size="12" font-weight="bold">📊 题库统计信息</text>
+                <text x="50" y="305" fill="#e6e6e6" font-size="10">题目总数: 100题 | 适用对象: 物联网工程专业学生</text>
+                <text x="50" y="325" fill="#e6e6e6" font-size="10">单选80分 | 多选60分 | 判断20分 | 简答100分 | 实操150分</text>
+            </svg>`;
+        }
+
+        // 生成PPT原则图
+        function generatePPTPrincipleSVG() {
+            return `<svg width="100%" height="280" viewBox="0 0 500 280" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <text x="250" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">PPT课件设计五大原则</text>
+                
+                <!-- 原则卡片 -->
+                <rect x="30" y="50" width="140" height="70" rx="8" fill="#7b68ee" opacity="0.9"/>
+                <text x="100" y="75" text-anchor="middle" fill="white" font-size="11" font-weight="bold">内容精简</text>
+                <text x="100" y="95" text-anchor="middle" fill="#e6e6e6" font-size="9">每页≤6要点</text>
+                <text x="100" y="110" text-anchor="middle" fill="#e6e6e6" font-size="9">文字简洁</text>
+                
+                <rect x="180" y="50" width="140" height="70" rx="8" fill="#00a8ff" opacity="0.9"/>
+                <text x="250" y="75" text-anchor="middle" fill="white" font-size="11" font-weight="bold">视觉统一</text>
+                <text x="250" y="95" text-anchor="middle" fill="#e6e6e6" font-size="9">统一配色</text>
+                <text x="250" y="110" text-anchor="middle" fill="#e6e6e6" font-size="9">统一字体</text>
+                
+                <rect x="330" y="50" width="140" height="70" rx="8" fill="#00d4aa" opacity="0.9"/>
+                <text x="400" y="75" text-anchor="middle" fill="white" font-size="11" font-weight="bold">图文并茂</text>
+                <text x="400" y="95" text-anchor="middle" fill="#e6e6e6" font-size="9">多用图表</text>
+                <text x="400" y="110" text-anchor="middle" fill="#e6e6e6" font-size="9">适度动画</text>
+                
+                <rect x="105" y="130" width="140" height="70" rx="8" fill="#ffa502" opacity="0.9"/>
+                <text x="175" y="155" text-anchor="middle" fill="white" font-size="11" font-weight="bold">逻辑清晰</text>
+                <text x="175" y="175" text-anchor="middle" fill="#e6e6e6" font-size="9">顺序合理</text>
+                <text x="175" y="190" text-anchor="middle" fill="#e6e6e6" font-size="9">过渡自然</text>
+                
+                <rect x="255" y="130" width="140" height="70" rx="8" fill="#ff4757" opacity="0.9"/>
+                <text x="325" y="155" text-anchor="middle" fill="white" font-size="11" font-weight="bold">互动设计</text>
+                <text x="325" y="175" text-anchor="middle" fill="#e6e6e6" font-size="9">互动环节</text>
+                <text x="325" y="190" text-anchor="middle" fill="#e6e6e6" font-size="9">引导思考</text>
+                
+                <!-- 连接箭头 -->
+                <path d="M100 120 L175 130" stroke="#00a8ff" stroke-width="2" fill="none" opacity="0.5"/>
+                <path d="M250 120 L175 130" stroke="#00a8ff" stroke-width="2" fill="none" opacity="0.5"/>
+                <path d="M250 120 L325 130" stroke="#00a8ff" stroke-width="2" fill="none" opacity="0.5"/>
+                <path d="M400 120 L325 130" stroke="#00a8ff" stroke-width="2" fill="none" opacity="0.5"/>
+                
+                <!-- 底部提示 -->
+                <rect x="30" y="210" width="440" height="60" rx="8" fill="#252536" stroke="#00a8ff"/>
+                <text x="250" y="235" text-anchor="middle" fill="#00a8ff" font-size="12" font-weight="bold">💡 设计建议</text>
+                <text x="250" y="255" text-anchor="middle" fill="#e6e6e6" font-size="10">科技风格: 深蓝主色调 | 教育风格: 清新简洁 | 商务风格: 简约大气</text>
+            </svg>`;
+        }
+
+        // 生成PPT大纲图
+        function generatePPTOutlineSVG() {
+            return `<svg width="100%" height="380" viewBox="0 0 600 380" style="margin-top: 16px; border-radius: 8px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <text x="300" y="25" text-anchor="middle" fill="#00a8ff" font-size="16" font-weight="bold">物联网三层架构PPT大纲</text>
+                
+                <!-- 课件信息 -->
+                <rect x="30" y="45" width="550" height="50" rx="8" fill="#252536" stroke="#7b68ee"/>
+                <text x="50" y="70" fill="#7b68ee" font-size="12" font-weight="bold">📊 课件信息</text>
+                <text x="200" y="70" fill="#e6e6e6" font-size="10">主题: 物联网三层架构详解</text>
+                <text x="400" y="70" fill="#e6e6e6" font-size="10">页数: 15页 | 时长: 45分钟</text>
+                
+                <!-- 幻灯片时间线 -->
+                <line x1="50" y1="120" x2="550" y2="120" stroke="#00a8ff" stroke-width="3"/>
+                
+                <!-- 幻灯片节点 -->
+                <circle cx="50" cy="120" r="20" fill="#7b68ee"/>
+                <text x="50" y="125" text-anchor="middle" fill="white" font-size="10">1</text>
+                <text x="50" y="150" text-anchor="middle" fill="#e6e6e6" font-size="9">封面</text>
+                
+                <circle cx="100" cy="120" r="20" fill="#00a8ff"/>
+                <text x="100" y="125" text-anchor="middle" fill="white" font-size="10">2</text>
+                <text x="100" y="150" text-anchor="middle" fill="#e6e6e6" font-size="9">目录</text>
+                
+                <circle cx="150" cy="120" r="20" fill="#00a8ff"/>
+                <text x="150" y="125" text-anchor="middle" fill="white" font-size="10">3</text>
+                <text x="150" y="150" text-anchor="middle" fill="#e6e6e6" font-size="9">概述</text>
+                
+                <circle cx="200" cy="120" r="20" fill="#00d4aa"/>
+                <text x="200" y="125" text-anchor="middle" fill="white" font-size="10">4</text>
+                <text x="200" y="150" text-anchor="middle" fill="#e6e6e6" font-size="9">架构总览</text>
+                
+                <!-- 感知层区域 -->
+                <rect x="230" y="100" width="90" height="80" rx="6" fill="#00d4aa" opacity="0.2" stroke="#00d4aa"/>
+                <text x="275" y="180" text-anchor="middle" fill="#00d4aa" font-size="10" font-weight="bold">感知层详解</text>
+                <circle cx="250" cy="120" r="15" fill="#00d4aa"/>
+                <text x="250" y="125" text-anchor="middle" fill="white" font-size="9">5</text>
+                <circle cx="275" cy="120" r="15" fill="#00d4aa"/>
+                <text x="275" y="125" text-anchor="middle" fill="white" font-size="9">6</text>
+                <circle cx="300" cy="120" r="15" fill="#00d4aa"/>
+                <text x="300" y="125" text-anchor="middle" fill="white" font-size="9">7</text>
+                
+                <!-- 网络层区域 -->
+                <rect x="330" y="100" width="90" height="80" rx="6" fill="#00a8ff" opacity="0.2" stroke="#00a8ff"/>
+                <text x="375" y="180" text-anchor="middle" fill="#00a8ff" font-size="10" font-weight="bold">网络层详解</text>
+                <circle cx="350" cy="120" r="15" fill="#00a8ff"/>
+                <text x="350" y="125" text-anchor="middle" fill="white" font-size="9">8</text>
+                <circle cx="375" cy="120" r="15" fill="#00a8ff"/>
+                <text x="375" y="125" text-anchor="middle" fill="white" font-size="9">9</text>
+                <circle cx="400" cy="120" r="15" fill="#00a8ff"/>
+                <text x="400" y="125" text-anchor="middle" fill="white" font-size="9">10</text>
+                
+                <!-- 应用层区域 -->
+                <rect x="430" y="100" width="90" height="80" rx="6" fill="#7b68ee" opacity="0.2" stroke="#7b68ee"/>
+                <text x="475" y="180" text-anchor="middle" fill="#7b68ee" font-size="10" font-weight="bold">应用层详解</text>
+                <circle cx="450" cy="120" r="15" fill="#7b68ee"/>
+                <text x="450" y="125" text-anchor="middle" fill="white" font-size="9">11</text>
+                <circle cx="475" cy="120" r="15" fill="#7b68ee"/>
+                <text x="475" y="125" text-anchor="middle" fill="white" font-size="9">12</text>
+                <circle cx="500" cy="120" r="15" fill="#7b68ee"/>
+                <text x="500" y="125" text-anchor="middle" fill="white" font-size="9">13</text>
+                
+                <circle cx="550" cy="120" r="20" fill="#ffa502"/>
+                <text x="550" y="125" text-anchor="middle" fill="white" font-size="10">14</text>
+                <text x="550" y="150" text-anchor="middle" fill="#e6e6e6" font-size="9">总结</text>
+                
+                <!-- 内容详情 -->
+                <rect x="30" y="200" width="270" height="170" rx="8" fill="#252536" stroke="#00d4aa"/>
+                <text x="50" y="225" fill="#00d4aa" font-size="11" font-weight="bold">感知层 (第5-7页)</text>
+                <text x="50" y="245" fill="#e6e6e6" font-size="10">• 功能: 数据采集、物体识别</text>
+                <text x="50" y="260" fill="#e6e6e6" font-size="10">• 技术: 传感器、RFID、摄像头</text>
+                <text x="50" y="275" fill="#e6e6e6" font-size="10">• 案例: 温湿度监测系统</text>
+                <text x="50" y="290" fill="#e6e6e6" font-size="10">• 实践: Arduino传感器读取</text>
+                
+                <rect x="320" y="200" width="270" height="170" rx="8" fill="#252536" stroke="#00a8ff"/>
+                <text x="340" y="225" fill="#00a8ff" font-size="11" font-weight="bold">网络层 (第8-10页)</text>
+                <text x="340" y="245" fill="#e6e6e6" font-size="10">• 功能: 数据传输、协议转换</text>
+                <text x="340" y="260" fill="#e6e6e6" font-size="10">• 技术: 5G/WiFi/蓝牙/ZigBee</text>
+                <text x="340" y="275" fill="#e6e6e6" font-size="10">• 案例: MQTT消息传输</text>
+                <text x="340" y="290" fill="#e6e6e6" font-size="10">• 实践: MQTT客户端开发</text>
+                
+                <text x="300" y="320" text-anchor="middle" fill="#7b68ee" font-size="11" font-weight="bold">应用层 (第11-13页)</text>
+                <text x="300" y="340" text-anchor="middle" fill="#e6e6e6" font-size="10">功能: 数据处理、智能决策 | 技术: 云计算、大数据、AI</text>
+                <text x="300" y="360" text-anchor="middle" fill="#e6e6e6" font-size="10">案例: 智能家居平台 | 实践: 数据可视化展示</text>
+            </svg>`;
+        }
+
+        // 生成AI回复 - 文字回复（取消图片）
+        function generateAIResponse(message) {
+            const responses = {
+                '什么是物联网？': {
+                    text: `<strong>物联网（Internet of Things，IoT）</strong>是指通过各种信息传感器、射频识别技术、全球定位系统等装置，实时采集物体信息，实现物与物、物与人的泛在连接。
+
+<strong>📚 核心概念：</strong>
+• <strong>全面感知：</strong>利用RFID、传感器、二维码等随时随地获取物体信息
+• <strong>可靠传输：</strong>通过各种网络将信息实时准确地传递出去  
+• <strong>智能处理：</strong>利用云计算、AI等技术对数据进行分析和处理`,
+                    image: generateIoTArchitectureSVG(),
+                    code: null
+                },
+                '物联网的三层架构是什么？': {
+                    text: `<strong>物联网三层架构</strong>是物联网系统设计的基础框架：
+
+<strong>🔹 感知层（Perception Layer）</strong>
+感知层是物联网的"皮肤"和"五官"，负责识别物体、采集信息。
+• <strong>功能：</strong>数据采集、短距离传输
+• <strong>技术：</strong>传感器、RFID、二维码、摄像头
+• <strong>特点：</strong>低功耗、低成本、小型化
+
+<strong>🔹 网络层（Network Layer）</strong>
+网络层是物联网的"神经系统"，负责传递和处理信息。
+• <strong>功能：</strong>数据传输、网络接入
+• <strong>技术：</strong>5G/4G、WiFi、蓝牙、ZigBee、LoRa
+• <strong>特点：</strong>高可靠、低延迟、广覆盖
+
+<strong>🔹 应用层（Application Layer）</strong>
+应用层是物联网的"大脑"，负责数据分析和业务处理。
+• <strong>功能：</strong>数据处理、业务应用
+• <strong>技术：</strong>云计算、大数据、人工智能
+• <strong>特点：</strong>智能化、个性化、服务化`,
+                    image: generateIoTLayerDiagramSVG(),
+                    code: {
+                        language: '架构示意',
+                        content: `┌─────────────────────────────────┐
+│         应用层 (Application)      │
+│   云计算 | 大数据 | AI | 业务应用  │
+├─────────────────────────────────┤
+│         网络层 (Network)          │
+│   5G/4G | WiFi | 蓝牙 | ZigBee    │
+├─────────────────────────────────┤
+│         感知层 (Perception)       │
+│   传感器 | RFID | 二维码 | 摄像头  │
+└─────────────────────────────────┘`
+                    }
+                },
+                '常见传感器类型有哪些？': {
+                    text: `<strong>传感器是物联网感知层的核心设备</strong>，用于检测和测量各种物理量、化学量、生物量，并将其转换为电信号输出。
+
+<strong>📊 常见传感器类型：</strong>
+
+<strong>1. 温度传感器 🌡️</strong>
+• 热电偶、热敏电阻、PT100
+• 应用：环境监测、工业控制、智能家居
+
+<strong>2. 湿度传感器 💧</strong>
+• 电容式、电阻式湿度传感器
+• 应用：气象监测、农业灌溉、仓储管理
+
+<strong>3. 光照传感器 ☀️</strong>
+• 光敏电阻、光电二极管
+• 应用：智能照明、农业大棚、摄影设备
+
+<strong>4. 气体传感器 💨</strong>
+• CO₂传感器、PM2.5传感器、有害气体检测
+• 应用：空气质量监测、工业安全、智能家居
+
+<strong>5. 压力传感器 ⚖️</strong>
+• 压阻式、电容式压力传感器
+• 应用：工业测量、医疗设备、汽车电子
+
+<strong>6. 加速度传感器 📱</strong>
+• MEMS加速度计、陀螺仪
+• 应用：手机、无人机、运动监测`,
+                    code: null
+                },
+                'MQTT协议的工作原理是什么？': {
+                    text: `<strong>MQTT（Message Queuing Telemetry Transport）</strong>是一种轻量级的发布/订阅消息传输协议，专为物联网设备设计。
+
+<strong>🔄 工作原理：</strong>
+<strong>1. Broker（代理服务器）</strong> - 负责接收和分发消息
+<strong>2. Publisher（发布者）</strong> - 设备向特定主题发布消息
+<strong>3. Subscriber（订阅者）</strong> - 设备订阅特定主题接收消息
+
+<strong>⚡ MQTT特点：</strong>
+• <strong>轻量级：</strong>协议头部最小仅2字节，适合低带宽环境
+• <strong>可靠传输：</strong>支持QoS质量等级（0、1、2）
+• <strong>低功耗：</strong>适合资源受限的嵌入式设备
+• <strong>实时性：</strong>支持实时消息推送，延迟低
+
+<strong>📡 应用场景：</strong>
+智能家居控制、工业设备监控、车联网通信、远程医疗`,
+                    code: {
+                        language: 'Python MQTT示例',
+                        content: `import paho.mqtt.client as mqtt
+
+# 创建客户端
+client = mqtt.Client()
+
+# 连接到MQTT Broker
+client.connect("broker.hivemq.com", 1883, 60)
+
+# 发布消息到主题
+client.publish("sensor/temperature", "25.5°C")
+
+# 订阅主题
+client.subscribe("sensor/#")
+
+# 启动消息循环
+client.loop_start()`
+                    }
+                },
+                '物联网有哪些典型应用场景？': {
+                    text: `<strong>物联网应用已渗透到各行各业</strong>，以下是典型应用场景：
+
+<strong>🏠 智能家居</strong>
+• 智能灯光控制、智能门锁、智能家电
+• 环境监测（温度、湿度、空气质量）
+• 远程控制与自动化场景联动
+
+<strong>🏙️ 智慧城市</strong>
+• 智能交通：路况监测、智能停车、信号灯优化
+• 环境监测：空气质量、噪声监测、水质检测
+• 公共安全：视频监控、应急报警、消防联动
+
+<strong>🏭 工业物联网</strong>
+• 设备状态监控与预测维护
+• 生产过程优化与质量控制
+• 能耗管理与节能减排
+
+<strong>🌾 智慧农业</strong>
+• 温室大棚环境监控
+• 精准灌溉与施肥
+• 农产品质量追溯
+
+<strong>🏥 智慧医疗</strong>
+• 远程健康监护
+• 医疗设备管理
+• 智能病房系统`,
+                    code: null
+                },
+                '温度传感器的工作原理是什么？': {
+                    text: `<strong>温度传感器</strong>是将温度变化转换为电信号输出的装置。
+
+<strong>🌡️ 常见类型及原理：</strong>
+
+<strong>1. 热电偶</strong>
+• 原理：两种不同金属焊接在一起，温度变化产生热电势
+• 特点：测温范围广（-200°C~1800°C）、响应快
+• 应用：工业高温测量、炉温控制
+
+<strong>2. 热敏电阻（NTC/PTC）</strong>
+• 原理：电阻值随温度变化而变化
+• 特点：灵敏度高、体积小、成本低
+• 应用：家电温度控制、环境监测
+
+<strong>3. PT100铂电阻</strong>
+• 原理：铂丝电阻随温度线性变化
+• 特点：精度高、稳定性好、线性度好
+• 应用：精密测量、实验室设备
+
+<strong>4. 数字温度传感器（DS18B20）</strong>
+• 原理：集成温度检测与数字转换
+• 特点：数字输出、单总线接口、无需校准
+• 应用：智能家居、嵌入式系统`,
+                    code: {
+                        language: 'Arduino示例',
+                        content: `// DS18B20温度传感器读取示例
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+OneWire oneWire(2);
+DallasTemperature sensors(&oneWire);
+
+void setup() {
+  sensors.begin();
+}
+
+void loop() {
+  sensors.requestTemperatures();
+  float temp = sensors.getTempCByIndex(0);
+  Serial.print("温度: ");
+  Serial.print(temp);
+  Serial.println("°C");
+  delay(1000);
+}`
+                    }
+                },
+                'HTTP和MQTT有什么区别？': {
+                    text: `<strong>HTTP与MQTT是两种不同的通信协议</strong>，各有适用场景：
+
+<strong>📊 主要区别对比：</strong>
+
+<strong>通信模式：</strong>
+• HTTP：请求-响应模式（客户端主动请求）
+• MQTT：发布-订阅模式（服务器推送消息）
+
+<strong>协议开销：</strong>
+• HTTP：头部较大（数百字节），适合传输大量数据
+• MQTT：头部最小仅2字节，适合频繁小数据传输
+
+<strong>实时性：</strong>
+• HTTP：需要轮询，延迟较高
+• MQTT：实时推送，延迟低
+
+<strong>连接方式：</strong>
+• HTTP：短连接，每次请求需重新建立连接
+• MQTT：长连接，保持连接状态
+
+<strong>适用场景：</strong>
+• HTTP：Web应用、API接口、文件传输
+• MQTT：物联网设备、实时监控、消息推送`,
+                    code: null
+                },
+                'Arduino开发入门指南': {
+                    text: `<strong>Arduino</strong>是一款开源电子原型平台，非常适合物联网入门学习。
+
+<strong>🔧 Arduino开发入门：</strong>
+
+<strong>1. 硬件准备</strong>
+• Arduino开发板（推荐Uno或Nano）
+• USB数据线
+• 面包板、杜邦线
+• 基础电子元件（LED、电阻、传感器等）
+
+<strong>2. 开发环境安装</strong>
+• 下载Arduino IDE软件
+• 安装驱动程序
+• 配置开发板型号和端口
+
+<strong>3. 第一个程序 - LED闪烁</strong>
+• 连接LED到数字引脚
+• 编写控制代码
+• 上传程序到开发板
+
+<strong>4. 学习路径建议</strong>
+• 基础：GPIO控制、串口通信
+• 进阶：传感器读取、PWM控制
+• 高级：网络通信、数据存储`,
+                    code: {
+                        language: 'Arduino LED闪烁',
+                        content: `// Arduino LED闪烁示例
+int ledPin = 13;  // LED连接到数字引脚13
+
+void setup() {
+  pinMode(ledPin, OUTPUT);  // 设置引脚为输出模式
+}
+
+void loop() {
+  digitalWrite(ledPin, HIGH);  // 点亮LED
+  delay(1000);                 // 等待1秒
+  digitalWrite(ledPin, LOW);   // 关闭LED
+  delay(1000);                 // 等待1秒
+}`
+                    }
+                },
+                '如何选择合适的传感器？': {
+                    text: `<strong>传感器选型</strong>需要综合考虑多个因素：
+
+<strong>📋 传感器选型指南：</strong>
+
+<strong>1. 测量参数</strong>
+• 确定需要测量的物理量（温度、湿度、压力等）
+• 确定测量范围和精度要求
+
+<strong>2. 环境条件</strong>
+• 工作温度范围
+• 湿度、压力等环境因素
+• 是否有腐蚀性气体或液体
+
+<strong>3. 输出信号</strong>
+• 模拟输出（电压、电流信号）
+• 数字输出（I2C、SPI、UART等）
+• 无线输出（蓝牙、WiFi、LoRa等）
+
+<strong>4. 性能指标</strong>
+• 精度、分辨率、响应时间
+• 稳定性、可靠性、寿命
+• 功耗、供电方式
+
+<strong>5. 成本因素</strong>
+• 传感器本身价格
+• 安装维护成本
+• 是否需要配套电路`,
+                    code: null
+                },
+                // ========== 教师角色问答 ==========
+                '如何制定课程标准？': {
+                    text: `<strong>课程标准制定</strong>是教学设计的核心环节，需要系统化思考。
+
+<strong>📋 制定步骤：</strong>
+<strong>1. 课程定位分析</strong>
+• 明确课程在专业体系中的地位
+• 确定授课对象和培养目标
+• 分析行业需求与就业导向
+
+<strong>2. 知识体系构建</strong>
+• 梳理核心知识点和能力要求
+• 设计知识点的层次结构
+• 确定重点难点和教学策略
+
+<strong>3. 学时分配规划</strong>
+• 合理分配理论与实践学时
+• 安排教学进度和考核节点
+• 预留机动时间应对变化
+
+<strong>4. 考核方式设计</strong>
+• 设计多元化考核方式
+• 确定成绩评定标准
+• 建立质量监控机制`,
+                    image: generateCurriculumFlowSVG(),
+                    code: null
+                },
+                '物联网通信协议课程标准如何定制？': {
+                    text: `<strong>物联网通信协议课程标准</strong>定制方案如下：
+
+<strong>📋 课程基本信息：</strong>
+• <strong>课程名称：</strong>物联网通信协议与应用
+• <strong>课程代码：</strong>IoT-COM-301
+• <strong>课程类型：</strong>专业必修课
+• <strong>授课对象：</strong>物联网工程专业本科生
+• <strong>学分学时：</strong>3学分 / 48学时（理论32 + 实验16）
+
+<strong>🎯 课程目标：</strong>
+• <strong>知识目标：</strong>掌握MQTT、CoAP、HTTP等主流物联网通信协议原理
+• <strong>能力目标：</strong>能够根据应用场景选择合适的通信协议并进行开发
+• <strong>素质目标：</strong>培养工程思维和团队协作能力
+
+<strong>📚 核心知识点：</strong>
+1. 物联网通信协议概述与分类
+2. MQTT协议原理与实践
+3. CoAP协议原理与实践
+4. HTTP/HTTPS在物联网中的应用
+5. 蓝牙、ZigBee、LoRa通信技术
+6. 协议选型与性能对比`,
+                    image: generateCurriculumStructureSVG(),
+                    code: null
+                },
+                '教材大纲设计的基本原则是什么？': {
+                    text: `<strong>教材大纲设计</strong>需要遵循以下基本原则：
+
+<strong>📖 设计原则：</strong>
+
+<strong>1. 科学性原则</strong>
+• 内容准确无误，符合学科规范
+• 知识体系完整，逻辑严密
+• 理论与实践相结合
+
+<strong>2. 系统性原则</strong>
+• 知识点层次分明，循序渐进
+• 章节之间衔接自然
+• 整体结构完整统一
+
+<strong>3. 实用性原则</strong>
+• 内容贴近实际应用
+• 案例丰富典型
+• 便于教学实施
+
+<strong>4. 创新性原则</strong>
+• 融入新技术新方法
+• 设计创新性实验
+• 引导学生探索思考
+
+<strong>5. 可读性原则</strong>
+• 语言简洁明了
+• 图表清晰直观
+• 版式美观大方`,
+                    image: generateSyllabusPrincipleSVG(),
+                    code: null
+                },
+                '物联网技术教材大纲如何设计？': {
+                    text: `<strong>物联网技术教材大纲</strong>设计方案：
+
+<strong>📖 教材信息：</strong>
+• <strong>教材名称：</strong>物联网技术基础与实践
+• <strong>适用课程：</strong>物联网概论 / 物联网技术基础
+• <strong>章节数量：</strong>8章 + 附录
+• <strong>预计页数：</strong>约300页
+
+<strong>📚 章节大纲：</strong>
+
+<strong>第一章 物联网概述</strong>（约20页）
+• 1.1 物联网的定义与发展历程
+• 1.2 物联网的应用领域
+• 1.3 物联网的发展趋势
+
+<strong>第二章 物联网架构</strong>（约30页）
+• 2.1 三层架构模型
+• 2.2 感知层详解
+• 2.3 网络层详解
+• 2.4 应用层详解
+
+<strong>第三章 传感器技术</strong>（约40页）
+• 3.1 传感器概述
+• 3.2 温湿度传感器
+• 3.3 光照与气体传感器
+• 3.4 传感器选型与应用
+
+<strong>第四章 通信协议</strong>（约50页）
+• 4.1 MQTT协议
+• 4.2 CoAP协议
+• 4.3 其他通信技术
+
+<strong>第五章 嵌入式开发</strong>（约40页）
+• 5.1 Arduino开发基础
+• 5.2 ESP32开发实践
+• 5.3 STM32开发入门
+
+<strong>第六章 数据处理</strong>（约30页）
+• 6.1 数据采集与存储
+• 6.2 数据分析与可视化
+
+<strong>第七章 应用开发</strong>（约40页）
+• 7.1 智能家居应用
+• 7.2 智慧农业应用
+• 7.3 工业物联网应用
+
+<strong>第八章 综合案例</strong>（约50页）
+• 8.1 温湿度监测系统
+• 8.2 智能照明系统
+• 8.3 环境监测系统`,
+                    image: generateSyllabusTreeSVG(),
+                    code: null
+                },
+                '如何设计高质量的题库？': {
+                    text: `<strong>高质量题库设计</strong>需要遵循以下原则：
+
+<strong>📝 设计要点：</strong>
+
+<strong>1. 题型多样化</strong>
+• 单选题：考查基础概念理解
+• 多选题：考查综合分析能力
+• 判断题：考查知识辨析能力
+• 填空题：考查关键知识记忆
+• 简答题：考查表达能力
+• 实操题：考查动手能力
+
+<strong>2. 难度梯度化</strong>
+• 简单题（30%）：基础概念，直接判断
+• 中等题（50%）：综合应用，需要分析
+• 困难题（20%）：深度理解，创新思考
+
+<strong>3. 知识覆盖全面</strong>
+• 覆盖所有核心知识点
+• 重点内容多设题目
+• 知识点分布合理
+
+<strong>4. 题目质量高</strong>
+• 题干表述清晰准确
+• 选项设置合理无歧义
+• 答案解析详细完整
+
+<strong>5. 实用性强</strong>
+• 题目贴近实际应用
+• 案例典型有代表性
+• 便于教学考核使用`,
+                    image: generateQuestionBankDesignSVG(),
+                    code: null
+                },
+                '物联网基础题库如何设计？': {
+                    text: `<strong>物联网基础题库</strong>设计方案：
+
+<strong>📝 题库信息：</strong>
+• <strong>题库名称：</strong>物联网技术基础测试题库
+• <strong>题目总数：</strong>100题
+• <strong>适用对象：</strong>物联网工程专业学生
+
+<strong>📊 题型分布：</strong>
+• <strong>单选题：</strong>40题（每题2分，共80分）
+• <strong>多选题：</strong>20题（每题3分，共60分）
+• <strong>判断题：</strong>20题（每题1分，共20分）
+• <strong>简答题：</strong>10题（每题10分，共100分）
+• <strong>实操题：</strong>10题（每题15分，共150分）
+
+<strong>📚 知识点覆盖：</strong>
+• 物联网概述：15题
+• 三层架构：20题
+• 传感器技术：25题
+• 通信协议：20题
+• 嵌入式开发：15题
+• 应用案例：5题`,
+                    image: generateQuestionBankDistributionSVG(),
+                    code: null
+                },
+                'PPT课件制作的设计原则有哪些？': {
+                    text: `<strong>PPT课件设计</strong>需要遵循以下原则：
+
+<strong>📊 设计原则：</strong>
+
+<strong>1. 内容精简原则</strong>
+• 每页内容不超过6个要点
+• 文字简洁，避免大段文字
+• 重点突出，一目了然
+
+<strong>2. 视觉统一原则</strong>
+• 统一的配色方案
+• 统一的字体风格
+• 统一的版式布局
+
+<strong>3. 图文并茂原则</strong>
+• 多用图表代替文字
+• 图片清晰有代表性
+• 动画适度增强效果
+
+<strong>4. 逻辑清晰原则</strong>
+• 内容顺序合理
+• 过渡自然流畅
+• 总结归纳到位
+
+<strong>5. 互动设计原则</strong>
+• 设置互动环节
+• 引导学生思考
+• 预留讨论时间`,
+                    image: generatePPTPrincipleSVG(),
+                    code: null
+                },
+                '物联网三层架构PPT课件如何设计？': {
+                    text: `<strong>物联网三层架构PPT课件</strong>设计方案：
+
+<strong>📊 课件信息：</strong>
+• <strong>课件主题：</strong>物联网三层架构详解
+• <strong>幻灯片数量：</strong>15页
+• <strong>设计风格：</strong>科技风格（深蓝主色调）
+• <strong>授课时长：</strong>约45分钟
+
+<strong>📑 幻灯片大纲：</strong>
+
+<strong>第1页 - 封面</strong>
+• 课件标题、作者信息
+
+<strong>第2页 - 目录</strong>
+• 四大部分内容导航
+
+<strong>第3页 - 物联网概述</strong>
+• 定义、发展历程
+
+<strong>第4页 - 架构总览</strong>
+• 三层架构整体图示
+
+<strong>第5-7页 - 感知层详解</strong>
+• 功能、技术、案例
+
+<strong>第8-10页 - 网络层详解</strong>
+• 功能、技术、案例
+
+<strong>第11-13页 - 应用层详解</strong>
+• 功能、技术、案例
+
+<strong>第14页 - 总结</strong>
+• 三层关系、发展趋势
+
+<strong>第15页 - 结束页</strong>
+• 致谢、联系方式`,
+                    image: generatePPTOutlineSVG(),
+                    code: null
+                }
+            };
+            
+            // 默认回复
+            const defaultResponse = {
+                text: `感谢您的提问！关于"${message}"，让我为您详细解答：
+
+这是一个很好的问题。在物联网领域，这个概念涉及到多个层面的知识。
+
+<strong>💡 建议学习路径：</strong>
+1. 查阅相关课程资料，了解基础概念
+2. 尝试实际操作实验，加深理解
+3. 与同学讨论交流，拓展思路
+
+<strong>📚 相关推荐：</strong>
+• 物联网基础课程
+• 传感器原理与应用
+• 嵌入式开发实践
+
+您还有其他问题吗？我很乐意继续为您解答。`,
+                code: null
+            };
+            
+            return responses[message] || defaultResponse;
+        }
+
+        // 复制代码
+        function copyCode(button) {
+            const code = button.closest('.message-code').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = '已复制';
+                setTimeout(() => button.textContent = '复制', 2000);
+            });
+        }
+
+        // 新建对话
+        function newChat() {
+            const userRole = localStorage.getItem('userRole') || 'student';
+            const chatMessages = document.getElementById('chatMessages');
+            
+            chatMessages.innerHTML = `
+                <div class="welcome-message" id="welcomeMessage">
+                    <div class="welcome-icon">🎓</div>
+                    <h2 class="welcome-title" id="welcomeTitle">欢迎使用AI学习助手</h2>
+                    <p class="welcome-text" id="welcomeText">
+                        我是您的智能学习助手，可以帮助您解答物联网、传感器、嵌入式开发等相关问题。
+                        请选择下方预置提示词，或直接输入您的问题开始对话。
+                    </p>
+                    <div class="preset-prompts" id="presetPrompts">
+                        <!-- 预置提示词将根据角色动态生成 -->
+                    </div>
+                </div>
+            `;
+            
+            // 根据角色生成欢迎消息和预置提示词
+            generateWelcomeMessage(userRole);
+            
+            messages = [];
+        }
+
+        // 切换历史记录
+        function toggleHistory() {
+            const sidebar = document.getElementById('historySidebar');
+            sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        // 打开表单模态框
+        function openGenerator(type) {
+            const formModal = document.getElementById(type + 'FormModal');
+            if (formModal) {
+                formModal.classList.add('active');
+            }
+        }
+
+        // 关闭表单模态框
+        function closeFormModal(type) {
+            const formModal = document.getElementById(type + 'FormModal');
+            if (formModal) {
+                formModal.classList.remove('active');
+            }
+        }
+
+        // 关闭生成过程模态框
+        function closeGenerator() {
+            document.getElementById('generateModal').classList.remove('active', 'completed');
+        }
+
+        // 关闭结果模态框
+        function closeResultModal() {
+            document.getElementById('resultModal').classList.remove('active');
+        }
+
+        // 提交课程标准表单
+        function submitCurriculumForm() {
+            const name = document.getElementById('curriculumName').value;
+            const type = document.getElementById('curriculumType').value;
+            const target = document.getElementById('curriculumTarget').value;
+            
+            if (!name || !type || !target) {
+                alert('请填写必填项：课程名称、课程类型、授课对象');
+                return;
+            }
+            
+            closeFormModal('curriculum');
+            showGeneratingProgress('curriculum', '正在生成课程标准...');
+            
+            setTimeout(() => {
+                closeGenerator();
+                showCurriculumResult();
+            }, 3000);
+        }
+
+        // 提交教材大纲表单
+        function submitSyllabusForm() {
+            const name = document.getElementById('syllabusName').value;
+            const course = document.getElementById('syllabusCourse').value;
+            
+            if (!name || !course) {
+                alert('请填写必填项：教材名称、适用课程');
+                return;
+            }
+            
+            closeFormModal('syllabus');
+            showGeneratingProgress('syllabus', '正在设计教材大纲...');
+            
+            setTimeout(() => {
+                closeGenerator();
+                showSyllabusResult();
+            }, 3000);
+        }
+
+        // 提交题库表单
+        function submitQuestionForm() {
+            const name = document.getElementById('questionBankName').value;
+            
+            if (!name) {
+                alert('请填写必填项：题库名称');
+                return;
+            }
+            
+            closeFormModal('question');
+            showGeneratingProgress('question', '正在生成题库...');
+            
+            setTimeout(() => {
+                closeGenerator();
+                showQuestionResult();
+            }, 3000);
+        }
+
+        // 提交PPT表单
+        function submitPptForm() {
+            const theme = document.getElementById('pptTheme').value;
+            const type = document.getElementById('pptType').value;
+            
+            if (!theme || !type) {
+                alert('请填写必填项：课件主题、课件类型');
+                return;
+            }
+            
+            closeFormModal('ppt');
+            showGeneratingProgress('ppt', '正在生成PPT课件...');
+            
+            setTimeout(() => {
+                closeGenerator();
+                showPptResult();
+            }, 3000);
+        }
+
+        // 显示生成进度
+        function showGeneratingProgress(type, title) {
+            const modal = document.getElementById('generateModal');
+            const icon = document.getElementById('generateIcon');
+            const titleEl = document.getElementById('generateTitle');
+            const progressBar = document.getElementById('generateProgressBar');
+            const status = document.getElementById('generateStatus');
+            const closeBtn = modal.querySelector('.generate-close');
+            
+            const icons = {
+                curriculum: '📋',
+                syllabus: '📖',
+                question: '📝',
+                ppt: '📊'
+            };
+            
+            const steps = {
+                curriculum: ['正在分析课程需求...', '正在整理知识点...', '正在生成课程大纲...', '正在优化课程结构...', '生成完成！'],
+                syllabus: ['正在分析教材内容...', '正在构建章节结构...', '正在设计教学目标...', '正在规划课时安排...', '生成完成！'],
+                question: ['正在分析知识点...', '正在生成选择题...', '正在生成简答题...', '正在设置难度等级...', '生成完成！'],
+                ppt: ['正在分析课程内容...', '正在设计幻灯片结构...', '正在添加图表动画...', '正在优化视觉效果...', '生成完成！']
+            };
+            
+            icon.textContent = icons[type];
+            titleEl.textContent = title;
+            progressBar.style.width = '0%';
+            status.textContent = steps[type][0];
+            closeBtn.style.display = 'none';
+            modal.classList.remove('completed');
+            modal.classList.add('active');
+            
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                if (step < steps[type].length) {
+                    progressBar.style.width = (step / (steps[type].length - 1) * 100) + '%';
+                    status.textContent = steps[type][step];
+                }
+                if (step >= steps[type].length - 1) {
+                    clearInterval(interval);
+                    modal.classList.add('completed');
+                    closeBtn.style.display = 'inline-block';
+                }
+            }, 600);
+        }
+
+        // 显示课程标准结果
+        function showCurriculumResult() {
+            const name = document.getElementById('curriculumName').value || '物联网技术基础';
+            const type = document.getElementById('curriculumType').value || '专业必修课';
+            const target = document.getElementById('curriculumTarget').value || '本科生';
+            const hours = document.getElementById('curriculumHours').value || '48';
+            const theoryHours = document.getElementById('curriculumTheoryHours').value || '32';
+            const practiceHours = document.getElementById('curriculumPracticeHours').value || '16';
+            
+            const resultContent = `
+                <div class="result-section">
+                    <div class="result-section-title">一、课程基本信息</div>
+                    <div class="result-section-content">
+                        <ul class="result-list">
+                            <li><strong>课程名称：</strong>${name}</li>
+                            <li><strong>课程代码：</strong>IoT-${Math.floor(Math.random() * 1000)}</li>
+                            <li><strong>课程类型：</strong>${type}</li>
+                            <li><strong>授课对象：</strong>${target}</li>
+                            <li><strong>学分：</strong>${Math.ceil(hours / 16)}学分</li>
+                            <li><strong>总学时：</strong>${hours}学时（理论${theoryHours}学时，实践${practiceHours}学时）</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">二、课程目标</div>
+                    <div class="result-section-content">
+                        <p>通过本课程的学习，学生应达到以下目标：</p>
+                        <ul class="result-list">
+                            <li><strong>知识目标：</strong>掌握物联网的基本概念、架构原理、关键技术及应用场景</li>
+                            <li><strong>能力目标：</strong>能够进行物联网系统的需求分析、方案设计和简单开发</li>
+                            <li><strong>素质目标：</strong>培养创新思维、团队协作精神和工程实践能力</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">三、教学内容与学时分配</div>
+                    <div class="result-section-content">
+                        <table style="width:100%; border-collapse: collapse; font-size: var(--font-size-sm);">
+                            <tr style="background: var(--bg-body);">
+                                <th style="padding: 8px; border: 1px solid var(--border-base);">章节</th>
+                                <th style="padding: 8px; border: 1px solid var(--border-base);">内容</th>
+                                <th style="padding: 8px; border: 1px solid var(--border-base);">理论</th>
+                                <th style="padding: 8px; border: 1px solid var(--border-base);">实践</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">第一章</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">物联网概述</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">4</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">第二章</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">感知层技术</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">6</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">4</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">第三章</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">网络层技术</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">6</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">4</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">第四章</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">应用层技术</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">8</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">4</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">第五章</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">物联网安全</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">4</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">2</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">第六章</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">综合实践</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">4</td>
+                                <td style="padding: 8px; border: 1px solid var(--border-base);">2</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">四、考核方式</div>
+                    <div class="result-section-content">
+                        <ul class="result-list">
+                            <li><strong>平时成绩：</strong>30%（作业10% + 实验10% + 课堂表现10%）</li>
+                            <li><strong>期中考试：</strong>20%</li>
+                            <li><strong>期末考试：</strong>50%</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resultTitle').textContent = '📋 课程标准生成结果';
+            document.getElementById('resultContent').innerHTML = resultContent;
+            document.getElementById('resultModal').classList.add('active');
+        }
+
+        // 显示教材大纲结果
+        function showSyllabusResult() {
+            const name = document.getElementById('syllabusName').value || '物联网技术实践教程';
+            const chapters = document.getElementById('syllabusChapters').value || '8';
+            
+            const resultContent = `
+                <div class="result-section">
+                    <div class="result-section-title">教材名称</div>
+                    <div class="result-section-content">
+                        <p style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold);">${name}</p>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">教材大纲</div>
+                    <div class="result-section-content">
+                        <ul class="result-list" style="padding-left: 0;">
+                            <li style="font-weight: var(--font-weight-semibold); margin-top: 8px;">第一章 物联网概述</li>
+                            <li style="padding-left: 16px;">1.1 物联网的定义与发展</li>
+                            <li style="padding-left: 16px;">1.2 物联网的应用领域</li>
+                            <li style="padding-left: 16px;">1.3 物联网的发展趋势</li>
+                            
+                            <li style="font-weight: var(--font-weight-semibold); margin-top: 8px;">第二章 物联网架构</li>
+                            <li style="padding-left: 16px;">2.1 三层架构模型</li>
+                            <li style="padding-left: 16px;">2.2 感知层详解</li>
+                            <li style="padding-left: 16px;">2.3 网络层详解</li>
+                            <li style="padding-left: 16px;">2.4 应用层详解</li>
+                            
+                            <li style="font-weight: var(--font-weight-semibold); margin-top: 8px;">第三章 传感器技术</li>
+                            <li style="padding-left: 16px;">3.1 温湿度传感器</li>
+                            <li style="padding-left: 16px;">3.2 光照传感器</li>
+                            <li style="padding-left: 16px;">3.3 气体传感器</li>
+                            <li style="padding-left: 16px;">3.4 传感器选型指南</li>
+                            
+                            <li style="font-weight: var(--font-weight-semibold); margin-top: 8px;">第四章 通信协议</li>
+                            <li style="padding-left: 16px;">4.1 MQTT协议</li>
+                            <li style="padding-left: 16px;">4.2 CoAP协议</li>
+                            <li style="padding-left: 16px;">4.3 HTTP协议</li>
+                            <li style="padding-left: 16px;">4.4 协议对比分析</li>
+                            
+                            <li style="font-weight: var(--font-weight-semibold); margin-top: 8px;">第五章 嵌入式开发</li>
+                            <li style="padding-left: 16px;">5.1 Arduino入门</li>
+                            <li style="padding-left: 16px;">5.2 ESP32开发</li>
+                            <li style="padding-left: 16px;">5.3 STM32开发</li>
+                            
+                            <li style="font-weight: var(--font-weight-semibold); margin-top: 8px;">第六章 数据处理</li>
+                            <li style="padding-left: 16px;">6.1 数据采集</li>
+                            <li style="padding-left: 16px;">6.2 数据存储</li>
+                            <li style="padding-left: 16px;">6.3 数据分析</li>
+                            
+                            <li style="font-weight: var(--font-weight-semibold); margin-top: 8px;">第七章 应用开发</li>
+                            <li style="padding-left: 16px;">7.1 智能家居应用</li>
+                            <li style="padding-left: 16px;">7.2 智慧农业应用</li>
+                            <li style="padding-left: 16px;">7.3 工业物联网应用</li>
+                            
+                            <li style="font-weight: var(--font-weight-semibold); margin-top: 8px;">第八章 综合案例</li>
+                            <li style="padding-left: 16px;">8.1 温湿度监测系统</li>
+                            <li style="padding-left: 16px;">8.2 智能照明系统</li>
+                            <li style="padding-left: 16px;">8.3 环境监测系统</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resultTitle').textContent = '📖 教材大纲生成结果';
+            document.getElementById('resultContent').innerHTML = resultContent;
+            document.getElementById('resultModal').classList.add('active');
+        }
+
+        // 显示题库结果
+        function showQuestionResult() {
+            const name = document.getElementById('questionBankName').value || '物联网基础测试题库';
+            
+            const resultContent = `
+                <div class="result-section">
+                    <div class="result-section-title">题库名称</div>
+                    <div class="result-section-content">
+                        <p style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold);">${name}</p>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">题目示例</div>
+                    <div class="result-section-content">
+                        <p style="font-weight: var(--font-weight-semibold); margin-top: 12px;">一、单选题</p>
+                        <p style="margin-top: 8px;">1. 物联网的三层架构中，负责数据采集的是哪一层？</p>
+                        <p style="padding-left: 16px;">A. 应用层</p>
+                        <p style="padding-left: 16px;">B. 网络层</p>
+                        <p style="padding-left: 16px;">C. 感知层 ✓</p>
+                        <p style="padding-left: 16px;">D. 处理层</p>
+                        
+                        <p style="font-weight: var(--font-weight-semibold); margin-top: 12px;">2. MQTT协议的默认端口是多少？</p>
+                        <p style="padding-left: 16px;">A. 80</p>
+                        <p style="padding-left: 16px;">B. 1883 ✓</p>
+                        <p style="padding-left: 16px;">C. 8080</p>
+                        <p style="padding-left: 16px;">D. 443</p>
+                        
+                        <p style="font-weight: var(--font-weight-semibold); margin-top: 16px;">二、判断题</p>
+                        <p style="margin-top: 8px;">1. 温度传感器只能测量温度，不能测量湿度。（×）</p>
+                        <p style="margin-top: 8px;">2. MQTT协议是一种轻量级的发布/订阅消息传输协议。（√）</p>
+                        
+                        <p style="font-weight: var(--font-weight-semibold); margin-top: 16px;">三、简答题</p>
+                        <p style="margin-top: 8px;">1. 请简述物联网三层架构各层的功能。</p>
+                        <p style="margin-top: 8px; padding-left: 16px; color: var(--text-secondary);">参考答案：感知层负责数据采集和物体识别；网络层负责数据传输和处理；应用层负责数据分析和业务应用。</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resultTitle').textContent = '📝 题库生成结果';
+            document.getElementById('resultContent').innerHTML = resultContent;
+            document.getElementById('resultModal').classList.add('active');
+        }
+
+        // 显示PPT结果
+        function showPptResult() {
+            const theme = document.getElementById('pptTheme').value || '物联网三层架构详解';
+            const slides = document.getElementById('pptSlides').value || '15';
+            
+            const resultContent = `
+                <div class="result-section">
+                    <div class="result-section-title">课件信息</div>
+                    <div class="result-section-content">
+                        <ul class="result-list">
+                            <li><strong>课件主题：</strong>${theme}</li>
+                            <li><strong>幻灯片数量：</strong>${slides}页</li>
+                            <li><strong>设计风格：</strong>科技风格</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">幻灯片大纲</div>
+                    <div class="result-section-content">
+                        <ul class="result-list" style="padding-left: 0;">
+                            <li style="margin-top: 8px;">第1页：封面 - ${theme}</li>
+                            <li style="margin-top: 8px;">第2页：目录</li>
+                            <li style="margin-top: 8px;">第3-4页：物联网概述</li>
+                            <li style="margin-top: 8px;">第5-7页：感知层详解</li>
+                            <li style="margin-top: 8px;">第8-10页：网络层详解</li>
+                            <li style="margin-top: 8px;">第11-13页：应用层详解</li>
+                            <li style="margin-top: 8px;">第14页：总结</li>
+                            <li style="margin-top: 8px;">第15页：结束页</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">设计要点</div>
+                    <div class="result-section-content">
+                        <ul class="result-list">
+                            <li>使用深蓝色作为主色调，体现科技感</li>
+                            <li>每页包含清晰的标题和要点列表</li>
+                            <li>关键概念使用图表可视化展示</li>
+                            <li>添加适当的动画效果增强互动性</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resultTitle').textContent = '📊 PPT课件生成结果';
+            document.getElementById('resultContent').innerHTML = resultContent;
+            document.getElementById('resultModal').classList.add('active');
+        }
+
+        // 复制结果
+        function copyResult() {
+            const content = document.getElementById('resultContent').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('内容已复制到剪贴板');
+            });
+        }
+
+        // 下载结果
+        function downloadResult() {
+            const title = document.getElementById('resultTitle').textContent;
+            const content = document.getElementById('resultContent').innerHTML;
+            
+            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${title}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #475569; }
+        h2 { color: #475569; border-bottom: 2px solid #475569; padding-bottom: 8px; }
+        ul { list-style: none; padding-left: 20px; }
+        li { margin: 8px 0; }
+        li::before { content: "•"; color: #475569; font-weight: bold; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <h1>${title}</h1>
+    ${content}
+</body>
+</html>`;
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = title.replace(/[📋📖📝📊]/g, '').trim() + '.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('generateModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeGenerator();
+            }
+        });
+        
+        document.getElementById('resultModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeResultModal();
+            }
+        });
+    </script>
+</body>
+</html>

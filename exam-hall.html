@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考试大厅 - 智联网综合实践平台</title>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* 考试大厅特定样式 */
+        .page-header-section {
+            margin-bottom: var(--space-4);
+        }
+
+        .page-main-title {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+        }
+
+        .page-main-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+        }
+
+        /* 考试类型卡片 */
+        .exam-types-section {
+            margin-bottom: var(--space-4);
+        }
+
+        .exam-type-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .exam-type-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+        }
+
+        .exam-type-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+
+        .exam-type-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .exam-type-card.regular .exam-type-icon {
+            background: rgba(24, 144, 255, 0.1);
+        }
+
+        .exam-type-card.certification .exam-type-icon {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .exam-type-card.competition .exam-type-icon {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .exam-type-info h3 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+
+        .exam-type-info p {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .exam-type-count {
+            text-align: right;
+        }
+
+        .count-number {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-blue);
+        }
+
+        .count-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        /* 搜索栏 */
+        .search-section {
+            margin-bottom: var(--space-4);
+        }
+
+        .search-bar-container {
+            background: var(--bg-card);
+            padding: var(--space-3);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            gap: var(--space-2);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-filters {
+            flex: 1;
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .search-btn {
+            padding: var(--space-1) var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .search-btn:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        /* 标签筛选 */
+        .filter-tags-section {
+            margin-bottom: var(--space-4);
+        }
+
+        /* 考试列表 */
+        .exam-list-section {
+            margin-bottom: var(--space-4);
+        }
+
+        .exam-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .exam-list-item {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all var(--duration-base) ease;
+        }
+
+        .exam-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+
+        .exam-list-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .exam-type-badge {
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .exam-type-badge.regular {
+            background: rgba(24, 144, 255, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .exam-type-badge.certification {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .exam-type-badge.competition {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .exam-list-info h3 {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-1);
+        }
+
+        .exam-details {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .exam-detail-item {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .detail-icon {
+            font-size: 14px;
+        }
+
+        .exam-list-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .exam-status {
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .exam-status.status-ongoing {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .exam-status.status-upcoming {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .exam-status.status-ended {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .enter-exam-btn {
+            padding: var(--space-1) var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .enter-exam-btn:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .enter-exam-btn:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .enter-exam-btn.secondary {
+            background: var(--text-title);
+        }
+
+        .enter-exam-btn.secondary:hover {
+            background: #374151;
+        }
+
+        /* 用户信息 */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .user-meta {
+            font-size: var(--font-size-xs);
+            opacity: 0.8;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .exam-type-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .exam-list-item {
+                flex-direction: column;
+                gap: var(--space-2);
+                align-items: flex-start;
+            }
+
+            .exam-list-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-bar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="nav-brand-icon">E</div>
+            <span class="nav-brand-text">智联网综合实践平台</span>
+        </div>
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-link">首页</a>
+            <a href="experiment-hall.html" class="nav-link">实验大厅</a>
+            <a href="exam-hall.html" class="nav-link active">考试中心</a>
+            <a href="profile.html" class="nav-link">个人中心</a>
+        </div>
+        <div class="user-info">
+            <div class="user-details">
+                <div class="user-name">魏同学</div>
+                <div class="user-meta">2024级 计算机学院</div>
+            </div>
+            <div class="user-avatar">魏</div>
+        </div>
+    </header>
+
+    <!-- 应用布局 -->
+    <div class="app-layout">
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <span class="sidebar-icon">📊</span>
+                    我的工作台
+                </a>
+                <a href="ai-assistant.html" class="sidebar-item" data-page="ai-assistant">
+                    <span class="sidebar-icon">🤖</span>
+                    AI学习助手
+                </a>
+                <a href="experiment-hall.html" class="sidebar-item" data-page="experiment-hall">
+                    <span class="sidebar-icon">🔬</span>
+                    实验大厅
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="simulation">
+                    <span class="sidebar-icon">💻</span>
+                    虚拟仿真实验
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="research">
+                    <span class="sidebar-icon">☁️</span>
+                    科研云服务
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="design">
+                    <span class="sidebar-icon">🎨</span>
+                    创意设计
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="embedded">
+                    <span class="sidebar-icon">🔧</span>
+                    嵌入式实训
+                </a>
+                <a href="experiment-detail.html" class="sidebar-item" data-page="algorithm">
+                    <span class="sidebar-icon">⚙️</span>
+                    算法演练
+                </a>
+                <a href="exam-hall.html" class="sidebar-item active" data-page="exam-hall">
+                    <span class="sidebar-icon">📝</span>
+                    考场大厅
+                </a>
+                <a href="profile.html" class="sidebar-item" data-page="profile">
+                    <span class="sidebar-icon">👤</span>
+                    个人中心
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面标题 -->
+            <section class="page-header-section">
+                <h1 class="page-main-title">📝 考试大厅</h1>
+                <p class="page-main-subtitle">查看所有考试信息，选择适合的考试参与</p>
+            </section>
+
+            <!-- 考试类型卡片 -->
+            <section class="exam-types-section">
+                <div class="exam-type-cards">
+                    <div class="exam-type-card regular" data-type="regular">
+                        <div class="exam-type-icon">📋</div>
+                        <div class="exam-type-info">
+                            <h3>常规考试</h3>
+                            <p>课程期末考试、期中测试等</p>
+                        </div>
+                        <div class="exam-type-count">
+                            <span class="count-number">12</span>
+                            <span class="count-label">场考试</span>
+                        </div>
+                    </div>
+                    <div class="exam-type-card certification" data-type="certification">
+                        <div class="exam-type-icon">🏆</div>
+                        <div class="exam-type-info">
+                            <h3>认证测评</h3>
+                            <p>专业技能认证、资格认证等</p>
+                        </div>
+                        <div class="exam-type-count">
+                            <span class="count-number">5</span>
+                            <span class="count-label">场考试</span>
+                        </div>
+                    </div>
+                    <div class="exam-type-card competition" data-type="competition">
+                        <div class="exam-type-icon">🎯</div>
+                        <div class="exam-type-info">
+                            <h3>竞赛</h3>
+                            <p>学科竞赛、编程比赛等</p>
+                        </div>
+                        <div class="exam-type-count">
+                            <span class="count-number">3</span>
+                            <span class="count-label">场考试</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 搜索栏 -->
+            <section class="search-section">
+                <div class="search-bar-container">
+                    <div class="search-filters">
+                        <select class="search-select" id="examTypeFilter">
+                            <option value="">全部类型</option>
+                            <option value="regular">常规考试</option>
+                            <option value="certification">认证测评</option>
+                            <option value="competition">竞赛</option>
+                        </select>
+                        <select class="search-select" id="examStatusFilter">
+                            <option value="">全部状态</option>
+                            <option value="ongoing">进行中</option>
+                            <option value="upcoming">未开始</option>
+                            <option value="ended">已结束</option>
+                        </select>
+                        <input type="text" class="search-input" id="keywordSearch" placeholder="搜索考试名称...">
+                    </div>
+                    <button class="search-btn" id="searchBtn">
+                        <span>🔍</span>
+                        搜索
+                    </button>
+                </div>
+            </section>
+
+            <!-- 标签筛选 -->
+            <section class="filter-tags-section">
+                <div class="filter-tags">
+                    <button class="filter-tag active" data-filter="all">全部考试</button>
+                    <button class="filter-tag" data-filter="my">我的考试</button>
+                    <button class="filter-tag" data-filter="completed">已完成</button>
+                    <button class="filter-tag" data-filter="pending">待参加</button>
+                </div>
+            </section>
+
+            <!-- 考试列表 -->
+            <section class="exam-list-section">
+                <div class="exam-list-container" id="examListContainer">
+                    <!-- 考试项 1 -->
+                    <div class="exam-list-item" data-type="regular" data-status="ongoing">
+                        <div class="exam-list-left">
+                            <div class="exam-type-badge regular">常规</div>
+                            <div class="exam-list-info">
+                                <h3 class="exam-name">计算机网络期末考试</h3>
+                                <div class="exam-details">
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">📅</span>
+                                        2026-06-10 14:00
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">⏱️</span>
+                                        120分钟
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">👥</span>
+                                        156人参与
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-list-right">
+                            <span class="exam-status status-ongoing">进行中</span>
+                            <a href="exam-anti-cheat.html" class="enter-exam-btn">进入考场</a>
+                        </div>
+                    </div>
+
+                    <!-- 考试项 2 -->
+                    <div class="exam-list-item" data-type="certification" data-status="upcoming">
+                        <div class="exam-list-left">
+                            <div class="exam-type-badge certification">认证</div>
+                            <div class="exam-list-info">
+                                <h3 class="exam-name">Python高级编程认证测评</h3>
+                                <div class="exam-details">
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">📅</span>
+                                        2026-06-12 09:00
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">⏱️</span>
+                                        90分钟
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">👥</span>
+                                        89人报名
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-list-right">
+                            <span class="exam-status status-upcoming">未开始</span>
+                            <button class="enter-exam-btn" disabled>查看详情</button>
+                        </div>
+                    </div>
+
+                    <!-- 考试项 3 -->
+                    <div class="exam-list-item" data-type="competition" data-status="ongoing">
+                        <div class="exam-list-left">
+                            <div class="exam-type-badge competition">竞赛</div>
+                            <div class="exam-list-info">
+                                <h3 class="exam-name">全国大学生算法设计竞赛</h3>
+                                <div class="exam-details">
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">📅</span>
+                                        2026-06-05 10:00
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">⏱️</span>
+                                        180分钟
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">👥</span>
+                                        234人参与
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-list-right">
+                            <span class="exam-status status-ongoing">进行中</span>
+                            <a href="exam-anti-cheat.html" class="enter-exam-btn">进入考场</a>
+                        </div>
+                    </div>
+
+                    <!-- 考试项 4 -->
+                    <div class="exam-list-item" data-type="regular" data-status="ended">
+                        <div class="exam-list-left">
+                            <div class="exam-type-badge regular">常规</div>
+                            <div class="exam-list-info">
+                                <h3 class="exam-name">数据结构期中测试</h3>
+                                <div class="exam-details">
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">📅</span>
+                                        2026-05-28 14:00
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">⏱️</span>
+                                        60分钟
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">👥</span>
+                                        142人参与
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-list-right">
+                            <span class="exam-status status-ended">已结束</span>
+                            <button class="enter-exam-btn secondary">查看成绩</button>
+                        </div>
+                    </div>
+
+                    <!-- 考试项 5 -->
+                    <div class="exam-list-item" data-type="certification" data-status="upcoming">
+                        <div class="exam-list-left">
+                            <div class="exam-type-badge certification">认证</div>
+                            <div class="exam-list-info">
+                                <h3 class="exam-name">软件工程师资格认证</h3>
+                                <div class="exam-details">
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">📅</span>
+                                        2026-06-15 14:30
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">⏱️</span>
+                                        150分钟
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">👥</span>
+                                        67人报名
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-list-right">
+                            <span class="exam-status status-upcoming">未开始</span>
+                            <button class="enter-exam-btn" disabled>查看详情</button>
+                        </div>
+                    </div>
+
+                    <!-- 考试项 6 -->
+                    <div class="exam-list-item" data-type="competition" data-status="upcoming">
+                        <div class="exam-list-left">
+                            <div class="exam-type-badge competition">竞赛</div>
+                            <div class="exam-list-info">
+                                <h3 class="exam-name">人工智能创新应用大赛</h3>
+                                <div class="exam-details">
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">📅</span>
+                                        2026-06-20 09:00
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">⏱️</span>
+                                        240分钟
+                                    </span>
+                                    <span class="exam-detail-item">
+                                        <span class="detail-icon">👥</span>
+                                        45人报名
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-list-right">
+                            <span class="exam-status status-upcoming">未开始</span>
+                            <button class="enter-exam-btn" disabled>查看详情</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="js/app.js"></script>
+    <script>
+        // 标签筛选功能
+        document.querySelectorAll('.filter-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                const items = document.querySelectorAll('.exam-list-item');
+                
+                items.forEach(item => {
+                    if (filter === 'all') {
+                        item.style.display = 'flex';
+                    } else if (filter === 'completed') {
+                        item.style.display = item.dataset.status === 'ended' ? 'flex' : 'none';
+                    } else if (filter === 'pending') {
+                        item.style.display = item.dataset.status === 'upcoming' ? 'flex' : 'none';
+                    } else {
+                        item.style.display = 'flex';
+                    }
+                });
+            });
+        });
+
+        // 搜索功能
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const keyword = document.getElementById('keywordSearch').value.toLowerCase();
+            const typeFilter = document.getElementById('examTypeFilter').value;
+            const statusFilter = document.getElementById('examStatusFilter').value;
+            
+            const items = document.querySelectorAll('.exam-list-item');
+            
+            items.forEach(item => {
+                const name = item.querySelector('.exam-name').textContent.toLowerCase();
+                const type = item.dataset.type;
+                const status = item.dataset.status;
+                
+                let show = true;
+                
+                if (keyword && !name.includes(keyword)) show = false;
+                if (typeFilter && type !== typeFilter) show = false;
+                if (statusFilter && status !== statusFilter) show = false;
+                
+                item.style.display = show ? 'flex' : 'none';
+            });
+        });
+
+        // 考试类型卡片点击
+        document.querySelectorAll('.exam-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const type = this.dataset.type;
+                document.getElementById('examTypeFilter').value = type;
+                document.getElementById('searchBtn').click();
+            });
+        });
+    </script>
+</body>
+</html>

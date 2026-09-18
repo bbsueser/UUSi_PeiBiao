@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务管理 - 智联网综合实践平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <style>
+        /* 页面特定样式 */
+        .task-management-page {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            background: var(--bg-body);
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            grid-column: 1 / -1;
+            background: var(--bg-header);
+            color: white;
+            padding: 0 var(--space-5);
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: var(--z-sticky);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .nav-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-blue);
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-xl);
+        }
+
+        .nav-brand-text {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            transition: all var(--duration-base) ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+        }
+
+        /* 左侧侧边栏 */
+        .sidebar {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-light);
+            padding: var(--space-3) 0;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+            padding: 0 var(--space-2);
+        }
+
+        .sidebar-item {
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            border: none;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+            font-family: var(--font-family);
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-body);
+            color: var(--text-title);
+        }
+
+        .sidebar-item.active {
+            background: rgba(71, 85, 105, 0.1);
+            color: var(--primary-blue);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .sidebar-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            background: var(--bg-body);
+            padding: var(--space-4);
+            overflow-y: auto;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            margin-bottom: var(--space-4);
+        }
+
+        .page-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.pending {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .stat-icon.completed {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .stat-icon.time {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .stat-icon.report {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        /* 内容区域布局 */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: var(--space-4);
+        }
+
+        /* 表单区域 */
+        .form-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+            margin-bottom: var(--space-4);
+        }
+
+        .form-section-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-3);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: var(--space-2);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-family: var(--font-family);
+            transition: all var(--duration-base) ease;
+            background: var(--bg-card);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--space-2);
+            justify-content: flex-end;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            border: none;
+            font-family: var(--font-family);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-body);
+            color: var(--text-body);
+            border: 1px solid var(--border-base);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-light);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            opacity: 0.9;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            opacity: 0.9;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        .btn-sm {
+            padding: 6px var(--space-2);
+            font-size: var(--font-size-xs);
+        }
+
+        /* 任务列表 */
+        .task-list-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+        }
+
+        /* 筛选标签 */
+        .filter-tags {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            padding: var(--space-1) var(--space-3);
+            background: var(--bg-card);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .filter-tag:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .filter-tag.active {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        /* 任务表格 */
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .task-table th {
+            background: var(--bg-body);
+            padding: var(--space-2) var(--space-3);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .task-table td {
+            padding: var(--space-2) var(--space-3);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .task-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .task-table tr:hover td {
+            background: var(--bg-body);
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            display: inline-block;
+        }
+
+        .status-badge.progress {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+
+        .status-badge.completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.expired {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        /* 操作按钮组 */
+        .action-buttons {
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        /* 我的教学区域 */
+        .teaching-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: stretch;
+            padding: var(--space-3);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            background: var(--bg-body);
+        }
+
+        .chart-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 100%;
+            gap: var(--space-2);
+        }
+
+        .chart-bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .chart-bar {
+            width: 100%;
+            max-width: 60px;
+            background: linear-gradient(180deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            transition: all var(--duration-base) ease;
+            position: relative;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+
+        .chart-bar-label {
+            margin-top: var(--space-1);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80px;
+        }
+
+        .chart-bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: var(--z-modal);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: var(--space-4);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .modal-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: var(--bg-body);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary);
+            transition: all var(--duration-base) ease;
+        }
+
+        .modal-close:hover {
+            background: var(--border-light);
+            color: var(--text-title);
+        }
+
+        .modal-body {
+            margin-bottom: var(--space-3);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: var(--space-2);
+            justify-content: flex-end;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* 学生列表 */
+        .student-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            border: 1px solid var(--border-light);
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .student-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-sm);
+        }
+
+        .student-details h4 {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            margin-bottom: 2px;
+        }
+
+        .student-details p {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .student-actions {
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .task-management-page {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 0 var(--space-3);
+            }
+
+            .nav-menu {
+                gap: var(--space-2);
+            }
+
+            .main-content {
+                padding: var(--space-3);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-table {
+                font-size: var(--font-size-xs);
+            }
+
+            .task-table th,
+            .task-table td {
+                padding: var(--space-1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="task-management-page">
+        <!-- 顶部导航栏 -->
+        <nav class="top-nav">
+            <div class="nav-brand">
+                <div class="nav-brand-icon">E</div>
+                <span class="nav-brand-text">智联网综合实践平台</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">工作台</a>
+                <a href="course-hall.html" class="nav-link">课程大厅</a>
+                <a href="exam-hall.html" class="nav-link">考场大厅</a>
+                <a href="task-management.html" class="nav-link active">任务管理</a>
+                <a href="profile.html" class="nav-link">个人中心</a>
+            </div>
+            <div class="user-info">
+                <span>张老师</span>
+                <div class="user-avatar">张</div>
+            </div>
+        </nav>
+
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <nav class="sidebar-menu">
+                <button class="sidebar-item active" data-tab="task-assign">
+                    <span class="sidebar-icon">📋</span>
+                    下发任务
+                </button>
+                <button class="sidebar-item" data-tab="task-list">
+                    <span class="sidebar-icon">📑</span>
+                    任务列表
+                </button>
+                <button class="sidebar-item" data-tab="my-teaching">
+                    <span class="sidebar-icon">📊</span>
+                    我的教学
+                </button>
+                <button class="sidebar-item" data-tab="student-stats">
+                    <span class="sidebar-icon">👥</span>
+                    学生统计
+                </button>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 下发任务 -->
+            <div id="task-assign" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">下发任务</h1>
+                    <p class="page-subtitle">创建新的学习任务并分配给学生</p>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span>📝</span>
+                        任务信息
+                    </h2>
+                    <form id="taskForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">任务名称 *</label>
+                                <input type="text" class="form-input" id="taskName" placeholder="请输入任务名称" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">选择课程资源 *</label>
+                                <select class="form-select" id="courseResource" required>
+                                    <option value="">请选择课程资源</option>
+                                    <option value="course1">计算机网络基础</option>
+                                    <option value="course2">操作系统原理</option>
+                                    <option value="course3">数据库系统概论</option>
+                                    <option value="course4">数据结构与算法</option>
+                                    <option value="course5">软件工程实践</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">指定班级 *</label>
+                                <select class="form-select" id="assignClass" required>
+                                    <option value="">请选择班级</option>
+                                    <option value="class1">计算机2024级1班</option>
+                                    <option value="class2">计算机2024级2班</option>
+                                    <option value="class3">软件工程2024级1班</option>
+                                    <option value="class4">网络工程2024级1班</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">指定学生</label>
+                                <select class="form-select" id="assignStudent">
+                                    <option value="">全部学生</option>
+                                    <option value="student1">张三</option>
+                                    <option value="student2">李四</option>
+                                    <option value="student3">王五</option>
+                                    <option value="student4">赵六</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">截止时长 *</label>
+                                <input type="number" class="form-input" id="deadline" placeholder="请输入小时数" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">任务优先级</label>
+                                <select class="form-select" id="priority">
+                                    <option value="normal">普通</option>
+                                    <option value="high">高优先级</option>
+                                    <option value="urgent">紧急</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">任务描述</label>
+                            <textarea class="form-textarea" id="taskDescription" placeholder="请输入任务详细描述..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">重置</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span>✓</span>
+                                创建任务
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 任务列表 -->
+            <div id="task-list" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">任务列表</h1>
+                    <p class="page-subtitle">查看和管理所有已下发的任务</p>
+                </div>
+
+                <div class="task-list-section">
+                    <!-- 筛选标签 -->
+                    <div class="filter-tags">
+                        <button class="filter-tag active" data-filter="all">全部任务</button>
+                        <button class="filter-tag" data-filter="progress">进行中</button>
+                        <button class="filter-tag" data-filter="completed">已完成</button>
+                        <button class="filter-tag" data-filter="expired">已过期</button>
+                    </div>
+
+                    <!-- 任务表格 -->
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th>任务名称</th>
+                                <th>课程资源</th>
+                                <th>班级</th>
+                                <th>截止时间</th>
+                                <th>完成进度</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskTableBody">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 我的教学 -->
+            <div id="my-teaching" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">我的教学</h1>
+                    <p class="page-subtitle">查看学生的学习情况和任务耗时统计</p>
+                </div>
+
+                <div class="teaching-section">
+                    <h2 class="form-section-title">
+                        <span>📊</span>
+                        学生任务耗时统计
+                    </h2>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <div class="chart-bars" id="chartBars">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学生统计 -->
+            <div id="student-stats" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">学生任务统计</h1>
+                    <p class="page-subtitle">查看学生的任务完成情况和学习时长</p>
+                </div>
+
+                <!-- 统计卡片 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon pending">⏰</div>
+                        </div>
+                        <div class="stat-value" id="pendingTasks">5</div>
+                        <div class="stat-label">待完成任务</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon completed">✓</div>
+                        </div>
+                        <div class="stat-value" id="completedTasks">12</div>
+                        <div class="stat-label">已完成任务</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon time">⏱️</div>
+                        </div>
+                        <div class="stat-value" id="usedTime">48h</div>
+                        <div class="stat-label">已用时长</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon time">⏳</div>
+                        </div>
+                        <div class="stat-value" id="remainingTime">32h</div>
+                        <div class="stat-label">剩余时长</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon report">📄</div>
+                        </div>
+                        <div class="stat-value" id="reportCount">8</div>
+                        <div class="stat-label">实验报告数</div>
+                    </div>
+                </div>
+
+                <div class="task-list-section">
+                    <h2 class="form-section-title">
+                        <span>👥</span>
+                        学生任务详情
+                    </h2>
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th>学生姓名</th>
+                                <th>班级</th>
+                                <th>待完成</th>
+                                <th>已完成</th>
+                                <th>已用时长</th>
+                                <th>实验报告</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 任务详情弹窗 -->
+    <div class="modal-overlay" id="taskDetailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">任务详情 - <span id="modalTaskName"></span></h3>
+                <button class="modal-close" onclick="closeModal('taskDetailModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="student-list" id="modalStudentList">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('taskDetailModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 评分弹窗 -->
+    <div class="modal-overlay" id="gradeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">任务评分</h3>
+                <button class="modal-close" onclick="closeModal('gradeModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">学生姓名</label>
+                    <input type="text" class="form-input" id="gradeStudentName" readonly>
+                </div>
+                <div class="form-group" style="margin-top: var(--space-2);">
+                    <label class="form-label">任务名称</label>
+                    <input type="text" class="form-input" id="gradeTaskName" readonly>
+                </div>
+                <div class="form-group" style="margin-top: var(--space-2);">
+                    <label class="form-label">评分 *</label>
+                    <input type="number" class="form-input" id="gradeScore" placeholder="请输入分数 (0-100)" min="0" max="100" required>
+                </div>
+                <div class="form-group" style="margin-top: var(--space-2);">
+                    <label class="form-label">评语</label>
+                    <textarea class="form-textarea" id="gradeComment" placeholder="请输入评语..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('gradeModal')">取消</button>
+                <button class="btn btn-primary" onclick="submitGrade()">提交评分</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据
+        const tasks = [
+            {
+                id: 1,
+                name: 'TCP/IP协议分析实验',
+                course: '计算机网络基础',
+                class: '计算机2024级1班',
+                deadline: '2026-06-10 18:00',
+                progress: '15/30',
+                status: 'progress',
+                students: [
+                    { name: '张三', time: '2h 30m', report: true },
+                    { name: '李四', time: '3h 15m', report: true },
+                    { name: '王五', time: '1h 45m', report: false }
+                ]
+            },
+            {
+                id: 2,
+                name: '进程调度算法实现',
+                course: '操作系统原理',
+                class: '计算机2024级2班',
+                deadline: '2026-06-08 20:00',
+                progress: '28/30',
+                status: 'completed',
+                students: [
+                    { name: '赵六', time: '4h 20m', report: true },
+                    { name: '钱七', time: '3h 50m', report: true }
+                ]
+            },
+            {
+                id: 3,
+                name: 'SQL查询优化实践',
+                course: '数据库系统概论',
+                class: '软件工程2024级1班',
+                deadline: '2026-06-05 12:00',
+                progress: '20/25',
+                status: 'expired',
+                students: [
+                    { name: '孙八', time: '5h 10m', report: true },
+                    { name: '周九', time: '4h 30m', report: true }
+                ]
+            },
+            {
+                id: 4,
+                name: '二叉树遍历算法',
+                course: '数据结构与算法',
+                class: '计算机2024级1班',
+                deadline: '2026-06-12 18:00',
+                progress: '10/30',
+                status: 'progress',
+                students: [
+                    { name: '吴十', time: '1h 20m', report: false },
+                    { name: '郑十一', time: '2h 10m', report: true }
+                ]
+            }
+        ];
+
+        const students = [
+            { name: '张三', class: '计算机2024级1班', pending: 2, completed: 8, usedTime: '24h', reports: 6 },
+            { name: '李四', class: '计算机2024级1班', pending: 3, completed: 7, usedTime: '20h', reports: 5 },
+            { name: '王五', class: '计算机2024级2班', pending: 1, completed: 10, usedTime: '32h', reports: 8 },
+            { name: '赵六', class: '计算机2024级2班', pending: 4, completed: 6, usedTime: '18h', reports: 4 },
+            { name: '钱七', class: '软件工程2024级1班', pending: 2, completed: 9, usedTime: '28h', reports: 7 }
+        ];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initTabs();
+            initFilterTags();
+            renderTaskTable();
+            renderStudentTable();
+            renderChart();
+            initTaskForm();
+        });
+
+        // 初始化标签页切换
+        function initTabs() {
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 更新侧边栏激活状态
+                    sidebarItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 切换内容区域
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    document.getElementById(tabId).style.display = 'block';
+                });
+            });
+        }
+
+        // 初始化筛选标签
+        function initFilterTags() {
+            const filterTags = document.querySelectorAll('.filter-tag');
+            filterTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    filterTags.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    filterTasks(this.getAttribute('data-filter'));
+                });
+            });
+        }
+
+        // 筛选任务
+        function filterTasks(filter) {
+            const tbody = document.getElementById('taskTableBody');
+            tbody.innerHTML = '';
+            
+            let filteredTasks = tasks;
+            if (filter !== 'all') {
+                filteredTasks = tasks.filter(task => task.status === filter);
+            }
+            
+            renderTaskRows(filteredTasks);
+        }
+
+        // 渲染任务表格
+        function renderTaskTable() {
+            renderTaskRows(tasks);
+        }
+
+        function renderTaskRows(taskList) {
+            const tbody = document.getElementById('taskTableBody');
+            tbody.innerHTML = '';
+            
+            taskList.forEach(task => {
+                const statusClass = task.status === 'progress' ? 'progress' : 
+                                   task.status === 'completed' ? 'completed' : 'expired';
+                const statusText = task.status === 'progress' ? '进行中' : 
+                                  task.status === 'completed' ? '已完成' : '已过期';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${task.name}</td>
+                    <td>${task.course}</td>
+                    <td>${task.class}</td>
+                    <td>${task.deadline}</td>
+                    <td>${task.progress}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-primary" onclick="viewTaskDetail(${task.id})">查看完成情况</button>
+                            <button class="btn btn-sm btn-success" onclick="openGradeModal(${task.id})">评分</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染学生表格
+        function renderStudentTable() {
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = '';
+            
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.class}</td>
+                    <td>${student.pending}</td>
+                    <td>${student.completed}</td>
+                    <td>${student.usedTime}</td>
+                    <td>${student.reports}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="viewStudentDetail('${student.name}')">查看详情</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染图表
+        function renderChart() {
+            const chartBars = document.getElementById('chartBars');
+            chartBars.innerHTML = '';
+            
+            const maxTime = Math.max(...students.map(s => parseInt(s.usedTime)));
+            
+            students.forEach(student => {
+                const time = parseInt(student.usedTime);
+                const height = (time / maxTime) * 100;
+                
+                const barItem = document.createElement('div');
+                barItem.className = 'chart-bar-item';
+                barItem.innerHTML = `
+                    <div class="chart-bar" style="height: ${height}%;">
+                        <span class="chart-bar-value">${student.usedTime}</span>
+                    </div>
+                    <span class="chart-bar-label">${student.name}</span>
+                `;
+                chartBars.appendChild(barItem);
+            });
+        }
+
+        // 查看任务详情
+        function viewTaskDetail(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            document.getElementById('modalTaskName').textContent = task.name;
+            const studentList = document.getElementById('modalStudentList');
+            studentList.innerHTML = '';
+            
+            task.students.forEach(student => {
+                const item = document.createElement('div');
+                item.className = 'student-item';
+                item.innerHTML = `
+                    <div class="student-info">
+                        <div class="student-avatar">${student.name.charAt(0)}</div>
+                        <div class="student-details">
+                            <h4>${student.name}</h4>
+                            <p>耗时: ${student.time} | 报告: ${student.report ? '已提交' : '未提交'}</p>
+                        </div>
+                    </div>
+                    <div class="student-actions">
+                        ${student.report ? '<button class="btn btn-sm btn-primary" onclick="viewReport(\'' + student.name + '\')">查看报告</button>' : ''}
+                        <button class="btn btn-sm btn-warning" onclick="returnTask(\'' + student.name + '\')">退回</button>
+                        <button class="btn btn-sm btn-secondary" onclick="extendTime(\'' + student.name + '\')">增加时长</button>
+                    </div>
+                `;
+                studentList.appendChild(item);
+            });
+            
+            openModal('taskDetailModal');
+        }
+
+        // 打开评分弹窗
+        function openGradeModal(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            document.getElementById('gradeTaskName').value = task.name;
+            document.getElementById('gradeStudentName').value = task.students[0]?.name || '';
+            openModal('gradeModal');
+        }
+
+        // 提交评分
+        function submitGrade() {
+            const score = document.getElementById('gradeScore').value;
+            const comment = document.getElementById('gradeComment').value;
+            
+            if (!score) {
+                alert('请输入评分');
+                return;
+            }
+            
+            alert('评分提交成功！');
+            closeModal('gradeModal');
+            document.getElementById('gradeScore').value = '';
+            document.getElementById('gradeComment').value = '';
+        }
+
+        // 查看报告
+        function viewReport(studentName) {
+            alert(`正在查看 ${studentName} 的实验报告...`);
+        }
+
+        // 退回任务
+        function returnTask(studentName) {
+            if (confirm(`确定要退回 ${studentName} 的任务吗？`)) {
+                alert(`已退回 ${studentName} 的任务`);
+            }
+        }
+
+        // 增加时长
+        function extendTime(studentName) {
+            const hours = prompt(`请输入要为 ${studentName} 增加的时长（小时）：`);
+            if (hours && !isNaN(hours)) {
+                alert(`已为 ${studentName} 增加 ${hours} 小时时长`);
+            }
+        }
+
+        // 查看学生详情
+        function viewStudentDetail(studentName) {
+            const student = students.find(s => s.name === studentName);
+            if (!student) return;
+            
+            alert(`学生: ${student.name}\n班级: ${student.class}\n待完成: ${student.pending}\n已完成: ${student.completed}\n已用时长: ${student.usedTime}\n实验报告: ${student.reports}`);
+        }
+
+        // 初始化任务表单
+        function initTaskForm() {
+            const form = document.getElementById('taskForm');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const taskName = document.getElementById('taskName').value;
+                const courseResource = document.getElementById('courseResource').value;
+                const assignClass = document.getElementById('assignClass').value;
+                const deadline = document.getElementById('deadline').value;
+                
+                if (!taskName || !courseResource || !assignClass || !deadline) {
+                    alert('请填写所有必填项');
+                    return;
+                }
+                
+                alert('任务创建成功！');
+                resetForm();
+            });
+        }
+
+        // 重置表单
+        function resetForm() {
+            document.getElementById('taskForm').reset();
+        }
+
+        // 打开弹窗
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // 点击弹窗外部关闭
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

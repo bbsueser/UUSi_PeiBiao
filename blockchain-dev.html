@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>区块链智能合约开发环境</title>
+    <style>
+        /* ==================== 全局样式 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-panel: #16213e;
+            --bg-card: #0f0f23;
+            --bg-editor: #0d1117;
+            --text-primary: #e6e6e6;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-orange: #f0883e;
+            --accent-red: #f85149;
+            --accent-purple: #bc8cff;
+            --border-color: #30363d;
+            --highlight-line: #161b22;
+            --success-bg: rgba(63, 185, 80, 0.1);
+            --error-bg: rgba(248, 81, 73, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ==================== 主布局 ==================== */
+        .ide-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ==================== 顶部工具栏 ==================== */
+        .top-toolbar {
+            height: 48px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .toolbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-right: 24px;
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--bg-panel);
+            border-color: var(--accent-blue);
+        }
+
+        .toolbar-btn.primary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .toolbar-btn.primary:hover {
+            background: #4c9ae6;
+        }
+
+        .toolbar-btn.success {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .toolbar-btn.success:hover {
+            background: #2ea043;
+        }
+
+        .toolbar-btn.danger {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .toolbar-status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.active {
+            background: var(--accent-green);
+        }
+
+        .status-dot.inactive {
+            background: var(--text-muted);
+        }
+
+        /* ==================== 中间区域 ==================== */
+        .main-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ==================== 左侧文件管理器 ==================== */
+        .file-explorer {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .explorer-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .explorer-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .explorer-search {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+
+        .explorer-search:focus {
+            border-color: var(--accent-blue);
+            outline: none;
+        }
+
+        .explorer-actions {
+            display: flex;
+            gap: 8px;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .explorer-btn {
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .explorer-btn:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .file-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .tree-folder {
+            margin-bottom: 4px;
+        }
+
+        .folder-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .folder-header:hover {
+            background: var(--bg-card);
+        }
+
+        .folder-icon {
+            font-size: 14px;
+        }
+
+        .folder-name {
+            font-size: 13px;
+        }
+
+        .folder-expand {
+            font-size: 10px;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .tree-folder.expanded .folder-expand {
+            transform: rotate(90deg);
+        }
+
+        .folder-children {
+            display: none;
+            padding-left: 24px;
+        }
+
+        .tree-folder.expanded .folder-children {
+            display: block;
+        }
+
+        .tree-file {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tree-file:hover {
+            background: var(--bg-card);
+        }
+
+        .tree-file.active {
+            background: var(--highlight-line);
+        }
+
+        .file-icon {
+            font-size: 14px;
+        }
+
+        .file-icon.sol { color: var(--accent-blue); }
+        .file-icon.js { color: var(--accent-orange); }
+        .file-icon.json { color: var(--accent-green); }
+        .file-icon.md { color: var(--text-secondary); }
+
+        .file-name {
+            font-size: 13px;
+        }
+
+        /* ==================== 中间代码编辑器 ==================== */
+        .editor-area {
+            flex: 1;
+            background: var(--bg-editor);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-tabs {
+            display: flex;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .editor-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+        }
+
+        .editor-tab:hover {
+            background: var(--bg-panel);
+        }
+
+        .editor-tab.active {
+            background: var(--bg-editor);
+            border-bottom: 1px solid var(--bg-editor);
+            margin-bottom: -1px;
+        }
+
+        .tab-close {
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .tab-close:hover {
+            color: var(--accent-red);
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            width: 50px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            padding: 16px 8px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            text-align: right;
+            overflow-y: auto;
+        }
+
+        .line-number {
+            height: 22.4px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .line-number:hover {
+            color: var(--text-primary);
+        }
+
+        .line-number.breakpoint {
+            color: var(--accent-red);
+        }
+
+        .line-number.breakpoint::before {
+            content: '●';
+            position: absolute;
+            left: 8px;
+            color: var(--accent-red);
+        }
+
+        .code-editor {
+            flex: 1;
+            padding: 16px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+            white-space: pre;
+        }
+
+        .code-line {
+            height: 22.4px;
+        }
+
+        .code-line.current {
+            background: var(--highlight-line);
+        }
+
+        .code-line.error {
+            background: var(--error-bg);
+        }
+
+        /* Solidity语法高亮 */
+        .keyword { color: var(--accent-purple); }
+        .type { color: var(--accent-blue); }
+        .function { color: var(--accent-orange); }
+        .string { color: var(--accent-green); }
+        .number { color: var(--accent-orange); }
+        .comment { color: var(--text-muted); }
+        .pragma { color: var(--accent-red); }
+        .modifier { color: var(--accent-blue); }
+
+        .editor-status {
+            height: 28px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* ==================== 右侧调试面板 ==================== */
+        .debug-panel {
+            width: 320px;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .debug-tabs {
+            display: flex;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .debug-tab {
+            padding: 10px 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .debug-tab:hover {
+            background: var(--bg-panel);
+        }
+
+        .debug-tab.active {
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--accent-blue);
+            margin-bottom: -1px;
+        }
+
+        .debug-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .debug-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .deploy-config {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .config-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            width: 80px;
+        }
+
+        .config-select {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .config-input {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+
+        .deploy-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-green);
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .deploy-btn:hover {
+            background: #2ea043;
+        }
+
+        .contract-info {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            font-size: 12px;
+            color: var(--accent-blue);
+        }
+
+        .function-list {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .function-item {
+            padding: 10px;
+            background: var(--bg-panel);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .function-name {
+            font-size: 13px;
+            color: var(--accent-orange);
+            margin-bottom: 8px;
+        }
+
+        .function-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .function-btn {
+            padding: 6px 12px;
+            background: var(--accent-blue);
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .debug-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .debug-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .debug-btn:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .debug-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .variable-panel {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .variable-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .variable-item:last-child {
+            border-bottom: none;
+        }
+
+        .var-name {
+            font-size: 12px;
+            color: var(--accent-purple);
+        }
+
+        .var-value {
+            font-size: 12px;
+            color: var(--accent-green);
+        }
+
+        .var-type {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: 8px;
+        }
+
+        .call-stack {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .stack-item {
+            padding: 8px;
+            background: var(--bg-panel);
+            border-radius: 4px;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .stack-item.current {
+            background: var(--highlight-line);
+            border-left: 2px solid var(--accent-blue);
+        }
+
+        /* ==================== 底部结果面板 ==================== */
+        .result-panel {
+            height: 200px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-tabs {
+            display: flex;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-tab {
+            padding: 8px 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .result-tab:hover {
+            background: var(--bg-panel);
+        }
+
+        .result-tab.active {
+            background: var(--bg-panel);
+            color: var(--text-primary);
+        }
+
+        .result-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+        }
+
+        .result-line {
+            margin-bottom: 4px;
+        }
+
+        .result-success {
+            color: var(--accent-green);
+        }
+
+        .result-error {
+            color: var(--accent-red);
+        }
+
+        .result-info {
+            color: var(--accent-blue);
+        }
+
+        .result-warning {
+            color: var(--accent-orange);
+        }
+
+        .analysis-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .analysis-level {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .analysis-level.high {
+            background: var(--error-bg);
+            color: var(--accent-red);
+        }
+
+        .analysis-level.medium {
+            background: rgba(240, 136, 62, 0.1);
+            color: var(--accent-orange);
+        }
+
+        .analysis-level.low {
+            background: var(--success-bg);
+            color: var(--accent-green);
+        }
+
+        .analysis-msg {
+            font-size: 12px;
+        }
+
+        /* ==================== 弹窗 ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-panel);
+            border-radius: 12px;
+            padding: 24px;
+            width: 400px;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-close:hover {
+            color: var(--accent-red);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .modal-input:focus {
+            border-color: var(--accent-blue);
+            outline: none;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .modal-btn.primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        /* ==================== 提示消息 ==================== */
+        .toast {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            padding: 12px 20px;
+            background: var(--bg-panel);
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1001;
+            animation: slideIn 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .toast.success {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .toast.error {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ==================== 模板选择 ==================== */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .template-item {
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+        }
+
+        .template-item:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .template-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .template-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="ide-layout">
+        <!-- 顶部工具栏 -->
+        <div class="top-toolbar">
+            <div class="toolbar-logo">
+                <div class="logo-icon">ETH</div>
+                <span>区块链智能合约开发环境</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn primary" onclick="compileContract()">
+                    <span>⚙️</span> Compile
+                </button>
+                <button class="toolbar-btn" onclick="runContract()">
+                    <span>▶️</span> Run
+                </button>
+                <button class="toolbar-btn" onclick="startDebug()">
+                    <span>🔍</span> Debug
+                </button>
+                <button class="toolbar-btn success" onclick="deployContract()">
+                    <span>📤</span> Deploy
+                </button>
+                <button class="toolbar-btn" onclick="analyzeContract()">
+                    <span>📊</span> Analyze
+                </button>
+                <button class="toolbar-btn" onclick="saveToStorage()">
+                    <span>💾</span> Save
+                </button>
+            </div>
+            <div class="toolbar-status">
+                <div class="status-item">
+                    <div class="status-dot active"></div>
+                    <span>JSVM Ready</span>
+                </div>
+                <div class="status-item">
+                    <span>Web3 v1.0</span>
+                </div>
+                <div class="status-item">
+                    <span>Solidity 0.8.x</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间区域 -->
+        <div class="main-area">
+            <!-- 左侧文件管理器 -->
+            <div class="file-explorer">
+                <div class="explorer-header">
+                    <div class="explorer-title">📁 文件浏览器</div>
+                    <input class="explorer-search" placeholder="请输入组件名" oninput="searchFiles(this.value)">
+                </div>
+                <div class="explorer-actions">
+                    <button class="explorer-btn" onclick="showCreateModal()">+ Create</button>
+                    <button class="explorer-btn" onclick="showTemplateModal()">📋 Template</button>
+                    <button class="explorer-btn" onclick="uploadFile()">⬆️ Upload</button>
+                </div>
+                <div class="file-tree" id="fileTree">
+                    <div class="tree-folder expanded">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-expand">▶</span>
+                            <span class="folder-icon">📁</span>
+                            <span class="folder-name">contracts</span>
+                        </div>
+                        <div class="folder-children">
+                            <div class="tree-file active" onclick="openFile('Storage.sol')">
+                                <span class="file-icon sol">📄</span>
+                                <span class="file-name">Storage.sol</span>
+                            </div>
+                            <div class="tree-file" onclick="openFile('ERC20.sol')">
+                                <span class="file-icon sol">📄</span>
+                                <span class="file-name">ERC20.sol</span>
+                            </div>
+                            <div class="tree-file" onclick="openFile('Voting.sol')">
+                                <span class="file-icon sol">📄</span>
+                                <span class="file-name">Voting.sol</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tree-folder expanded">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-expand">▶</span>
+                            <span class="folder-icon">📁</span>
+                            <span class="folder-name">scripts</span>
+                        </div>
+                        <div class="folder-children">
+                            <div class="tree-file" onclick="openFile('deploy.js')">
+                                <span class="file-icon js">📄</span>
+                                <span class="file-name">deploy.js</span>
+                            </div>
+                            <div class="tree-file" onclick="openFile('test.js')">
+                                <span class="file-icon js">📄</span>
+                                <span class="file-name">test.js</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tree-folder">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-expand">▶</span>
+                            <span class="folder-icon">📁</span>
+                            <span class="folder-name">config</span>
+                        </div>
+                        <div class="folder-children">
+                            <div class="tree-file" onclick="openFile('truffle-config.json')">
+                                <span class="file-icon json">📄</span>
+                                <span class="file-name">truffle-config.json</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间代码编辑器 -->
+            <div class="editor-area">
+                <div class="editor-tabs">
+                    <div class="editor-tab active" onclick="switchTab('Storage.sol')">
+                        <span class="file-icon sol">📄</span>
+                        <span>Storage.sol</span>
+                        <span class="tab-close" onclick="closeTab('Storage.sol')">✕</span>
+                    </div>
+                    <div class="editor-tab" onclick="switchTab('ERC20.sol')">
+                        <span class="file-icon sol">📄</span>
+                        <span>ERC20.sol</span>
+                        <span class="tab-close" onclick="closeTab('ERC20.sol')">✕</span>
+                    </div>
+                </div>
+                <div class="editor-content">
+                    <div class="line-numbers" id="lineNumbers"></div>
+                    <div class="code-editor" id="codeEditor"></div>
+                </div>
+                <div class="editor-status">
+                    <span>Ln 1, Col 1</span>
+                    <span>Solidity</span>
+                    <span>UTF-8</span>
+                    <span id="compileStatus">Not Compiled</span>
+                </div>
+            </div>
+
+            <!-- 右侧调试面板 -->
+            <div class="debug-panel">
+                <div class="debug-tabs">
+                    <div class="debug-tab active" onclick="switchDebugTab('deploy')">Deploy</div>
+                    <div class="debug-tab" onclick="switchDebugTab('debug')">Debug</div>
+                    <div class="debug-tab" onclick="switchDebugTab('web3')">Web3</div>
+                </div>
+                <div class="debug-content" id="debugContent">
+                    <!-- Deploy Tab -->
+                    <div class="debug-tab-content" id="deployTab">
+                        <div class="debug-section">
+                            <div class="section-title">运行环境</div>
+                            <div class="deploy-config">
+                                <div class="config-row">
+                                    <span class="config-label">Environment</span>
+                                    <select class="config-select" id="envSelect">
+                                        <option>JavaScript VM (JSVM)</option>
+                                        <option>Injected Web3</option>
+                                        <option>Web3 Provider</option>
+                                    </select>
+                                </div>
+                                <div class="config-row">
+                                    <span class="config-label">Account</span>
+                                    <select class="config-select" id="accountSelect">
+                                        <option>0x5B38... (100 ETH)</option>
+                                        <option>0xAb34... (50 ETH)</option>
+                                        <option>0xCd56... (30 ETH)</option>
+                                    </select>
+                                </div>
+                                <div class="config-row">
+                                    <span class="config-label">Gas Limit</span>
+                                    <input class="config-input" value="3000000">
+                                </div>
+                                <div class="config-row">
+                                    <span class="config-label">Gas Price</span>
+                                    <input class="config-input" value="20 Gwei">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="debug-section">
+                            <div class="section-title">合约</div>
+                            <div class="deploy-config">
+                                <div class="config-row">
+                                    <span class="config-label">Contract</span>
+                                    <select class="config-select" id="contractSelect">
+                                        <option>Storage</option>
+                                        <option>ERC20</option>
+                                        <option>Voting</option>
+                                    </select>
+                                </div>
+                                <button class="deploy-btn" onclick="deployContract()">Deploy</button>
+                            </div>
+                        </div>
+                        <div class="debug-section" id="deployedSection" style="display:none;">
+                            <div class="section-title">已部署合约</div>
+                            <div class="contract-info">
+                                <div class="info-row">
+                                    <span class="info-label">Address</span>
+                                    <span class="info-value" id="contractAddress">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Transaction</span>
+                                    <span class="info-value" id="txHash">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Gas Used</span>
+                                    <span class="info-value" id="gasUsed">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="debug-section">
+                            <div class="section-title">合约函数</div>
+                            <div class="function-list" id="functionList">
+                                <div class="function-item">
+                                    <div class="function-name">store(uint256 _num)</div>
+                                    <input class="function-input" placeholder="输入参数: 123">
+                                    <button class="function-btn" onclick="callFunction('store')">Call</button>
+                                </div>
+                                <div class="function-item">
+                                    <div class="function-name">retrieve() → uint256</div>
+                                    <button class="function-btn" onclick="callFunction('retrieve')">Call</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Debug Tab -->
+                    <div class="debug-tab-content" id="debugTab" style="display:none;">
+                        <div class="debug-section">
+                            <div class="section-title">调试控制</div>
+                            <div class="debug-controls">
+                                <button class="debug-btn" onclick="debugStep('continue')" title="继续">▶️</button>
+                                <button class="debug-btn" onclick="debugStep('stepOver')" title="单步跳过">⏭️</button>
+                                <button class="debug-btn" onclick="debugStep('stepInto')" title="单步进入">⬇️</button>
+                                <button class="debug-btn" onclick="debugStep('stepOut')" title="单步跳出">⬆️</button>
+                                <button class="debug-btn" onclick="stopDebug()" title="停止">⏹️</button>
+                            </div>
+                        </div>
+                        <div class="debug-section">
+                            <div class="section-title">断点</div>
+                            <div class="variable-panel">
+                                <div class="variable-item">
+                                    <span class="var-name">Line 5</span>
+                                    <span class="var-value">store()</span>
+                                </div>
+                                <div class="variable-item">
+                                    <span class="var-name">Line 12</span>
+                                    <span class="var-value">retrieve()</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="debug-section">
+                            <div class="section-title">变量监视</div>
+                            <div class="variable-panel" id="variablePanel">
+                                <div class="variable-item">
+                                    <span class="var-name">_num</span>
+                                    <span class="var-value">123</span>
+                                    <span class="var-type">uint256</span>
+                                </div>
+                                <div class="variable-item">
+                                    <span class="var-name">number</span>
+                                    <span class="var-value">0</span>
+                                    <span class="var-type">uint256</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="debug-section">
+                            <div class="section-title">调用栈</div>
+                            <div class="call-stack" id="callStack">
+                                <div class="stack-item current">Storage.store(uint256)</div>
+                                <div class="stack-item">Web3.callContract()</div>
+                                <div class="stack-item">JSVM.execute()</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Web3 Tab -->
+                    <div class="debug-tab-content" id="web3Tab" style="display:none;">
+                        <div class="debug-section">
+                            <div class="section-title">Web3 环境</div>
+                            <div class="contract-info">
+                                <div class="info-row">
+                                    <span class="info-label">Provider</span>
+                                    <span class="info-value">JSVM (HTTP)</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Network</span>
+                                    <span class="info-value">Custom (123)</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Block Number</span>
+                                    <span class="info-value" id="blockNumber">0</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Chain ID</span>
+                                    <span class="info-value">123</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="debug-section">
+                            <div class="section-title">账户列表</div>
+                            <div class="variable-panel">
+                                <div class="variable-item">
+                                    <span class="var-name">0x5B38Da6a701c568545dCfcB03FcB875f56beddC4</span>
+                                    <span class="var-value">100 ETH</span>
+                                </div>
+                                <div class="variable-item">
+                                    <span class="var-name">0xAb8483F70dAfcB03FcB875f56beddC4</span>
+                                    <span class="var-value">50 ETH</span>
+                                </div>
+                                <div class="variable-item">
+                                    <span class="var-name">0xCd56E5F70dAfcB03FcB875f56beddC4</span>
+                                    <span class="var-value">30 ETH</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="debug-section">
+                            <div class="section-title">注入对象</div>
+                            <div class="contract-info">
+                                <div class="info-row">
+                                    <span class="info-label">web3</span>
+                                    <span class="info-value">Web3.js v1.0.0</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">web3.eth</span>
+                                    <span class="info-value">✓ Available</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">web3.utils</span>
+                                    <span class="info-value">✓ Available</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部结果面板 -->
+        <div class="result-panel">
+            <div class="result-tabs">
+                <div class="result-tab active" onclick="switchResultTab('output')">运行结果</div>
+                <div class="result-tab" onclick="switchResultTab('analysis')">静态分析</div>
+                <div class="result-tab" onclick="switchResultTab('abi')">ABI/Bytecode</div>
+                <div class="result-tab" onclick="switchResultTab('logs')">日志</div>
+            </div>
+            <div class="result-content" id="resultContent">
+                <div class="result-tab-content" id="outputTab">
+                    <div class="result-line result-info">[系统] JavaScript虚拟机已初始化</div>
+                    <div class="result-line result-info">[系统] Web3对象已注入</div>
+                    <div class="result-line result-success">[编译] 合约编译成功</div>
+                    <div class="result-line result-info">[部署] 等待部署...</div>
+                </div>
+                <div class="result-tab-content" id="analysisTab" style="display:none;">
+                    <div class="analysis-item">
+                        <span class="analysis-level low">LOW</span>
+                        <span class="analysis-msg">未使用的变量: tempVar (line 8)</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-level medium">MEDIUM</span>
+                        <span class="analysis-msg">建议添加访问控制: store函数缺少权限检查</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-level low">LOW</span>
+                        <span class="analysis-msg">代码风格: 建议使用natspec注释</span>
+                    </div>
+                </div>
+                <div class="result-tab-content" id="abiTab" style="display:none;">
+                    <div class="result-line result-info">ABI:</div>
+                    <div class="result-line">[{"inputs":[{"name":"_num","type":"uint256"}],"name":"store","outputs":[]},{"inputs":[],"name":"retrieve","outputs":[{"name":"","type":"uint256"}]}]</div>
+                    <div class="result-line result-info" style="margin-top:12px;">Bytecode:</div>
+                    <div class="result-line">0x608060405234801561001057600080fd5b5060043610610036576000357c010000000000000000000000000000000000000000000000000000000090048063...</div>
+                </div>
+                <div class="result-tab-content" id="logsTab" style="display:none;">
+                    <div class="result-line">[2024-01-15 10:30:00] 项目创建</div>
+                    <div class="result-line">[2024-01-15 10:30:05] 文件保存: Storage.sol</div>
+                    <div class="result-line">[2024-01-15 10:30:10] 编译成功</div>
+                    <div class="result-line">[2024-01-15 10:30:15] 部署成功: 0x123...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建文件弹窗 -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">创建文件</div>
+                <div class="modal-close" onclick="closeCreateModal()">✕</div>
+            </div>
+            <div class="modal-body">
+                <input class="modal-input" id="fileNameInput" placeholder="文件名 (如: MyContract.sol)">
+                <select class="config-select" id="fileTypeSelect">
+                    <option value=".sol">Solidity (.sol)</option>
+                    <option value=".js">JavaScript (.js)</option>
+                    <option value=".json">JSON (.json)</option>
+                    <option value=".md">Markdown (.md)</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeCreateModal()">取消</button>
+                <button class="modal-btn primary" onclick="createFile()">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模板选择弹窗 -->
+    <div class="modal-overlay" id="templateModal">
+        <div class="modal-content" style="width:500px;">
+            <div class="modal-header">
+                <div class="modal-title">选择合约模板</div>
+                <div class="modal-close" onclick="closeTemplateModal()">✕</div>
+            </div>
+            <div class="modal-body">
+                <div class="template-grid">
+                    <div class="template-item" onclick="loadTemplate('empty')">
+                        <div class="template-name">空合约</div>
+                        <div class="template-desc">基础的空白合约模板</div>
+                    </div>
+                    <div class="template-item" onclick="loadTemplate('storage')">
+                        <div class="template-name">存储合约</div>
+                        <div class="template-desc">简单的数据存储与读取</div>
+                    </div>
+                    <div class="template-item" onclick="loadTemplate('erc20')">
+                        <div class="template-name">ERC20代币</div>
+                        <div class="template-desc">标准代币合约接口</div>
+                    </div>
+                    <div class="template-item" onclick="loadTemplate('voting')">
+                        <div class="template-name">投票合约</div>
+                        <div class="template-desc">简易投票系统</div>
+                    </div>
+                    <div class="template-item" onclick="loadTemplate('auction')">
+                        <div class="template-name">拍卖合约</div>
+                        <div class="template-desc">竞价拍卖系统</div>
+                    </div>
+                    <div class="template-item" onclick="loadTemplate('multisig')">
+                        <div class="template-name">多重签名</div>
+                        <div class="template-desc">多签钱包合约</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 状态管理 ====================
+        const state = {
+            files: {
+                'Storage.sol': {
+                    content: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Storage {
+    uint256 number;
+
+    // 存储数值
+    function store(uint256 _num) public {
+        number = _num;
+    }
+
+    // 读取数值
+    function retrieve() public view returns (uint256) {
+        return number;
+    }
+}`,
+                    type: 'sol'
+                },
+                'ERC20.sol': {
+                    content: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract ERC20 {
+    string public name = "MyToken";
+    string public symbol = "MTK";
+    uint8 public decimals = 18;
+    uint256 public totalSupply = 1000000;
+
+    mapping(address => uint256) balances;
+
+    constructor() {
+        balances[msg.sender] = totalSupply;
+    }
+
+    function transfer(address _to, uint256 _value) public returns (bool) {
+        require(balances[msg.sender] >= _value);
+        balances[msg.sender] -= _value;
+        balances[_to] += _value;
+        return true;
+    }
+
+    function balanceOf(address _owner) public view returns (uint256) {
+        return balances[_owner];
+    }
+}`,
+                    type: 'sol'
+                },
+                'Voting.sol': {
+                    content: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Voting {
+    struct Proposal {
+        string name;
+        uint256 voteCount;
+    }
+
+    Proposal[] public proposals;
+    mapping(address => bool) hasVoted;
+
+    constructor(string[] memory _proposalNames) {
+        for (uint i = 0; i < _proposalNames.length; i++) {
+            proposals.push(Proposal(_proposalNames[i], 0));
+        }
+    }
+
+    function vote(uint256 _proposalIndex) public {
+        require(!hasVoted[msg.sender]);
+        proposals[_proposalIndex].voteCount += 1;
+        hasVoted[msg.sender] = true;
+    }
+
+    function getProposalCount() public view returns (uint256) {
+        return proposals.length;
+    }
+}`,
+                    type: 'sol'
+                },
+                'deploy.js': {
+                    content: `// 部署脚本
+const Web3 = require('web3');
+const web3 = new Web3('http://localhost:8545');
+
+async function deploy() {
+    const accounts = await web3.eth.getAccounts();
+    console.log('Deploying from:', accounts[0]);
+    // ... 部署逻辑
+}`,
+                    type: 'js'
+                },
+                'test.js': {
+                    content: `// 测试脚本
+const Storage = artifacts.require('Storage');
+
+contract('Storage', (accounts) => {
+    it('should store value', async () => {
+        const instance = await Storage.deployed();
+        await instance.store(42);
+        const value = await instance.retrieve();
+        assert.equal(value, 42);
+    });
+});`,
+                    type: 'js'
+                },
+                'truffle-config.json': {
+                    content: `{
+    "networks": {
+        "development": {
+            "host": "127.0.0.1",
+            "port": 8545,
+            "network_id": "*"
+        }
+    },
+    "compilers": {
+        "solc": {
+            "version": "0.8.0"
+        }
+    }
+}`,
+                    type: 'json'
+                }
+            },
+            currentFile: 'Storage.sol',
+            openTabs: ['Storage.sol', 'ERC20.sol'],
+            breakpoints: [5, 12],
+            currentLine: 1,
+            deployed: false,
+            contractAddress: '',
+            blockNumber: 0
+        };
+
+        // ==================== 初始化 ====================
+        function init() {
+            renderEditor();
+            updateLineNumbers();
+            startBlockSimulation();
+        }
+
+        function startBlockSimulation() {
+            setInterval(() => {
+                state.blockNumber++;
+                document.getElementById('blockNumber').textContent = state.blockNumber;
+            }, 5000);
+        }
+
+        // ==================== 编辑器 ====================
+        function renderEditor() {
+            const editor = document.getElementById('codeEditor');
+            const content = state.files[state.currentFile]?.content || '';
+            
+            // 语法高亮处理
+            const highlighted = highlightSyntax(content);
+            editor.innerHTML = highlighted;
+        }
+
+        function highlightSyntax(code) {
+            const lines = code.split('\n');
+            return lines.map((line, i) => {
+                let highlighted = line;
+                
+                // Solidity关键字
+                highlighted = highlighted.replace(/(pragma|contract|function|public|private|internal|external|view|pure|returns|return|require|assert|emit|event|mapping|struct|constructor|modifier|virtual|override|abstract|interface|library|using|import|from|as|is|new|delete|let|var|constant|memory|storage|calldata)/g, '<span class="keyword">$1</span>');
+                
+                // 类型
+                highlighted = highlighted.replace(/(uint256|uint|int256|int|address|bool|string|bytes32|bytes|byte|fixed|ufixed)/g, '<span class="type">$1</span>');
+                
+                // 函数名
+                highlighted = highlighted.replace(/(\w+)(\s*\()/g, '<span class="function">$1</span>$2');
+                
+                // 字符串
+                highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
+                highlighted = highlighted.replace(/'([^']*)'/g, '<span class="string">\'$1\'</span>');
+                
+                // 数字
+                highlighted = highlighted.replace(/(\d+)/g, '<span class="number">$1</span>');
+                
+                // 注释
+                highlighted = highlighted.replace(/(\/\/.*)/g, '<span class="comment">$1</span>');
+                highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="comment">$1</span>');
+                
+                // pragma特殊处理
+                highlighted = highlighted.replace(/pragma/g, '<span class="pragma">pragma</span>');
+                
+                // 行号和断点
+                const isBreakpoint = state.breakpoints.includes(i + 1);
+                const isCurrent = state.currentLine === i + 1;
+                
+                let classes = 'code-line';
+                if (isCurrent) classes += ' current';
+                if (isBreakpoint) classes += ' breakpoint';
+                
+                return '<div class="' + classes + '" onclick="toggleBreakpoint(' + (i + 1) + ')">' + highlighted + '</div>';
+            }).join('');
+        }
+
+        function updateLineNumbers() {
+            const content = state.files[state.currentFile]?.content || '';
+            const lines = content.split('\n');
+            const lineNumbers = document.getElementById('lineNumbers');
+            
+            lineNumbers.innerHTML = lines.map((_, i) => {
+                const isBreakpoint = state.breakpoints.includes(i + 1);
+                return '<div class="line-number' + (isBreakpoint ? ' breakpoint' : '') + '" onclick="toggleBreakpoint(' + (i + 1) + ')">' + (i + 1) + '</div>';
+            }).join('');
+        }
+
+        function toggleBreakpoint(line) {
+            const index = state.breakpoints.indexOf(line);
+            if (index > -1) {
+                state.breakpoints.splice(index, 1);
+            } else {
+                state.breakpoints.push(line);
+            }
+            renderEditor();
+            updateLineNumbers();
+            addLog('info', '断点设置: Line ' + line);
+        }
+
+        // ==================== 文件管理 ====================
+        function openFile(filename) {
+            state.currentFile = filename;
+            
+            if (!state.openTabs.includes(filename)) {
+                state.openTabs.push(filename);
+                renderTabs();
+            }
+            
+            renderEditor();
+            updateLineNumbers();
+            
+            // 更新文件树选中状态
+            document.querySelectorAll('.tree-file').forEach(f => f.classList.remove('active'));
+            event.target.closest('.tree-file')?.classList.add('active');
+            
+            // 更新标签页选中状态
+            switchTab(filename);
+        }
+
+        function switchTab(filename) {
+            state.currentFile = filename;
+            renderEditor();
+            updateLineNumbers();
+            
+            document.querySelectorAll('.editor-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.editor-tab').forEach(tab => {
+                if (tab.textContent.includes(filename)) {
+                    tab.classList.add('active');
+                }
+            });
+        }
+
+        function closeTab(filename) {
+            const index = state.openTabs.indexOf(filename);
+            if (index > -1) {
+                state.openTabs.splice(index, 1);
+                renderTabs();
+                
+                if (state.currentFile === filename && state.openTabs.length > 0) {
+                    state.currentFile = state.openTabs[0];
+                    renderEditor();
+                    updateLineNumbers();
+                }
+            }
+        }
+
+        function renderTabs() {
+            const tabs = document.querySelector('.editor-tabs');
+            tabs.innerHTML = state.openTabs.map(file => {
+                const type = state.files[file]?.type || 'sol';
+                const iconClass = type === 'sol' ? 'sol' : type === 'js' ? 'js' : type === 'json' ? 'json' : '';
+                return '<div class="editor-tab' + (file === state.currentFile ? ' active' : '') + '" onclick="switchTab(\'' + file + '\')">' +
+                    '<span class="file-icon ' + iconClass + '">📄</span>' +
+                    '<span>' + file + '</span>' +
+                    '<span class="tab-close" onclick="closeTab(\'' + file + '\')">✕</span>' +
+                '</div>';
+            }).join('');
+        }
+
+        function toggleFolder(header) {
+            header.closest('.tree-folder').classList.toggle('expanded');
+        }
+
+        function searchFiles(keyword) {
+            document.querySelectorAll('.tree-file').forEach(file => {
+                const name = file.querySelector('.file-name').textContent;
+                file.style.display = name.toLowerCase().includes(keyword.toLowerCase()) ? 'flex' : 'none';
+            });
+        }
+
+        function showCreateModal() {
+            document.getElementById('createModal').classList.add('show');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.remove('show');
+        }
+
+        function createFile() {
+            const name = document.getElementById('fileNameInput').value;
+            const type = document.getElementById('fileTypeSelect').value;
+            
+            if (name) {
+                const filename = name + type;
+                state.files[filename] = {
+                    content: type === '.sol' ? `// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract ${name} {\n    // Your code here\n}` : '',
+                    type: type.replace('.', '')
+                };
+                
+                openFile(filename);
+                closeCreateModal();
+                showToast('success', '文件创建成功: ' + filename);
+                addLog('info', '创建文件: ' + filename);
+            }
+        }
+
+        function showTemplateModal() {
+            document.getElementById('templateModal').classList.add('show');
+        }
+
+        function closeTemplateModal() {
+            document.getElementById('templateModal').classList.remove('show');
+        }
+
+        function loadTemplate(type) {
+            const templates = {
+                empty: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract MyContract {
+    // Your code here
+}`,
+                storage: state.files['Storage.sol'].content,
+                erc20: state.files['ERC20.sol'].content,
+                voting: state.files['Voting.sol'].content,
+                auction: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Auction {
+    address public beneficiary;
+    uint256 public highestBid;
+    address public highestBidder;
+    bool ended;
+
+    constructor(address _beneficiary) {
+        beneficiary = _beneficiary;
+    }
+
+    function bid() public payable {
+        require(!ended);
+        require(msg.value > highestBid);
+        highestBid = msg.value;
+        highestBidder = msg.sender;
+    }
+
+    function endAuction() public {
+        require(!ended);
+        ended = true;
+        beneficiary.transfer(highestBid);
+    }
+}`,
+                multisig: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract MultiSigWallet {
+    address[] public owners;
+    uint256 public required;
+    mapping(uint256 => mapping(address => bool)) confirmations;
+
+    constructor(address[] memory _owners, uint256 _required) {
+        owners = _owners;
+        required = _required;
+    }
+
+    function submitTransaction(address _to, uint256 _value) public returns (uint256) {
+        // Transaction logic
+        return 0;
+    }
+
+    function confirmTransaction(uint256 _txId) public {
+        confirmations[_txId][msg.sender] = true;
+    }
+}`
+            };
+            
+            state.files['NewContract.sol'] = {
+                content: templates[type],
+                type: 'sol'
+            };
+            
+            openFile('NewContract.sol');
+            closeTemplateModal();
+            showToast('success', '模板加载成功');
+        }
+
+        function uploadFile() {
+            showToast('info', '拖拽文件到文件浏览器区域上传');
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('blockchainIDE', JSON.stringify(state.files));
+            showToast('success', '项目已保存到浏览器本地存储');
+            addLog('success', '项目保存成功');
+        }
+
+        // ==================== 编译与部署 ====================
+        function compileContract() {
+            document.getElementById('compileStatus').textContent = 'Compiling...';
+            
+            setTimeout(() => {
+                document.getElementById('compileStatus').textContent = 'Compiled ✓';
+                showToast('success', '合约编译成功');
+                addLog('success', '合约编译成功');
+                addLog('info', '生成ABI和Bytecode');
+                
+                // 更新ABI面板
+                document.getElementById('abiTab').innerHTML = 
+                    '<div class="result-line result-info">ABI:</div>' +
+                    '<div class="result-line">[{"inputs":[{"name":"_num","type":"uint256"}],"name":"store","outputs":[]},{"inputs":[],"name":"retrieve","outputs":[{"name":"","type":"uint256"}]}]</div>' +
+                    '<div class="result-line result-info" style="margin-top:12px;">Bytecode:</div>' +
+                    '<div class="result-line">0x608060405234801561001057600080fd5b5060043610610036576000357c0100000000000000000000000000000000000000000000000000000000900480632e64cec11461003b5780636057361d14610052575b600080fd5b610043610069565b6040518082815260200191505060405180910390f35b61004c610073565b6040518082815260200191505060405180910390f35b600080fd5b60005481565b600080fdA...</div>';
+            }, 1000);
+        }
+
+        function deployContract() {
+            if (!state.deployed) {
+                addLog('info', '开始部署合约...');
+                
+                setTimeout(() => {
+                    state.deployed = true;
+                    state.contractAddress = '0x' + Math.random().toString(16).substr(2, 40);
+                    
+                    document.getElementById('deployedSection').style.display = 'block';
+                    document.getElementById('contractAddress').textContent = state.contractAddress;
+                    document.getElementById('txHash').textContent = '0x' + Math.random().toString(16).substr(2, 64);
+                    document.getElementById('gasUsed').textContent = '125,432';
+                    
+                    showToast('success', '合约部署成功');
+                    addLog('success', '合约部署成功');
+                    addLog('info', '合约地址: ' + state.contractAddress);
+                    addLog('info', 'Gas消耗: 125,432');
+                }, 1500);
+            } else {
+                showToast('info', '合约已部署，点击"重新部署"可重新部署');
+            }
+        }
+
+        function runContract() {
+            if (!state.deployed) {
+                showToast('error', '请先部署合约');
+                return;
+            }
+            
+            addLog('info', '执行合约函数...');
+            setTimeout(() => {
+                addLog('success', '函数执行成功');
+                addLog('info', '返回值: 0');
+            }, 500);
+        }
+
+        function callFunction(funcName) {
+            if (!state.deployed) {
+                showToast('error', '请先部署合约');
+                return;
+            }
+            
+            addLog('info', '调用函数: ' + funcName);
+            
+            setTimeout(() => {
+                if (funcName === 'retrieve') {
+                    addLog('success', '返回值: 123');
+                    showToast('success', 'retrieve() → 123');
+                } else {
+                    addLog('success', '函数调用成功');
+                    showToast('success', funcName + '() 执行成功');
+                }
+            }, 300);
+        }
+
+        // ==================== 调试 ====================
+        function startDebug() {
+            if (!state.deployed) {
+                showToast('error', '请先部署合约');
+                return;
+            }
+            
+            switchDebugTab('debug');
+            state.currentLine = state.breakpoints[0] || 5;
+            renderEditor();
+            
+            addLog('info', '调试模式启动');
+            addLog('info', '当前行: ' + state.currentLine);
+            showToast('info', '调试模式已启动');
+        }
+
+        function debugStep(type) {
+            const actions = {
+                continue: '继续执行',
+                stepOver: '单步跳过',
+                stepInto: '单步进入',
+                stepOut: '单步跳出'
+            };
+            
+            state.currentLine++;
+            if (state.currentLine > 10) state.currentLine = 5;
+            
+            renderEditor();
+            updateVariablePanel();
+            
+            addLog('info', actions[type] + ' → Line ' + state.currentLine);
+        }
+
+        function stopDebug() {
+            state.currentLine = 1;
+            renderEditor();
+            switchDebugTab('deploy');
+            addLog('info', '调试已停止');
+            showToast('info', '调试已停止');
+        }
+
+        function updateVariablePanel() {
+            const panel = document.getElementById('variablePanel');
+            panel.innerHTML = 
+                '<div class="variable-item"><span class="var-name">_num</span><span class="var-value">' + Math.floor(Math.random() * 100) + '</span><span class="var-type">uint256</span></div>' +
+                '<div class="variable-item"><span class="var-name">number</span><span class="var-value">' + Math.floor(Math.random() * 100) + '</span><span class="var-type">uint256</span></div>';
+        }
+
+        // ==================== 静态分析 ====================
+        function analyzeContract() {
+            addLog('info', '开始静态分析...');
+            
+            setTimeout(() => {
+                switchResultTab('analysis');
+                showToast('success', '静态分析完成');
+                addLog('success', '静态分析完成');
+                addLog('warning', '发现3个潜在问题');
+            }, 1000);
+        }
+
+        // ==================== 面板切换 ====================
+        function switchDebugTab(tab) {
+            document.querySelectorAll('.debug-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.debug-tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById(tab + 'Tab').style.display = 'block';
+        }
+
+        function switchResultTab(tab) {
+            document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.result-tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById(tab + 'Tab').style.display = 'block';
+        }
+
+        // ==================== 日志 ====================
+        function addLog(type, message) {
+            const time = new Date().toLocaleTimeString();
+            const output = document.getElementById('outputTab');
+            output.innerHTML += '<div class="result-line result-' + type + '">[' + time + '] ' + message + '</div>';
+        }
+
+        // ==================== 提示 ====================
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ==================== 快捷键 ====================
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveToStorage();
+            }
+            if (e.key === 'F5') {
+                e.preventDefault();
+                runContract();
+            }
+            if (e.key === 'F9') {
+                e.preventDefault();
+                startDebug();
+            }
+            if (e.ctrlKey && e.key === 'F9') {
+                e.preventDefault();
+                toggleBreakpoint(state.currentLine);
+            }
+            if (e.key === 'F10') {
+                e.preventDefault();
+                debugStep('stepOver');
+            }
+            if (e.key === 'F11') {
+                e.preventDefault();
+                debugStep('stepInto');
+            }
+            if (e.shiftKey && e.key === 'F11') {
+                e.preventDefault();
+                debugStep('stepOut');
+            }
+            if (e.key === 'Escape') {
+                closeCreateModal();
+                closeTemplateModal();
+            }
+        });
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>

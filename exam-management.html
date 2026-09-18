@@ -1,0 +1,2720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考试管理 - 智联网综合实践平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <style>
+        /* 页面基础布局 */
+        .exam-management-page {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            background: var(--bg-body);
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            grid-column: 1 / -1;
+            background: var(--bg-header);
+            color: white;
+            padding: 0 var(--space-5);
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: var(--z-sticky);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .nav-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-blue);
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-xl);
+        }
+
+        .nav-brand-text {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            transition: all var(--duration-base) ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+        }
+
+        /* 左侧侧边栏 */
+        .sidebar {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-light);
+            padding: var(--space-3) 0;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+            padding: 0 var(--space-2);
+        }
+
+        .sidebar-item {
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            border: none;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+            font-family: var(--font-family);
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-body);
+            color: var(--text-title);
+        }
+
+        .sidebar-item.active {
+            background: rgba(71, 85, 105, 0.1);
+            color: var(--primary-blue);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .sidebar-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            background: var(--bg-body);
+            padding: var(--space-4);
+            overflow-y: auto;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            margin-bottom: var(--space-4);
+        }
+
+        .page-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.exam { background: rgba(71, 85, 105, 0.1); }
+        .stat-icon.question { background: rgba(59, 130, 246, 0.1); }
+        .stat-icon.paper { background: rgba(16, 185, 129, 0.1); }
+        .stat-icon.score { background: rgba(245, 158, 11, 0.1); }
+
+        .stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        /* 内容区域布局 */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: var(--space-4);
+        }
+
+        /* 表单区域 */
+        .form-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+            margin-bottom: var(--space-4);
+            border: 1px solid var(--border-light);
+        }
+
+        .form-section-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-3);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .form-section-title .highlight {
+            color: var(--primary-blue);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
+        .form-row.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+        }
+
+        .form-label .required {
+            color: var(--error);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: var(--space-2);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-family: var(--font-family);
+            transition: all var(--duration-base) ease;
+            background: var(--bg-card);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--space-2);
+            justify-content: flex-end;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            border: none;
+            font-family: var(--font-family);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-body);
+            color: var(--text-body);
+            border: 1px solid var(--border-base);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-light);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            opacity: 0.9;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            opacity: 0.9;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        .btn-sm {
+            padding: 6px var(--space-2);
+            font-size: var(--font-size-xs);
+        }
+
+        /* 场次管理 */
+        .session-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            border: 1px solid var(--border-light);
+        }
+
+        .session-item .session-info {
+            flex: 1;
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+
+        .session-item .session-index {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .session-item .session-time {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+        }
+
+        .session-item .session-range {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            background: rgba(71, 85, 105, 0.1);
+            padding: 2px var(--space-1);
+            border-radius: var(--radius-sm);
+        }
+
+        .session-item .btn-remove {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--duration-base) ease;
+        }
+
+        .session-item .btn-remove:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        .time-range-display {
+            background: linear-gradient(135deg, rgba(71, 85, 105, 0.1), rgba(71, 85, 105, 0.05));
+            border: 1px solid var(--primary-blue);
+            border-radius: var(--radius-base);
+            padding: var(--space-2) var(--space-3);
+            margin-top: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .time-range-display .icon {
+            font-size: 18px;
+        }
+
+        .time-range-display .text {
+            font-size: var(--font-size-sm);
+            color: var(--primary-blue);
+            font-weight: var(--font-weight-medium);
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--bg-body);
+            padding: var(--space-2) var(--space-3);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .data-table td {
+            padding: var(--space-2) var(--space-3);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover td {
+            background: var(--bg-body);
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            display: inline-block;
+        }
+
+        .status-badge.active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-badge.pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-badge.inactive { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+
+        /* 难度标签 */
+        .difficulty-badge {
+            padding: 2px var(--space-1);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .difficulty-badge.easy { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .difficulty-badge.medium { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .difficulty-badge.hard { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+
+        /* 题型标签 */
+        .type-badge {
+            padding: 2px var(--space-1);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .type-badge.single { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+        .type-badge.multiple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .type-badge.judge { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .type-badge.fill { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .type-badge.short { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
+
+        /* 操作按钮组 */
+        .action-buttons {
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        /* 图表区域 */
+        .chart-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+            margin-bottom: var(--space-4);
+            border: 1px solid var(--border-light);
+        }
+
+        .chart-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-3);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .chart-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+        }
+
+        .chart-box {
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            border: 1px solid var(--border-light);
+        }
+
+        .chart-box-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+            text-align: center;
+        }
+
+        /* 饼图样式 */
+        .pie-chart {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .pie-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+            justify-content: center;
+        }
+
+        .pie-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: var(--font-size-xs);
+            color: var(--text-body);
+        }
+
+        .pie-legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* 柱状图样式 */
+        .bar-chart {
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: var(--space-2);
+            padding: var(--space-2);
+        }
+
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .bar {
+            width: 100%;
+            max-width: 50px;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            transition: all var(--duration-base) ease;
+            position: relative;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .bar-label {
+            margin-top: var(--space-1);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* 组卷区域 */
+        .paper-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+            margin-bottom: var(--space-4);
+            border: 1px solid var(--border-light);
+        }
+
+        .paper-tabs {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: var(--space-2);
+        }
+
+        .paper-tab {
+            padding: var(--space-1) var(--space-3);
+            border: none;
+            background: transparent;
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--radius-base) var(--radius-base) 0 0;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .paper-tab:hover {
+            color: var(--primary-blue);
+        }
+
+        .paper-tab.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .paper-config {
+            display: none;
+        }
+
+        .paper-config.active {
+            display: block;
+        }
+
+        .big-question-item {
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            margin-bottom: var(--space-2);
+            border: 1px solid var(--border-light);
+        }
+
+        .big-question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+
+        .big-question-title {
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+        }
+
+        .big-question-config {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-2);
+        }
+
+        /* 防作弊区域 - 重点样式 */
+        .anti-cheat-section {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+            border: 2px solid var(--primary-blue);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .anti-cheat-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--success), var(--warning), var(--error));
+        }
+
+        .anti-cheat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+        }
+
+        .anti-cheat-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .anti-cheat-title .highlight-badge {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .anti-cheat-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: rgba(16, 185, 129, 0.2);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            border: 1px solid var(--success);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .status-text {
+            color: var(--success);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .anti-cheat-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .anti-cheat-feature {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: var(--space-1);
+        }
+
+        .feature-name {
+            color: white;
+            font-weight: var(--font-weight-medium);
+            font-size: var(--font-size-sm);
+            margin-bottom: 4px;
+        }
+
+        .feature-desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: var(--font-size-xs);
+        }
+
+        .feature-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--success);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all var(--duration-base) ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        .toggle-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: var(--font-size-xs);
+        }
+
+        /* 模拟考试预览 */
+        .exam-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            margin-top: var(--space-3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .exam-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+
+        .exam-preview-title {
+            color: white;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .exam-monitor-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: rgba(16, 185, 129, 0.2);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-full);
+        }
+
+        .monitor-icon {
+            animation: scan 2s infinite;
+        }
+
+        @keyframes scan {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+        }
+
+        .exam-preview-content {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .preview-placeholder {
+            text-align: center;
+        }
+
+        .preview-placeholder .icon {
+            font-size: 48px;
+            margin-bottom: var(--space-2);
+        }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: var(--z-modal);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: var(--space-4);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .modal-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: var(--bg-body);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary);
+            transition: all var(--duration-base) ease;
+        }
+
+        .modal-close:hover {
+            background: var(--border-light);
+            color: var(--text-title);
+        }
+
+        .modal-body {
+            margin-bottom: var(--space-3);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: var(--space-2);
+            justify-content: flex-end;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* 文件上传区域 */
+        .file-upload-area {
+            border: 2px dashed var(--border-base);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            background: var(--bg-body);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.1);
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+
+        .file-upload-text {
+            color: var(--text-body);
+            font-size: var(--font-size-sm);
+        }
+
+        .file-upload-hint {
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+            margin-top: var(--space-1);
+        }
+
+        /* Tab内容 */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 导出按钮组 */
+        .export-buttons {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        /* 阅卷人员选择 */
+        .grader-select-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-top: var(--space-1);
+        }
+
+        .grader-chip {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 6px var(--space-2);
+            background: rgba(71, 85, 105, 0.1);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+        }
+
+        .grader-chip .remove {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all var(--duration-base) ease;
+        }
+
+        .grader-chip .remove:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .exam-management-page {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row.three-col {
+                grid-template-columns: 1fr;
+            }
+
+            .big-question-config {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 0 var(--space-3);
+            }
+
+            .nav-menu {
+                gap: var(--space-2);
+            }
+
+            .main-content {
+                padding: var(--space-3);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .anti-cheat-features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="exam-management-page">
+        <!-- 顶部导航栏 -->
+        <nav class="top-nav">
+            <div class="nav-brand">
+                <div class="nav-brand-icon">E</div>
+                <span class="nav-brand-text">智联网综合实践平台</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">工作台</a>
+                <a href="course-hall.html" class="nav-link">课程大厅</a>
+                <a href="exam-hall.html" class="nav-link">考场大厅</a>
+                <a href="exam-management.html" class="nav-link active">考试管理</a>
+                <a href="task-management.html" class="nav-link">任务管理</a>
+                <a href="profile.html" class="nav-link">个人中心</a>
+            </div>
+            <div class="user-info">
+                <span>张老师</span>
+                <div class="user-avatar">张</div>
+            </div>
+        </nav>
+
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <nav class="sidebar-menu">
+                <button class="sidebar-item active" data-tab="exam-create">
+                    <span class="sidebar-icon">📝</span>
+                    创建考试
+                </button>
+                <button class="sidebar-item" data-tab="question-bank">
+                    <span class="sidebar-icon">📚</span>
+                    题库管理
+                </button>
+                <button class="sidebar-item" data-tab="paper-config">
+                    <span class="sidebar-icon">📄</span>
+                    试卷组卷
+                </button>
+                <button class="sidebar-item" data-tab="anti-cheat">
+                    <span class="sidebar-icon">🛡️</span>
+                    防作弊设置
+                </button>
+                <button class="sidebar-item" data-tab="grading">
+                    <span class="sidebar-icon">✏️</span>
+                    在线阅卷
+                </button>
+                <button class="sidebar-item" data-tab="score-export">
+                    <span class="sidebar-icon">📊</span>
+                    成绩导出
+                </button>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 创建考试 -->
+            <div id="exam-create" class="tab-content active">
+                <div class="page-header">
+                    <h1 class="page-title">创建考试</h1>
+                    <p class="page-subtitle">配置考试基本信息、场次安排和阅卷设置</p>
+                </div>
+
+                <!-- 统计卡片 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon exam">📋</div>
+                        </div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">已创建考试</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon question">❓</div>
+                        </div>
+                        <div class="stat-value">1,286</div>
+                        <div class="stat-label">题库题目</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon paper">📑</div>
+                        </div>
+                        <div class="stat-value">36</div>
+                        <div class="stat-label">组卷试卷</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon score">📈</div>
+                        </div>
+                        <div class="stat-value">89.2%</div>
+                        <div class="stat-label">平均通过率</div>
+                    </div>
+                </div>
+
+                <div class="content-layout">
+                    <div class="left-column">
+                        <!-- 考试基础设置 -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">
+                                <span>📋</span>
+                                考试基础设置
+                            </h2>
+                            <form id="examForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">考试名称 <span class="required">*</span></label>
+                                        <input type="text" class="form-input" id="examName" placeholder="请输入考试名称" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">考试类型 <span class="required">*</span></label>
+                                        <select class="form-select" id="examType" required>
+                                            <option value="">请选择考试类型</option>
+                                            <option value="regular">常规考试</option>
+                                            <option value="certification">认证测评</option>
+                                            <option value="competition">竞赛</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">考试时长（分钟）<span class="required">*</span></label>
+                                        <input type="number" class="form-input" id="examDuration" placeholder="如：120" min="1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">限考次数</label>
+                                        <select class="form-select" id="examAttempts">
+                                            <option value="1">仅限1次</option>
+                                            <option value="2">最多2次</option>
+                                            <option value="3">最多3次</option>
+                                            <option value="unlimited">不限制</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">及格分数 <span class="required">*</span></label>
+                                        <input type="number" class="form-input" id="passScore" placeholder="如：60" min="0" max="100" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">总分</label>
+                                        <input type="number" class="form-input" id="totalScore" placeholder="如：100" min="1" value="100">
+                                    </div>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">考试说明</label>
+                                    <textarea class="form-textarea" id="examDescription" placeholder="请输入考试说明..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- 考试场次关联 - 重点功能 -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">
+                                <span>🗓️</span>
+                                考试场次关联 <span class="highlight">（自动计算整体时间范围）</span>
+                            </h2>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">场次名称</label>
+                                    <input type="text" class="form-input" id="sessionName" placeholder="如：第一场">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">开始时间</label>
+                                    <input type="datetime-local" class="form-input" id="sessionStart">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">结束时间</label>
+                                    <input type="datetime-local" class="form-input" id="sessionEnd">
+                                </div>
+                            </div>
+                            <div class="form-actions" style="justify-content: flex-start; border-top: none; padding-top: 0;">
+                                <button type="button" class="btn btn-primary" onclick="addSession()">
+                                    <span>+</span>
+                                    添加场次
+                                </button>
+                            </div>
+
+                            <!-- 场次列表 -->
+                            <div class="session-list" id="sessionList">
+                                <!-- 动态生成 -->
+                            </div>
+
+                            <!-- 整体时间范围显示 -->
+                            <div class="time-range-display" id="timeRangeDisplay" style="display: none;">
+                                <span class="icon">📅</span>
+                                <span class="text" id="timeRangeText">整体时间范围：--</span>
+                            </div>
+                        </div>
+
+                        <!-- 阅卷设置 -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">
+                                <span>✏️</span>
+                                阅卷设置
+                            </h2>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">批阅类型</label>
+                                    <select class="form-select" id="gradingType">
+                                        <option value="auto">自动批阅</option>
+                                        <option value="manual">人工批阅</option>
+                                        <option value="mixed">混合批阅</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">阅卷方式</label>
+                                    <select class="form-select" id="gradingMethod">
+                                        <option value="single">单人阅卷</option>
+                                        <option value="double">双人阅卷</option>
+                                        <option value="triple">三人阅卷</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">阅卷人员</label>
+                                <select class="form-select" id="graderSelect">
+                                    <option value="">请选择阅卷人员</option>
+                                    <option value="teacher1">李老师 - 计算机学院</option>
+                                    <option value="teacher2">王老师 - 软件学院</option>
+                                    <option value="teacher3">赵老师 - 网络学院</option>
+                                    <option value="teacher4">陈老师 - 信息学院</option>
+                                </select>
+                                <div class="grader-select-area" id="graderList">
+                                    <!-- 动态生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="right-column">
+                        <!-- 快速操作 -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">
+                                <span>⚡</span>
+                                快速操作
+                            </h2>
+                            <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                                <button class="btn btn-primary" style="width: 100%;" onclick="saveExam()">
+                                    <span>💾</span>
+                                    保存考试
+                                </button>
+                                <button class="btn btn-secondary" style="width: 100%;" onclick="previewExam()">
+                                    <span>👁️</span>
+                                    预览考试
+                                </button>
+                                <button class="btn btn-secondary" style="width: 100%;" onclick="publishExam()">
+                                    <span>🚀</span>
+                                    发布考试
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 关联试卷 -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">
+                                <span>📄</span>
+                                关联试卷
+                            </h2>
+                            <div class="form-group">
+                                <label class="form-label">选择试卷</label>
+                                <select class="form-select" id="paperSelect">
+                                    <option value="">请选择试卷</option>
+                                    <option value="paper1">计算机网络期末试卷A</option>
+                                    <option value="paper2">计算机网络期末试卷B</option>
+                                    <option value="paper3">数据结构期中试卷</option>
+                                </select>
+                            </div>
+                            <div style="margin-top: var(--space-2);">
+                                <button class="btn btn-secondary btn-sm" onclick="goToPaperConfig()">
+                                    <span>⚙️</span>
+                                    去组卷
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 题库管理 -->
+            <div id="question-bank" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">题库管理</h1>
+                    <p class="page-subtitle">管理试题库，支持单题新增和批量导入</p>
+                </div>
+
+                <!-- 题库数据分析 -->
+                <div class="chart-section">
+                    <h2 class="chart-title">
+                        <span>📊</span>
+                        题库数据分析
+                    </h2>
+                    <div class="chart-container">
+                        <!-- 题型分布饼图 -->
+                        <div class="chart-box">
+                            <div class="chart-box-title">题型分布</div>
+                            <div class="pie-chart" id="typePieChart"></div>
+                            <div class="pie-legend" id="typeLegend"></div>
+                        </div>
+                        <!-- 难度分布柱状图 -->
+                        <div class="chart-box">
+                            <div class="chart-box-title">难度分布</div>
+                            <div class="bar-chart" id="difficultyBarChart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 试题操作 -->
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span>➕</span>
+                        试题管理
+                    </h2>
+                    <div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-3);">
+                        <button class="btn btn-primary" onclick="openAddQuestionModal()">
+                            <span>+</span>
+                            单题新增
+                        </button>
+                        <button class="btn btn-secondary" onclick="openBatchImportModal()">
+                            <span>📁</span>
+                            批量导入
+                        </button>
+                        <button class="btn btn-secondary">
+                            <span>📥</span>
+                            导出题库
+                        </button>
+                    </div>
+
+                    <!-- 筛选 -->
+                    <div class="form-row" style="margin-bottom: var(--space-3);">
+                        <div class="form-group">
+                            <select class="form-select" id="questionTypeFilter">
+                                <option value="">全部题型</option>
+                                <option value="single">单选题</option>
+                                <option value="multiple">多选题</option>
+                                <option value="judge">判断题</option>
+                                <option value="fill">填空题</option>
+                                <option value="short">简答题</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select class="form-select" id="difficultyFilter">
+                                <option value="">全部难度</option>
+                                <option value="easy">简单</option>
+                                <option value="medium">中等</option>
+                                <option value="hard">困难</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-input" id="keywordFilter" placeholder="搜索题目关键词...">
+                        </div>
+                    </div>
+
+                    <!-- 试题表格 -->
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;"><input type="checkbox" id="selectAll"></th>
+                                    <th>题目内容</th>
+                                    <th style="width: 100px;">题型</th>
+                                    <th style="width: 80px;">难度</th>
+                                    <th style="width: 80px;">分值</th>
+                                    <th style="width: 100px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questionTableBody">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 试卷组卷 -->
+            <div id="paper-config" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">试卷组卷</h1>
+                    <p class="page-subtitle">配置理论试卷和实操试卷，支持固定组卷和随机组卷</p>
+                </div>
+
+                <div class="paper-section">
+                    <div class="paper-tabs">
+                        <button class="paper-tab active" data-paper="theory">理论试卷</button>
+                        <button class="paper-tab" data-paper="practice">实操试卷</button>
+                    </div>
+
+                    <!-- 理论试卷配置 -->
+                    <div class="paper-config active" id="theory-paper">
+                        <div class="form-row" style="margin-bottom: var(--space-3);">
+                            <div class="form-group">
+                                <label class="form-label">试卷名称</label>
+                                <input type="text" class="form-input" placeholder="如：计算机网络期末试卷A">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">组卷方式</label>
+                                <select class="form-select" id="theoryPaperType">
+                                    <option value="fixed">固定组卷</option>
+                                    <option value="random">随机组卷</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 大题配置 -->
+                        <h3 style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2); color: var(--text-title);">
+                            大题配置
+                        </h3>
+                        <div id="bigQuestionList">
+                            <!-- 动态生成 -->
+                        </div>
+
+                        <button class="btn btn-secondary" onclick="addBigQuestion()" style="margin-top: var(--space-2);">
+                            <span>+</span>
+                            添加大题
+                        </button>
+                    </div>
+
+                    <!-- 实操试卷配置 -->
+                    <div class="paper-config" id="practice-paper">
+                        <div class="form-row" style="margin-bottom: var(--space-3);">
+                            <div class="form-group">
+                                <label class="form-label">试卷名称</label>
+                                <input type="text" class="form-input" placeholder="如：网络配置实操试卷">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">实验环境</label>
+                                <select class="form-select">
+                                    <option value="">请选择实验环境</option>
+                                    <option value="network">网络仿真环境</option>
+                                    <option value="linux">Linux服务器</option>
+                                    <option value="database">数据库环境</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">实操任务描述</label>
+                            <textarea class="form-textarea" placeholder="请描述实操任务要求..."></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">满分</label>
+                                <input type="number" class="form-input" placeholder="如：100">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">时间限制（分钟）</label>
+                                <input type="number" class="form-input" placeholder="如：60">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-secondary">预览试卷</button>
+                    <button class="btn btn-primary">保存试卷</button>
+                </div>
+            </div>
+
+            <!-- 防作弊设置 - 重点功能 -->
+            <div id="anti-cheat" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">🛡️ 防作弊设置</h1>
+                    <p class="page-subtitle">配置考试防作弊机制，确保考试公平公正</p>
+                </div>
+
+                <!-- 防作弊状态显示 -->
+                <div class="anti-cheat-section">
+                    <div class="anti-cheat-header">
+                        <div class="anti-cheat-title">
+                            <span>🛡️</span>
+                            防作弊监控系统
+                            <span class="highlight-badge">重点功能</span>
+                        </div>
+                        <div class="anti-cheat-status">
+                            <div class="status-dot"></div>
+                            <span class="status-text">防作弊监控已开启</span>
+                        </div>
+                    </div>
+
+                    <div class="anti-cheat-features">
+                        <div class="anti-cheat-feature">
+                            <div class="feature-icon">🚫</div>
+                            <div class="feature-name">禁用右键菜单</div>
+                            <div class="feature-desc">防止考生通过右键复制内容</div>
+                            <div class="feature-toggle">
+                                <div class="toggle-switch active" onclick="toggleFeature(this)"></div>
+                                <span class="toggle-label">已启用</span>
+                            </div>
+                        </div>
+                        <div class="anti-cheat-feature">
+                            <div class="feature-icon">📋</div>
+                            <div class="feature-name">禁用复制粘贴</div>
+                            <div class="feature-desc">禁止复制和粘贴操作</div>
+                            <div class="feature-toggle">
+                                <div class="toggle-switch active" onclick="toggleFeature(this)"></div>
+                                <span class="toggle-label">已启用</span>
+                            </div>
+                        </div>
+                        <div class="anti-cheat-feature">
+                            <div class="feature-icon">🔍</div>
+                            <div class="feature-name">切屏检测</div>
+                            <div class="feature-desc">检测考生切换窗口行为</div>
+                            <div class="feature-toggle">
+                                <div class="toggle-switch active" onclick="toggleFeature(this)"></div>
+                                <span class="toggle-label">已启用</span>
+                            </div>
+                        </div>
+                        <div class="anti-cheat-feature">
+                            <div class="feature-icon">⏱️</div>
+                            <div class="feature-name">自动交卷</div>
+                            <div class="feature-desc">切屏超过3次自动交卷</div>
+                            <div class="feature-toggle">
+                                <div class="toggle-switch active" onclick="toggleFeature(this)"></div>
+                                <span class="toggle-label">已启用</span>
+                            </div>
+                        </div>
+                        <div class="anti-cheat-feature">
+                            <div class="feature-icon">📸</div>
+                            <div class="feature-name">摄像头监控</div>
+                            <div class="feature-desc">考试期间开启摄像头抓拍</div>
+                            <div class="feature-toggle">
+                                <div class="toggle-switch" onclick="toggleFeature(this)"></div>
+                                <span class="toggle-label">未启用</span>
+                            </div>
+                        </div>
+                        <div class="anti-cheat-feature">
+                            <div class="feature-icon">🔒</div>
+                            <div class="feature-name">全屏模式</div>
+                            <div class="feature-desc">强制全屏考试模式</div>
+                            <div class="feature-toggle">
+                                <div class="toggle-switch active" onclick="toggleFeature(this)"></div>
+                                <span class="toggle-label">已启用</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 模拟考试预览 -->
+                    <div class="exam-preview">
+                        <div class="exam-preview-header">
+                            <div class="exam-preview-title">模拟考试页面预览</div>
+                            <div class="exam-monitor-bar">
+                                <span class="monitor-icon">📡</span>
+                                <span style="color: var(--success); font-size: var(--font-size-sm);">实时监控中</span>
+                            </div>
+                        </div>
+                        <div class="exam-preview-content" id="examPreviewContent">
+                            <div class="preview-placeholder">
+                                <div class="icon">🔒</div>
+                                <div>点击"预览考试"查看防作弊效果</div>
+                                <div style="font-size: var(--font-size-xs); margin-top: var(--space-1);">
+                                    （右键、复制、切屏等操作将被禁止）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="previewAntiCheat()">预览防作弊效果</button>
+                    <button class="btn btn-primary">保存设置</button>
+                </div>
+            </div>
+
+            <!-- 在线阅卷 -->
+            <div id="grading" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">在线阅卷</h1>
+                    <p class="page-subtitle">客观题自动评分，主观题在线批阅</p>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span>✅</span>
+                        自动评分设置
+                    </h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">客观题自动评分</label>
+                            <select class="form-select" id="autoGrading">
+                                <option value="enabled">启用</option>
+                                <option value="disabled">禁用</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">评分后显示答案</label>
+                            <select class="form-select" id="showAnswer">
+                                <option value="after">考试结束后显示</option>
+                                <option value="immediately">提交后立即显示</option>
+                                <option value="never">不显示</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span>📝</span>
+                        待阅卷列表
+                    </h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>考生姓名</th>
+                                    <th>考试名称</th>
+                                    <th>提交时间</th>
+                                    <th>客观题得分</th>
+                                    <th>主观题待阅</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradingTableBody">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成绩导出 -->
+            <div id="score-export" class="tab-content">
+                <div class="page-header">
+                    <h1 class="page-title">成绩导出</h1>
+                    <p class="page-subtitle">导出考试成绩数据</p>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span>📊</span>
+                        导出设置
+                    </h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">选择考试</label>
+                            <select class="form-select" id="exportExam">
+                                <option value="">请选择考试</option>
+                                <option value="exam1">计算机网络期末考试</option>
+                                <option value="exam2">数据结构期中测试</option>
+                                <option value="exam3">操作系统期末考试</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">选择场次</label>
+                            <select class="form-select" id="exportSession">
+                                <option value="">全部场次</option>
+                                <option value="session1">第一场 (2026-06-10 14:00)</option>
+                                <option value="session2">第二场 (2026-06-10 18:00)</option>
+                                <option value="session3">第三场 (2026-06-11 09:00)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">导出格式</label>
+                            <select class="form-select" id="exportFormat">
+                                <option value="xlsx">Excel (.xlsx)</option>
+                                <option value="csv">CSV (.csv)</option>
+                                <option value="pdf">PDF (.pdf)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">包含内容</label>
+                            <select class="form-select" id="exportContent">
+                                <option value="all">全部信息</option>
+                                <option value="score">仅成绩</option>
+                                <option value="detail">成绩及答题详情</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="export-buttons">
+                        <button class="btn btn-primary" onclick="exportAllScores()">
+                            <span>📥</span>
+                            导出整体成绩
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportBySession()">
+                            <span>📁</span>
+                            按场次导出
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <span>📋</span>
+                        成绩预览
+                    </h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>排名</th>
+                                    <th>考生姓名</th>
+                                    <th>学号</th>
+                                    <th>场次</th>
+                                    <th>客观题</th>
+                                    <th>主观题</th>
+                                    <th>总分</th>
+                                    <th>是否通过</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scoreTableBody">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 添加试题弹窗 -->
+    <div class="modal-overlay" id="addQuestionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">添加试题</h3>
+                <button class="modal-close" onclick="closeModal('addQuestionModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">题型 <span class="required">*</span></label>
+                        <select class="form-select" id="questionType">
+                            <option value="single">单选题</option>
+                            <option value="multiple">多选题</option>
+                            <option value="judge">判断题</option>
+                            <option value="fill">填空题</option>
+                            <option value="short">简答题</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">难度 <span class="required">*</span></label>
+                        <select class="form-select" id="questionDifficulty">
+                            <option value="easy">简单</option>
+                            <option value="medium">中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">题目内容 <span class="required">*</span></label>
+                    <textarea class="form-textarea" id="questionContent" placeholder="请输入题目内容..."></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">选项（每行一个选项）</label>
+                    <textarea class="form-textarea" id="questionOptions" placeholder="A. 选项1&#10;B. 选项2&#10;C. 选项3&#10;D. 选项4"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">正确答案</label>
+                        <input type="text" class="form-input" id="questionAnswer" placeholder="如：A 或 AB">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">分值</label>
+                        <input type="number" class="form-input" id="questionScore" placeholder="如：5" value="5">
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">答案解析</label>
+                    <textarea class="form-textarea" id="questionAnalysis" placeholder="请输入答案解析..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addQuestionModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveQuestion()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量导入弹窗 -->
+    <div class="modal-overlay" id="batchImportModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">批量导入试题</h3>
+                <button class="modal-close" onclick="closeModal('batchImportModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="file-upload-icon">📁</div>
+                    <div class="file-upload-text">点击或拖拽文件到此处上传</div>
+                    <div class="file-upload-hint">支持 Excel (.xlsx, .xls)、CSV (.csv) 格式</div>
+                    <input type="file" id="fileInput" style="display: none;" accept=".xlsx,.xls,.csv">
+                </div>
+                <div id="uploadedFileInfo" style="display: none; margin-top: var(--space-2); padding: var(--space-2); background: var(--bg-body); border-radius: var(--radius-base);">
+                    <div style="display: flex; align-items: center; gap: var(--space-2);">
+                        <span>📄</span>
+                        <span id="uploadedFileName" style="flex: 1;"></span>
+                        <button class="btn btn-sm btn-danger" onclick="removeUploadedFile()">删除</button>
+                    </div>
+                </div>
+                <div style="margin-top: var(--space-3);">
+                    <a href="#" style="color: var(--primary-blue); font-size: var(--font-size-sm);" onclick="downloadTemplate()">下载导入模板</a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('batchImportModal')">取消</button>
+                <button class="btn btn-primary" onclick="importQuestions()">导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 阅卷弹窗 -->
+    <div class="modal-overlay" id="gradingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">在线阅卷</h3>
+                <button class="modal-close" onclick="closeModal('gradingModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: var(--bg-body); padding: var(--space-3); border-radius: var(--radius-base); margin-bottom: var(--space-3);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">
+                        <span style="font-weight: var(--font-weight-medium);">考生：<span id="gradingStudent">张三</span></span>
+                        <span>客观题得分：<span id="gradingObjectiveScore">45</span>分</span>
+                    </div>
+                    <div>考试：<span id="gradingExamName">计算机网络期末考试</span></div>
+                </div>
+                
+                <div style="margin-bottom: var(--space-3);">
+                    <h4 style="margin-bottom: var(--space-2);">主观题评分</h4>
+                    <div id="subjectiveQuestions">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('gradingModal')">取消</button>
+                <button class="btn btn-primary" onclick="submitGrading()">提交评分</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据
+        const sessions = [];
+        const graders = [];
+        let questionId = 1;
+        let bigQuestionId = 1;
+
+        const questions = [
+            { id: 1, content: 'TCP/IP协议栈中，负责端到端可靠传输的是哪一层？', type: 'single', difficulty: 'easy', score: 5 },
+            { id: 2, content: '以下哪些属于OSI七层模型的层次？', type: 'multiple', difficulty: 'medium', score: 10 },
+            { id: 3, content: 'HTTP协议默认使用80端口。', type: 'judge', difficulty: 'easy', score: 2 },
+            { id: 4, content: 'DNS的主要作用是______。', type: 'fill', difficulty: 'medium', score: 5 },
+            { id: 5, content: '请简述三次握手的过程。', type: 'short', difficulty: 'hard', score: 15 },
+            { id: 6, content: 'IP地址192.168.1.1属于哪类地址？', type: 'single', difficulty: 'easy', score: 5 },
+            { id: 7, content: '以下哪些是传输层协议？', type: 'multiple', difficulty: 'medium', score: 10 },
+            { id: 8, content: 'UDP协议提供可靠的数据传输服务。', type: 'judge', difficulty: 'easy', score: 2 },
+        ];
+
+        const gradingList = [
+            { id: 1, student: '张三', exam: '计算机网络期末考试', submitTime: '2026-06-05 16:30', objectiveScore: 45, subjectiveCount: 3, status: 'pending' },
+            { id: 2, student: '李四', exam: '计算机网络期末考试', submitTime: '2026-06-05 16:25', objectiveScore: 38, subjectiveCount: 3, status: 'pending' },
+            { id: 3, student: '王五', exam: '数据结构期中测试', submitTime: '2026-06-04 14:20', objectiveScore: 52, subjectiveCount: 2, status: 'completed' },
+        ];
+
+        const scoreList = [
+            { rank: 1, name: '张三', studentId: '2024001', session: '第一场', objective: 45, subjective: 42, total: 87, passed: true },
+            { rank: 2, name: '李四', studentId: '2024002', session: '第一场', objective: 42, subjective: 38, total: 80, passed: true },
+            { rank: 3, name: '王五', studentId: '2024003', session: '第二场', objective: 38, subjective: 35, total: 73, passed: true },
+            { rank: 4, name: '赵六', studentId: '2024004', session: '第二场', objective: 35, subjective: 22, total: 57, passed: false },
+            { rank: 5, name: '钱七', studentId: '2024005', session: '第三场', objective: 48, subjective: 45, total: 93, passed: true },
+        ];
+
+        const bigQuestions = [
+            { id: 1, name: '一、单项选择题', type: 'single', count: 10, scorePer: 5 },
+            { id: 2, name: '二、多项选择题', type: 'multiple', count: 5, scorePer: 10 },
+            { id: 3, name: '三、判断题', type: 'judge', count: 10, scorePer: 2 },
+        ];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initTabs();
+            initPaperTabs();
+            renderQuestionTable();
+            renderGradingTable();
+            renderScoreTable();
+            renderCharts();
+            renderBigQuestions();
+            initGraderSelect();
+            initFileUpload();
+        });
+
+        // 初始化标签页切换
+        function initTabs() {
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    sidebarItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        // 初始化试卷标签页
+        function initPaperTabs() {
+            const paperTabs = document.querySelectorAll('.paper-tab');
+            paperTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const paperType = this.getAttribute('data-paper');
+                    
+                    paperTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.paper-config').forEach(config => {
+                        config.classList.remove('active');
+                    });
+                    document.getElementById(paperType + '-paper').classList.add('active');
+                });
+            });
+        }
+
+        // 添加场次
+        function addSession() {
+            const name = document.getElementById('sessionName').value;
+            const start = document.getElementById('sessionStart').value;
+            const end = document.getElementById('sessionEnd').value;
+
+            if (!name || !start || !end) {
+                alert('请填写完整的场次信息');
+                return;
+            }
+
+            const session = {
+                id: Date.now(),
+                name: name,
+                start: new Date(start),
+                end: new Date(end)
+            };
+
+            sessions.push(session);
+            renderSessions();
+            updateTimeRange();
+
+            // 清空输入
+            document.getElementById('sessionName').value = '';
+            document.getElementById('sessionStart').value = '';
+            document.getElementById('sessionEnd').value = '';
+        }
+
+        // 渲染场次列表
+        function renderSessions() {
+            const list = document.getElementById('sessionList');
+            list.innerHTML = '';
+
+            sessions.forEach((session, index) => {
+                const item = document.createElement('div');
+                item.className = 'session-item';
+                item.innerHTML = `
+                    <span class="session-index">${index + 1}</span>
+                    <div class="session-info">
+                        <span class="session-time">${session.name}</span>
+                        <span class="session-range">${formatDateTime(session.start)} - ${formatDateTime(session.end)}</span>
+                    </div>
+                    <button class="btn-remove" onclick="removeSession(${session.id})">×</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // 移除场次
+        function removeSession(id) {
+            const index = sessions.findIndex(s => s.id === id);
+            if (index > -1) {
+                sessions.splice(index, 1);
+                renderSessions();
+                updateTimeRange();
+            }
+        }
+
+        // 更新整体时间范围
+        function updateTimeRange() {
+            const display = document.getElementById('timeRangeDisplay');
+            const text = document.getElementById('timeRangeText');
+
+            if (sessions.length === 0) {
+                display.style.display = 'none';
+                return;
+            }
+
+            const starts = sessions.map(s => s.start);
+            const ends = sessions.map(s => s.end);
+            const minStart = new Date(Math.min(...starts));
+            const maxEnd = new Date(Math.max(...ends));
+
+            display.style.display = 'flex';
+            text.textContent = `整体时间范围：${formatDateTime(minStart)} 至 ${formatDateTime(maxEnd)}`;
+        }
+
+        // 格式化日期时间
+        function formatDateTime(date) {
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 初始化阅卷人员选择
+        function initGraderSelect() {
+            const select = document.getElementById('graderSelect');
+            select.addEventListener('change', function() {
+                if (this.value) {
+                    const option = this.options[this.selectedIndex];
+                    if (!graders.includes(this.value)) {
+                        graders.push(this.value);
+                        renderGraders();
+                    }
+                    this.value = '';
+                }
+            });
+        }
+
+        // 渲染阅卷人员
+        function renderGraders() {
+            const list = document.getElementById('graderList');
+            list.innerHTML = '';
+
+            const graderNames = {
+                'teacher1': '李老师',
+                'teacher2': '王老师',
+                'teacher3': '赵老师',
+                'teacher4': '陈老师'
+            };
+
+            graders.forEach(grader => {
+                const chip = document.createElement('div');
+                chip.className = 'grader-chip';
+                chip.innerHTML = `
+                    <span>${graderNames[grader] || grader}</span>
+                    <button class="remove" onclick="removeGrader('${grader}')">×</button>
+                `;
+                list.appendChild(chip);
+            });
+        }
+
+        // 移除阅卷人员
+        function removeGrader(grader) {
+            const index = graders.indexOf(grader);
+            if (index > -1) {
+                graders.splice(index, 1);
+                renderGraders();
+            }
+        }
+
+        // 渲染试题表格
+        function renderQuestionTable() {
+            const tbody = document.getElementById('questionTableBody');
+            tbody.innerHTML = '';
+
+            const typeLabels = {
+                'single': { text: '单选', class: 'single' },
+                'multiple': { text: '多选', class: 'multiple' },
+                'judge': { text: '判断', class: 'judge' },
+                'fill': { text: '填空', class: 'fill' },
+                'short': { text: '简答', class: 'short' }
+            };
+
+            const difficultyLabels = {
+                'easy': { text: '简单', class: 'easy' },
+                'medium': { text: '中等', class: 'medium' },
+                'hard': { text: '困难', class: 'hard' }
+            };
+
+            questions.forEach(q => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" data-id="${q.id}"></td>
+                    <td>${q.content.length > 50 ? q.content.substring(0, 50) + '...' : q.content}</td>
+                    <td><span class="type-badge ${typeLabels[q.type].class}">${typeLabels[q.type].text}</span></td>
+                    <td><span class="difficulty-badge ${difficultyLabels[q.difficulty].class}">${difficultyLabels[q.difficulty].text}</span></td>
+                    <td>${q.score}分</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-secondary" onclick="editQuestion(${q.id})">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${q.id})">删除</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染阅卷表格
+        function renderGradingTable() {
+            const tbody = document.getElementById('gradingTableBody');
+            tbody.innerHTML = '';
+
+            gradingList.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.student}</td>
+                    <td>${item.exam}</td>
+                    <td>${item.submitTime}</td>
+                    <td>${item.objectiveScore}分</td>
+                    <td>${item.subjectiveCount}题</td>
+                    <td><span class="status-badge ${item.status}">${item.status === 'pending' ? '待阅卷' : '已完成'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="openGradingModal(${item.id})">阅卷</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染成绩表格
+        function renderScoreTable() {
+            const tbody = document.getElementById('scoreTableBody');
+            tbody.innerHTML = '';
+
+            scoreList.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.rank}</td>
+                    <td>${item.name}</td>
+                    <td>${item.studentId}</td>
+                    <td>${item.session}</td>
+                    <td>${item.objective}分</td>
+                    <td>${item.subjective}分</td>
+                    <td><strong>${item.total}分</strong></td>
+                    <td><span class="status-badge ${item.passed ? 'active' : 'inactive'}">${item.passed ? '通过' : '未通过'}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染图表
+        function renderCharts() {
+            // 题型分布饼图
+            const typeData = [
+                { label: '单选题', value: 45, color: '#3b82f6' },
+                { label: '多选题', value: 25, color: '#8b5cf6' },
+                { label: '判断题', value: 15, color: '#10b981' },
+                { label: '填空题', value: 10, color: '#f59e0b' },
+                { label: '简答题', value: 5, color: '#ec4899' }
+            ];
+
+            renderPieChart('typePieChart', 'typeLegend', typeData);
+
+            // 难度分布柱状图
+            const difficultyData = [
+                { label: '简单', value: 120, color: '#10b981' },
+                { label: '中等', value: 180, color: '#f59e0b' },
+                { label: '困难', value: 80, color: '#ef4444' }
+            ];
+
+            renderBarChart('difficultyBarChart', difficultyData);
+        }
+
+        // 渲染饼图
+        function renderPieChart(chartId, legendId, data) {
+            const chart = document.getElementById(chartId);
+            const legend = document.getElementById(legendId);
+            
+            const total = data.reduce((sum, item) => sum + item.value, 0);
+            let gradient = 'conic-gradient(';
+            let currentAngle = 0;
+
+            data.forEach((item, index) => {
+                const angle = (item.value / total) * 360;
+                gradient += `${item.color} ${currentAngle}deg ${currentAngle + angle}deg`;
+                if (index < data.length - 1) gradient += ', ';
+                currentAngle += angle;
+            });
+            gradient += ')';
+
+            chart.style.background = gradient;
+
+            legend.innerHTML = data.map(item => `
+                <div class="pie-legend-item">
+                    <div class="pie-legend-color" style="background: ${item.color}"></div>
+                    <span>${item.label}: ${item.value}</span>
+                </div>
+            `).join('');
+        }
+
+        // 渲染柱状图
+        function renderBarChart(chartId, data) {
+            const chart = document.getElementById(chartId);
+            const maxValue = Math.max(...data.map(d => d.value));
+
+            chart.innerHTML = data.map(item => `
+                <div class="bar-item">
+                    <div class="bar" style="height: ${(item.value / maxValue) * 100}%; background: ${item.color};">
+                        <span class="bar-value">${item.value}</span>
+                    </div>
+                    <span class="bar-label">${item.label}</span>
+                </div>
+            `).join('');
+        }
+
+        // 渲染大题配置
+        function renderBigQuestions() {
+            const list = document.getElementById('bigQuestionList');
+            list.innerHTML = '';
+
+            bigQuestions.forEach(q => {
+                const item = document.createElement('div');
+                item.className = 'big-question-item';
+                item.innerHTML = `
+                    <div class="big-question-header">
+                        <span class="big-question-title">${q.name}</span>
+                        <button class="btn btn-sm btn-danger" onclick="removeBigQuestion(${q.id})">删除</button>
+                    </div>
+                    <div class="big-question-config">
+                        <div class="form-group">
+                            <label class="form-label">题型</label>
+                            <select class="form-select">
+                                <option value="single" ${q.type === 'single' ? 'selected' : ''}>单选题</option>
+                                <option value="multiple" ${q.type === 'multiple' ? 'selected' : ''}>多选题</option>
+                                <option value="judge" ${q.type === 'judge' ? 'selected' : ''}>判断题</option>
+                                <option value="fill" ${q.type === 'fill' ? 'selected' : ''}>填空题</option>
+                                <option value="short" ${q.type === 'short' ? 'selected' : ''}>简答题</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">题目数量</label>
+                            <input type="number" class="form-input" value="${q.count}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">每题分值</label>
+                            <input type="number" class="form-input" value="${q.scorePer}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">小计</label>
+                            <input type="text" class="form-input" value="${q.count * q.scorePer}分" readonly style="background: var(--bg-body);">
+                        </div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // 添加大题
+        function addBigQuestion() {
+            bigQuestionId++;
+            bigQuestions.push({
+                id: bigQuestionId,
+                name: `${['一', '二', '三', '四', '五', '六'][bigQuestions.length]}、新大题`,
+                type: 'single',
+                count: 5,
+                scorePer: 5
+            });
+            renderBigQuestions();
+        }
+
+        // 移除大题
+        function removeBigQuestion(id) {
+            const index = bigQuestions.findIndex(q => q.id === id);
+            if (index > -1) {
+                bigQuestions.splice(index, 1);
+                renderBigQuestions();
+            }
+        }
+
+        // 打开添加试题弹窗
+        function openAddQuestionModal() {
+            document.getElementById('addQuestionModal').classList.add('active');
+        }
+
+        // 打开批量导入弹窗
+        function openBatchImportModal() {
+            document.getElementById('batchImportModal').classList.add('active');
+        }
+
+        // 打开阅卷弹窗
+        function openGradingModal(id) {
+            const item = gradingList.find(g => g.id === id);
+            if (item) {
+                document.getElementById('gradingStudent').textContent = item.student;
+                document.getElementById('gradingObjectiveScore').textContent = item.objectiveScore;
+                document.getElementById('gradingExamName').textContent = item.exam;
+                
+                // 生成主观题评分区域
+                const subjectiveDiv = document.getElementById('subjectiveQuestions');
+                subjectiveDiv.innerHTML = '';
+                for (let i = 1; i <= item.subjectiveCount; i++) {
+                    subjectiveDiv.innerHTML += `
+                        <div style="background: var(--bg-body); padding: var(--space-2); border-radius: var(--radius-base); margin-bottom: var(--space-2);">
+                            <div style="margin-bottom: var(--space-1); font-size: var(--font-size-sm);">主观题 ${i}</div>
+                            <div style="display: flex; gap: var(--space-2); align-items: center;">
+                                <input type="number" class="form-input" placeholder="得分" style="width: 100px;" min="0" max="20">
+                                <span style="font-size: var(--font-size-sm); color: var(--text-secondary);">/ 20分</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            document.getElementById('gradingModal').classList.add('active');
+        }
+
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // 保存试题
+        function saveQuestion() {
+            const type = document.getElementById('questionType').value;
+            const difficulty = document.getElementById('questionDifficulty').value;
+            const content = document.getElementById('questionContent').value;
+            const score = document.getElementById('questionScore').value;
+
+            if (!content) {
+                alert('请输入题目内容');
+                return;
+            }
+
+            questions.push({
+                id: questionId++,
+                content: content,
+                type: type,
+                difficulty: difficulty,
+                score: parseInt(score) || 5
+            });
+
+            renderQuestionTable();
+            closeModal('addQuestionModal');
+            alert('试题添加成功！');
+
+            // 清空表单
+            document.getElementById('questionContent').value = '';
+            document.getElementById('questionOptions').value = '';
+            document.getElementById('questionAnswer').value = '';
+            document.getElementById('questionAnalysis').value = '';
+        }
+
+        // 编辑试题
+        function editQuestion(id) {
+            alert('编辑试题 ID: ' + id);
+        }
+
+        // 删除试题
+        function deleteQuestion(id) {
+            if (confirm('确定要删除这道试题吗？')) {
+                const index = questions.findIndex(q => q.id === id);
+                if (index > -1) {
+                    questions.splice(index, 1);
+                    renderQuestionTable();
+                }
+            }
+        }
+
+        // 初始化文件上传
+        function initFileUpload() {
+            const uploadArea = document.getElementById('fileUploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        // 处理文件上传
+        function handleFileUpload(file) {
+            const allowedTypes = ['.xlsx', '.xls', '.csv'];
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            
+            if (!allowedTypes.includes(ext)) {
+                alert('请上传 Excel 或 CSV 格式的文件');
+                return;
+            }
+
+            document.getElementById('uploadedFileName').textContent = file.name;
+            document.getElementById('uploadedFileInfo').style.display = 'block';
+            document.getElementById('fileUploadArea').style.display = 'none';
+        }
+
+        // 移除已上传文件
+        function removeUploadedFile() {
+            document.getElementById('uploadedFileInfo').style.display = 'none';
+            document.getElementById('fileUploadArea').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+        }
+
+        // 下载模板
+        function downloadTemplate() {
+            alert('正在下载导入模板...');
+        }
+
+        // 导入试题
+        function importQuestions() {
+            const fileInfo = document.getElementById('uploadedFileInfo');
+            if (fileInfo.style.display === 'none') {
+                alert('请先上传文件');
+                return;
+            }
+            alert('试题导入成功！共导入 50 道题目');
+            closeModal('batchImportModal');
+        }
+
+        // 提交阅卷
+        function submitGrading() {
+            alert('评分提交成功！');
+            closeModal('gradingModal');
+        }
+
+        // 保存考试
+        function saveExam() {
+            const name = document.getElementById('examName').value;
+            const type = document.getElementById('examType').value;
+            const duration = document.getElementById('examDuration').value;
+            const passScore = document.getElementById('passScore').value;
+
+            if (!name || !type || !duration || !passScore) {
+                alert('请填写所有必填项');
+                return;
+            }
+
+            alert('考试保存成功！');
+        }
+
+        // 预览考试
+        function previewExam() {
+            alert('正在打开考试预览...');
+        }
+
+        // 发布考试
+        function publishExam() {
+            if (confirm('确定要发布考试吗？发布后考生将可以参加考试。')) {
+                alert('考试发布成功！');
+            }
+        }
+
+        // 跳转到组卷页面
+        function goToPaperConfig() {
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-tab') === 'paper-config') {
+                    item.classList.add('active');
+                }
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('paper-config').classList.add('active');
+        }
+
+        // 切换防作弊功能
+        function toggleFeature(element) {
+            element.classList.toggle('active');
+            const label = element.nextElementSibling;
+            label.textContent = element.classList.contains('active') ? '已启用' : '未启用';
+        }
+
+        // 预览防作弊效果
+        function previewAntiCheat() {
+            const preview = document.getElementById('examPreviewContent');
+            preview.innerHTML = `
+                <div style="width: 100%; text-align: left; color: white;">
+                    <div style="background: rgba(255,255,255,0.1); padding: var(--space-2); border-radius: var(--radius-base); margin-bottom: var(--space-2); display: flex; justify-content: space-between; align-items: center;">
+                        <span>计算机网络期末考试</span>
+                        <span style="color: var(--success);">🛡️ 防作弊监控中</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); padding: var(--space-3); border-radius: var(--radius-base);">
+                        <p style="margin-bottom: var(--space-2);"><strong>第1题：</strong>TCP/IP协议栈中，负责端到端可靠传输的是哪一层？</p>
+                        <div style="margin-left: var(--space-2);">
+                            <p>A. 网络层</p>
+                            <p>B. 传输层</p>
+                            <p>C. 应用层</p>
+                            <p>D. 数据链路层</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: rgba(255,255,255,0.5);">
+                        ⚠️ 右键菜单、复制粘贴、切屏等操作已被禁用
+                    </div>
+                </div>
+            `;
+        }
+
+        // 导出整体成绩
+        function exportAllScores() {
+            alert('正在导出整体成绩...');
+        }
+
+        // 按场次导出
+        function exportBySession() {
+            const session = document.getElementById('exportSession').value;
+            if (!session) {
+                alert('请选择场次');
+                return;
+            }
+            alert('正在按场次导出成绩...');
+        }
+
+        // 点击弹窗外部关闭
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // 全选功能
+        document.getElementById('selectAll')?.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('#questionTableBody input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    </script>
+</body>
+</html>

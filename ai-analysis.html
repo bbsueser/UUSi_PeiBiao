@@ -1,0 +1,2301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI分析中心 - 智联网综合实践平台</title>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/common.css">
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    
+    <style>
+        /* AI分析中心专用样式 - 仅保留页面特有的样式 */
+        
+        /* 无侧边栏布局 */
+        .app-layout.no-sidebar {
+            display: block;
+        }
+        
+        .app-layout.no-sidebar .main-content {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* 统计卡片网格 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-blue-hover));
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: var(--space-2);
+        }
+        
+        .stat-card:nth-child(1) .stat-icon { background: rgba(71, 85, 105, 0.1); }
+        .stat-card:nth-child(2) .stat-icon { background: rgba(16, 185, 129, 0.1); }
+        .stat-card:nth-child(3) .stat-icon { background: rgba(245, 158, 11, 0.1); }
+        .stat-card:nth-child(4) .stat-icon { background: rgba(59, 130, 246, 0.1); }
+        
+        .stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: var(--space-2);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .trend-up { color: #10B981; }
+        .trend-down { color: #EF4444; }
+        
+        /* 主要内容区网格 */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        /* 卡片容器 */
+        .analysis-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            margin-bottom: var(--space-4);
+        }
+        
+        .skill-graph-section {
+            margin-bottom: var(--space-4);
+        }
+        
+        .chart-container-full {
+            height: 400px;
+            width: 100%;
+        }
+        
+        .card-header {
+            padding: var(--space-3);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .card-title .icon {
+            font-size: 20px;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        .card-action-btn {
+            padding: 6px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            border: 1px solid var(--border-base);
+            background: var(--bg-card);
+            color: var(--text-body);
+            font-family: var(--font-family);
+        }
+        
+        .card-action-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        
+        .card-action-btn.active {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .card-body {
+            padding: var(--space-3);
+        }
+        
+        /* AI学伴配置卡片 */
+        .ai-companion-card {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+        
+        .companion-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            flex-shrink: 0;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(71, 85, 105, 0.3);
+        }
+        
+        .companion-info {
+            flex: 1;
+        }
+        
+        .companion-name {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .companion-role {
+            display: inline-block;
+            padding: 4px var(--space-2);
+            background: rgba(71, 85, 105, 0.1);
+            color: var(--primary-blue);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .companion-desc {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            margin-top: var(--space-2);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        .companion-traits {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+        
+        .trait-tag {
+            padding: 6px var(--space-2);
+            background: var(--bg-body);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .config-btn {
+            padding: var(--space-2) var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+        
+        .config-btn:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            width: 100%;
+            height: 320px;
+        }
+        
+        /* 推荐课程卡片 */
+        .recommend-courses {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-3);
+        }
+        
+        .recommend-card {
+            background: var(--bg-body);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+        }
+        
+        .recommend-card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(71, 85, 105, 0.1);
+        }
+        
+        .recommend-tag {
+            display: inline-block;
+            padding: 4px var(--space-2);
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            margin-bottom: var(--space-2);
+        }
+        
+        .recommend-title {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+            line-height: var(--line-height-tight);
+        }
+        
+        .recommend-desc {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            line-height: var(--line-height-relaxed);
+            margin-bottom: var(--space-2);
+        }
+        
+        .recommend-progress {
+            height: 4px;
+            background: var(--border-light);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: var(--space-1);
+        }
+        
+        .recommend-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-blue-hover));
+            border-radius: 2px;
+        }
+        
+        .recommend-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-xs);
+            color: var(--text-body);
+        }
+        
+        /* 学生画像卡片 */
+        .profile-section {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: var(--space-3);
+        }
+        
+        .profile-basic {
+            text-align: center;
+            padding: var(--space-3);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            border-radius: var(--radius-lg);
+            color: white;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            margin: 0 auto var(--space-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-blue);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .profile-name {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-2);
+        }
+        
+        .profile-signature {
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+            margin-bottom: var(--space-2);
+            font-style: italic;
+        }
+        
+        .profile-match {
+            display: inline-block;
+            padding: var(--space-1) var(--space-2);
+            background: rgba(0, 168, 255, 0.2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .profile-details {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+        
+        .ability-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .ability-label {
+            width: 80px;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            flex-shrink: 0;
+        }
+        
+        .ability-bar {
+            flex: 1;
+            height: 10px;
+            background: var(--border-light);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .ability-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .ability-value {
+            width: 50px;
+            text-align: right;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-blue);
+        }
+        
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            width: 520px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-body);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--text-body);
+            transition: all var(--duration-base) ease;
+        }
+        
+        .modal-close:hover {
+            background: var(--border-light);
+            color: var(--text-title);
+        }
+        
+        .modal-body {
+            padding: var(--space-4);
+        }
+        
+        .modal-footer {
+            padding: var(--space-3) var(--space-4);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-2);
+        }
+        
+        .btn-cancel {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            background: var(--bg-card);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+        
+        .btn-cancel:hover {
+            background: var(--bg-body);
+        }
+        
+        .btn-save {
+            padding: var(--space-2) var(--space-3);
+            border: none;
+            border-radius: var(--radius-base);
+            background: var(--primary-blue);
+            color: white;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+        
+        .btn-save:hover {
+            background: var(--primary-blue-hover);
+        }
+        
+        /* 表单样式 */
+        .form-group-modal {
+            margin-bottom: var(--space-3);
+        }
+        
+        .form-label-modal {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            margin-bottom: var(--space-1);
+        }
+        
+        .form-input-modal {
+            width: 100%;
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-input);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-family: var(--font-family);
+            color: var(--text-body);
+            transition: all var(--duration-base) ease;
+        }
+        
+        .form-input-modal:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .avatar-selector {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+        
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-base);
+            border: 3px solid var(--border-light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            transition: all var(--duration-base) ease;
+            background: var(--bg-body);
+        }
+        
+        .avatar-option:hover {
+            border-color: var(--primary-blue);
+        }
+        
+        .avatar-option.selected {
+            border-color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.1);
+        }
+        
+        .role-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-2);
+        }
+        
+        .role-option {
+            padding: var(--space-2);
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            text-align: center;
+        }
+        
+        .role-option:hover {
+            border-color: var(--primary-blue);
+        }
+        
+        .role-option.selected {
+            border-color: var(--primary-blue);
+            background: rgba(71, 85, 105, 0.05);
+        }
+        
+        .role-option-icon {
+            font-size: 28px;
+            margin-bottom: var(--space-1);
+        }
+        
+        .role-option-name {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+        }
+        
+        .personality-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+        }
+        
+        .personality-tag {
+            padding: var(--space-1) var(--space-2);
+            border: 1px solid var(--border-base);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            background: var(--bg-card);
+        }
+        
+        .personality-tag:hover {
+            border-color: var(--primary-blue);
+        }
+        
+        .personality-tag.selected {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+        
+        /* ========== 顶部导航栏样式 ========== */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-4);
+            z-index: 100;
+            box-shadow: var(--shadow-card);
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .nav-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: var(--font-weight-bold);
+            color: white;
+        }
+        
+        .nav-brand-text {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: var(--space-4);
+        }
+        
+        .nav-link {
+            padding: var(--space-2) var(--space-3);
+            color: var(--text-secondary);
+            font-size: var(--font-size-base);
+            border-radius: var(--radius-base);
+            transition: all var(--duration-base) ease;
+            cursor: pointer;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-blue);
+            background: rgba(0, 168, 255, 0.1);
+        }
+        
+        .nav-link.active {
+            color: var(--primary-blue);
+            background: rgba(0, 168, 255, 0.15);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+        }
+        
+        .user-meta {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: var(--font-weight-bold);
+            color: white;
+        }
+        
+        /* ========== 应用布局 ========== */
+        .app-layout {
+            display: flex;
+            margin-top: 60px;
+            height: calc(100vh - 60px);
+        }
+        
+        /* ========== 左侧侧边栏样式 ========== */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-light);
+            padding: var(--space-3);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+        
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            color: var(--text-secondary);
+            font-size: var(--font-size-base);
+            border-radius: var(--radius-base);
+            transition: all var(--duration-base) ease;
+            cursor: pointer;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(0, 168, 255, 0.1);
+            color: var(--primary-blue);
+        }
+        
+        .sidebar-item.active {
+            background: rgba(0, 168, 255, 0.15);
+            color: var(--primary-blue);
+            font-weight: var(--font-weight-medium);
+            border-left: 3px solid var(--primary-blue);
+        }
+        
+        .sidebar-icon {
+            font-size: 18px;
+        }
+        
+        .sidebar-section {
+            margin-top: var(--space-4);
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .sidebar-section-title {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            padding: var(--space-2) var(--space-3);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        /* ========== 主内容区 ========== */
+        .main-content {
+            flex: 1;
+            padding: var(--space-4);
+            overflow-y: auto;
+            background: var(--bg-body);
+        }
+        
+        .page-header {
+            margin-bottom: var(--space-4);
+        }
+        
+        .page-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .page-title-icon {
+            font-size: 24px;
+        }
+        
+        .page-description {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--space-1);
+        }
+        
+        .page-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--space-1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1400px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .recommend-courses {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ai-companion-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .recommend-courses {
+                grid-template-columns: 1fr;
+            }
+            
+            .role-options {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ========== 学习参与度分析模块样式 ========== */
+        .engagement-section {
+            margin-bottom: var(--space-4);
+        }
+        
+        .live-indicator {
+            font-size: var(--font-size-xs);
+            color: var(--success);
+            margin-left: var(--space-2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .engagement-overview {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .engagement-radar, .engagement-timeline, .engagement-experiments, .engagement-heatmap {
+            background: var(--bg-panel);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            border: 1px solid var(--border-light);
+        }
+        
+        .engagement-subtitle {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+        }
+        
+        .chart-container-small {
+            height: 200px;
+        }
+        
+        .chart-container-wide {
+            height: 250px;
+            margin-top: var(--space-2);
+        }
+        
+        .radar-legend {
+            display: flex;
+            gap: var(--space-2);
+            justify-content: center;
+            margin-top: var(--space-2);
+        }
+        
+        .legend-item {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .legend-dot.green { background: var(--success); }
+        .legend-dot.blue { background: var(--primary-blue); }
+        .legend-dot.orange { background: var(--warning); }
+        
+        .timeline-stats {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+        
+        .timeline-stat {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+        }
+        
+        .experiment-progress-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+        
+        .experiment-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .experiment-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            min-width: 180px;
+        }
+        
+        .experiment-name {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+        }
+        
+        .experiment-status {
+            font-size: var(--font-size-xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+        
+        .experiment-status.completed {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--success);
+        }
+        
+        .experiment-status.in-progress {
+            background: rgba(0, 168, 255, 0.2);
+            color: var(--primary-blue);
+        }
+        
+        .experiment-status.pending {
+            background: rgba(255, 165, 2, 0.2);
+            color: var(--warning);
+        }
+        
+        .experiment-progress-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+        
+        .experiment-percent {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            min-width: 40px;
+        }
+        
+        .progress-fill.animated {
+            animation: progressGrow 2s ease-out;
+        }
+        
+        @keyframes progressGrow {
+            from { width: 0; }
+        }
+        
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        
+        .heatmap-cell {
+            height: 30px;
+            border-radius: var(--radius-sm);
+            transition: all 0.3s ease;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+        }
+        
+        .heatmap-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--space-1);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        .engagement-efficiency {
+            background: var(--bg-panel);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            border: 1px solid var(--border-light);
+            margin-bottom: var(--space-4);
+        }
+        
+        .efficiency-summary {
+            display: flex;
+            gap: var(--space-4);
+            margin-top: var(--space-3);
+        }
+        
+        .efficiency-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-1);
+        }
+        
+        .efficiency-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        .efficiency-value {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-blue);
+        }
+        
+        .efficiency-trend {
+            font-size: var(--font-size-xs);
+        }
+        
+        .efficiency-trend.up {
+            color: var(--success);
+        }
+        
+        .efficiency-date {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+        }
+        
+        .engagement-live-stats {
+            background: var(--bg-panel);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            border: 1px solid var(--border-light);
+        }
+        
+        .live-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-3);
+            margin-top: var(--space-2);
+        }
+        
+        .live-stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .live-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .live-stat-icon {
+            font-size: 24px;
+            margin-bottom: var(--space-1);
+        }
+        
+        .live-stat-value {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            transition: all 0.3s ease;
+        }
+        
+        .live-stat-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        .live-stat-animation {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 168, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="nav-brand-icon">E</div>
+            <span class="nav-brand-text">智联网综合实践平台</span>
+        </div>
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-link">首页</a>
+            <a href="experiment-hall.html" class="nav-link">实验大厅</a>
+            <a href="ai-analysis.html" class="nav-link active">AI分析</a>
+            <a href="profile.html" class="nav-link">个人中心</a>
+        </div>
+        <div class="user-info">
+            <div class="user-details">
+                <div class="user-name">魏同学</div>
+                <div class="user-meta">2024级 计算机学院</div>
+            </div>
+            <div class="user-avatar">魏</div>
+        </div>
+    </header>
+
+    <!-- 应用布局 -->
+    <!-- 应用布局 - 无侧边栏 -->
+    <div class="app-layout no-sidebar">
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1 class="page-title">🧠 AI分析中心</h1>
+                <p class="page-subtitle">全方位洞察学习行为，智能推荐个性化成长路径</p>
+            </div>
+
+            <!-- 互动统计卡片 -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-value">1,286</div>
+                    <div class="stat-label">回答总数</div>
+                    <div class="stat-trend trend-up">↑ 12.5% 较上周</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">❓</div>
+                    <div class="stat-value">48</div>
+                    <div class="stat-label">今日提问</div>
+                    <div class="stat-trend trend-up">↑ 8.3% 较昨日</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-value">3,456</div>
+                    <div class="stat-label">互动次数</div>
+                    <div class="stat-trend trend-up">↑ 23.1% 较上月</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-value">128h</div>
+                    <div class="stat-label">伴学时长</div>
+                    <div class="stat-trend trend-up">↑ 15.7% 累计增长</div>
+                </div>
+            </section>
+
+            <!-- AI学伴配置卡片 -->
+            <section class="analysis-card" style="margin-bottom: var(--space-4);">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="icon">🤖</span>
+                        专属AI学伴配置
+                    </div>
+                    <button class="config-btn" onclick="openModal()">
+                        <span>⚙️</span> 配置学伴
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="ai-companion-card">
+                        <div class="companion-avatar" id="companionAvatar">🎓</div>
+                        <div class="companion-info">
+                            <div class="companion-name">
+                                <span id="companionName">智学小助手</span>
+                                <span class="companion-role" id="companionRole">学习导师</span>
+                            </div>
+                            <p class="companion-desc" id="companionDesc">我是您的专属AI学伴，擅长知识点讲解、学习规划与答疑解惑。让我们一起探索知识的海洋！</p>
+                            <div class="companion-traits" id="companionTraits">
+                                <span class="trait-tag">耐心细致</span>
+                                <span class="trait-tag">逻辑清晰</span>
+                                <span class="trait-tag">善于引导</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 技能图谱 -->
+            <section class="analysis-card skill-graph-section">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="icon">📊</span>
+                        技能图谱
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-action-btn active" onclick="switchSkillGraph('network')">网状图</button>
+                        <button class="card-action-btn" onclick="switchSkillGraph('tree')">树状图</button>
+                        <button class="card-action-btn" onclick="switchSkillGraph('radar')">环形图</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="skillChart" class="chart-container-full"></div>
+                </div>
+            </section>
+
+            <!-- 学习参与度分析 - 丰富版 -->
+                <section class="analysis-card engagement-section">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="icon">📈</span>
+                            学习参与度分析
+                            <span class="live-indicator">● 实时更新</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn active" onclick="switchEngagementView('overview')">综合概览</button>
+                            <button class="card-action-btn" onclick="switchEngagementView('behavior')">行为分析</button>
+                            <button class="card-action-btn" onclick="switchEngagementView('experiment')">实验进度</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- 参与度概览 -->
+                        <div class="engagement-overview" id="engagementOverview">
+                            <!-- 多维度雷达图 -->
+                            <div class="engagement-radar">
+                                <h4 class="engagement-subtitle">🎯 多维度参与度评估</h4>
+                                <div id="engagementRadarChart" class="chart-container-small"></div>
+                                <div class="radar-legend">
+                                    <div class="legend-item"><span class="legend-dot green"></span>优秀 (≥80%)</div>
+                                    <div class="legend-item"><span class="legend-dot blue"></span>良好 (60-79%)</div>
+                                    <div class="legend-item"><span class="legend-dot orange"></span>待提升 (<60%)</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 学习行为时间分布 -->
+                            <div class="engagement-timeline">
+                                <h4 class="engagement-subtitle">📊 今日学习行为分布</h4>
+                                <div id="engagementTimelineChart" class="chart-container-small"></div>
+                                <div class="timeline-stats">
+                                    <div class="timeline-stat">
+                                        <span class="stat-icon">🌅</span>
+                                        <span class="stat-text">上午学习: <strong id="morningTime">2.5h</strong></span>
+                                    </div>
+                                    <div class="timeline-stat">
+                                        <span class="stat-icon">☀️</span>
+                                        <span class="stat-text">下午学习: <strong id="afternoonTime">3.2h</strong></span>
+                                    </div>
+                                    <div class="timeline-stat">
+                                        <span class="stat-icon">🌙</span>
+                                        <span class="stat-text">晚间学习: <strong id="eveningTime">1.8h</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 实验完成进度 -->
+                            <div class="engagement-experiments">
+                                <h4 class="engagement-subtitle">🔬 实验完成进度</h4>
+                                <div class="experiment-progress-list">
+                                    <div class="experiment-item">
+                                        <div class="experiment-info">
+                                            <span class="experiment-name">工程虚拟仿真</span>
+                                            <span class="experiment-status completed">已完成</span>
+                                        </div>
+                                        <div class="experiment-progress-bar">
+                                            <div class="progress-fill animated" style="width: 100%;"></div>
+                                        </div>
+                                        <span class="experiment-percent">100%</span>
+                                    </div>
+                                    <div class="experiment-item">
+                                        <div class="experiment-info">
+                                            <span class="experiment-name">Jupyter数据分析</span>
+                                            <span class="experiment-status in-progress">进行中</span>
+                                        </div>
+                                        <div class="experiment-progress-bar">
+                                            <div class="progress-fill animated" style="width: 75%;"></div>
+                                        </div>
+                                        <span class="experiment-percent">75%</span>
+                                    </div>
+                                    <div class="experiment-item">
+                                        <div class="experiment-info">
+                                            <span class="experiment-name">区块链智能合约</span>
+                                            <span class="experiment-status in-progress">进行中</span>
+                                        </div>
+                                        <div class="experiment-progress-bar">
+                                            <div class="progress-fill animated" style="width: 45%;"></div>
+                                        </div>
+                                        <span class="experiment-percent">45%</span>
+                                    </div>
+                                    <div class="experiment-item">
+                                        <div class="experiment-info">
+                                            <span class="experiment-name">嵌入式系统仿真</span>
+                                            <span class="experiment-status pending">待开始</span>
+                                        </div>
+                                        <div class="experiment-progress-bar">
+                                            <div class="progress-fill animated" style="width: 10%;"></div>
+                                        </div>
+                                        <span class="experiment-percent">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 互动热力图 -->
+                            <div class="engagement-heatmap">
+                                <h4 class="engagement-subtitle">🔥 本周互动热力图</h4>
+                                <div class="heatmap-grid" id="heatmapGrid">
+                                    <!-- 周一到周日的热力图 -->
+                                </div>
+                                <div class="heatmap-labels">
+                                    <span>低</span>
+                                    <span>中</span>
+                                    <span>高</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 学习效率曲线 -->
+                        <div class="engagement-efficiency">
+                            <h4 class="engagement-subtitle">⚡ 学习效率趋势 (近30天)</h4>
+                            <div id="efficiencyChart" class="chart-container-wide"></div>
+                            <div class="efficiency-summary">
+                                <div class="efficiency-stat">
+                                    <span class="efficiency-label">平均效率</span>
+                                    <span class="efficiency-value" id="avgEfficiency">78.5%</span>
+                                    <span class="efficiency-trend up">↑ 5.2%</span>
+                                </div>
+                                <div class="efficiency-stat">
+                                    <span class="efficiency-label">最高效率</span>
+                                    <span class="efficiency-value" id="maxEfficiency">92%</span>
+                                    <span class="efficiency-date">周三</span>
+                                </div>
+                                <div class="efficiency-stat">
+                                    <span class="efficiency-label">专注时长</span>
+                                    <span class="efficiency-value" id="focusTime">4.2h</span>
+                                    <span class="efficiency-trend up">↑ 12%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 实时互动统计 -->
+                        <div class="engagement-live-stats">
+                            <h4 class="engagement-subtitle">💬 实时互动统计</h4>
+                            <div class="live-stats-grid">
+                                <div class="live-stat-card">
+                                    <div class="live-stat-icon">📝</div>
+                                    <div class="live-stat-value" id="liveQuestions">32</div>
+                                    <div class="live-stat-label">今日提问</div>
+                                    <div class="live-stat-animation"></div>
+                                </div>
+                                <div class="live-stat-card">
+                                    <div class="live-stat-icon">✅</div>
+                                    <div class="live-stat-value" id="liveAnswers">28</div>
+                                    <div class="live-stat-label">已回答</div>
+                                    <div class="live-stat-animation"></div>
+                                </div>
+                                <div class="live-stat-card">
+                                    <div class="live-stat-icon">🎯</div>
+                                    <div class="live-stat-value" id="liveAccuracy">87%</div>
+                                    <div class="live-stat-label">正确率</div>
+                                    <div class="live-stat-animation"></div>
+                                </div>
+                                <div class="live-stat-card">
+                                    <div class="live-stat-icon">⭐</div>
+                                    <div class="live-stat-value" id="liveScore">4.8</div>
+                                    <div class="live-stat-label">满意度</div>
+                                    <div class="live-stat-animation"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            <!-- AI智能进阶推荐 -->
+            <section class="analysis-card" style="margin-bottom: var(--space-4);">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="icon">💡</span>
+                        AI智能进阶推荐
+                        <span style="font-size: var(--font-size-xs); color: var(--text-body); font-weight: var(--font-weight-normal); margin-left: var(--space-2);">基于技能薄弱点智能推荐</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="recommend-courses">
+                        <div class="recommend-card">
+                            <span class="recommend-tag">薄弱点强化</span>
+                            <h4 class="recommend-title">数据结构与算法进阶</h4>
+                            <p class="recommend-desc">针对您在算法复杂度分析上的薄弱环节，推荐系统学习</p>
+                            <div class="recommend-progress">
+                                <div class="recommend-progress-bar" style="width: 35%;"></div>
+                            </div>
+                            <div class="recommend-meta">
+                                <span>已完成 35%</span>
+                                <span>预计 8 课时</span>
+                            </div>
+                        </div>
+                        <div class="recommend-card">
+                            <span class="recommend-tag">薄弱点强化</span>
+                            <h4 class="recommend-title">操作系统进程管理</h4>
+                            <p class="recommend-desc">深入理解进程调度、死锁处理等核心概念</p>
+                            <div class="recommend-progress">
+                                <div class="recommend-progress-bar" style="width: 20%;"></div>
+                            </div>
+                            <div class="recommend-meta">
+                                <span>已完成 20%</span>
+                                <span>预计 6 课时</span>
+                            </div>
+                        </div>
+                        <div class="recommend-card">
+                            <span class="recommend-tag">薄弱点强化</span>
+                            <h4 class="recommend-title">计算机网络协议分析</h4>
+                            <p class="recommend-desc">TCP/IP协议栈深度解析，网络编程实战</p>
+                            <div class="recommend-progress">
+                                <div class="recommend-progress-bar" style="width: 45%;"></div>
+                            </div>
+                            <div class="recommend-meta">
+                                <span>已完成 45%</span>
+                                <span>预计 5 课时</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 学生AI综合画像 -->
+            <section class="analysis-card" style="margin-bottom: var(--space-4);">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="icon">👤</span>
+                        学生AI综合画像
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="profile-section">
+                        <div class="profile-basic">
+                            <div class="profile-avatar">魏</div>
+                            <div class="profile-name">魏同学</div>
+                            <p class="profile-signature">"代码改变世界，学习成就未来"</p>
+                            <div class="profile-match">🎯 最佳匹配：后端开发工程师</div>
+                        </div>
+                        <div class="profile-details">
+                            <div class="ability-item">
+                                <span class="ability-label">编程能力</span>
+                                <div class="ability-bar">
+                                    <div class="ability-fill" style="width: 85%; background: linear-gradient(90deg, #475569, #64748B);"></div>
+                                </div>
+                                <span class="ability-value">85%</span>
+                            </div>
+                            <div class="ability-item">
+                                <span class="ability-label">算法思维</span>
+                                <div class="ability-bar">
+                                    <div class="ability-fill" style="width: 72%; background: linear-gradient(90deg, #10B981, #059669);"></div>
+                                </div>
+                                <span class="ability-value">72%</span>
+                            </div>
+                            <div class="ability-item">
+                                <span class="ability-label">系统设计</span>
+                                <div class="ability-bar">
+                                    <div class="ability-fill" style="width: 68%; background: linear-gradient(90deg, #F59E0B, #D97706);"></div>
+                                </div>
+                                <span class="ability-value">68%</span>
+                            </div>
+                            <div class="ability-item">
+                                <span class="ability-label">团队协作</span>
+                                <div class="ability-bar">
+                                    <div class="ability-fill" style="width: 90%; background: linear-gradient(90deg, #3B82F6, #2563EB);"></div>
+                                </div>
+                                <span class="ability-value">90%</span>
+                            </div>
+                            <div class="ability-item">
+                                <span class="ability-label">创新思维</span>
+                                <div class="ability-bar">
+                                    <div class="ability-fill" style="width: 78%; background: linear-gradient(90deg, #8B5CF6, #7C3AED);"></div>
+                                </div>
+                                <span class="ability-value">78%</span>
+                            </div>
+                            <div class="ability-item">
+                                <span class="ability-label">问题解决</span>
+                                <div class="ability-bar">
+                                    <div class="ability-fill" style="width: 82%; background: linear-gradient(90deg, #EC4899, #DB2777);"></div>
+                                </div>
+                                <span class="ability-value">82%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 班级成绩分布和技能热力图 -->
+            <div class="main-grid">
+                <!-- 班级成绩分布 -->
+                <section class="analysis-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="icon">📊</span>
+                            班级成绩分布
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="gradeDistribution" class="chart-container"></div>
+                    </div>
+                </section>
+
+                <!-- 技能热力图 -->
+                <section class="analysis-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="icon">🔥</span>
+                            技能热力图
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="skillHeatmap" class="chart-container"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- AI学伴配置弹窗 -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <span>⚙️</span>
+                    配置专属AI学伴
+                </h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group-modal">
+                    <label class="form-label-modal">学伴昵称</label>
+                    <input type="text" class="form-input-modal" id="companionNameInput" placeholder="为您的AI学伴起个名字" value="智学小助手">
+                </div>
+                
+                <div class="form-group-modal">
+                    <label class="form-label-modal">选择头像</label>
+                    <div class="avatar-selector">
+                        <div class="avatar-option selected" data-avatar="🎓" onclick="selectAvatar(this)">🎓</div>
+                        <div class="avatar-option" data-avatar="🤖" onclick="selectAvatar(this)">🤖</div>
+                        <div class="avatar-option" data-avatar="🧠" onclick="selectAvatar(this)">🧠</div>
+                        <div class="avatar-option" data-avatar="💡" onclick="selectAvatar(this)">💡</div>
+                        <div class="avatar-option" data-avatar="🦉" onclick="selectAvatar(this)">🦉</div>
+                        <div class="avatar-option" data-avatar="🚀" onclick="selectAvatar(this)">🚀</div>
+                    </div>
+                </div>
+                
+                <div class="form-group-modal">
+                    <label class="form-label-modal">角色设定</label>
+                    <div class="role-options">
+                        <div class="role-option selected" data-role="学习导师" onclick="selectRole(this)">
+                            <div class="role-option-icon">👨‍🏫</div>
+                            <div class="role-option-name">学习导师</div>
+                        </div>
+                        <div class="role-option" data-role="编程助手" onclick="selectRole(this)">
+                            <div class="role-option-icon">👨‍💻</div>
+                            <div class="role-option-name">编程助手</div>
+                        </div>
+                        <div class="role-option" data-role="知识顾问" onclick="selectRole(this)">
+                            <div class="role-option-icon">📚</div>
+                            <div class="role-option-name">知识顾问</div>
+                        </div>
+                        <div class="role-option" data-role="项目教练" onclick="selectRole(this)">
+                            <div class="role-option-icon">🎯</div>
+                            <div class="role-option-name">项目教练</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group-modal">
+                    <label class="form-label-modal">性格特点（可多选）</label>
+                    <div class="personality-options">
+                        <span class="personality-tag selected" onclick="togglePersonality(this)">耐心细致</span>
+                        <span class="personality-tag selected" onclick="togglePersonality(this)">逻辑清晰</span>
+                        <span class="personality-tag selected" onclick="togglePersonality(this)">善于引导</span>
+                        <span class="personality-tag" onclick="togglePersonality(this)">幽默风趣</span>
+                        <span class="personality-tag" onclick="togglePersonality(this)">严谨认真</span>
+                        <span class="personality-tag" onclick="togglePersonality(this)">热情鼓励</span>
+                        <span class="personality-tag" onclick="togglePersonality(this)">简洁高效</span>
+                        <span class="personality-tag" onclick="togglePersonality(this)">深入浅出</span>
+                    </div>
+                </div>
+                
+                <div class="form-group-modal">
+                    <label class="form-label-modal">个性签名</label>
+                    <textarea class="form-input-modal form-textarea" id="companionSignature" placeholder="为您的AI学伴设置一句个性签名">我是您的专属AI学伴，擅长知识点讲解、学习规划与答疑解惑。让我们一起探索知识的海洋！</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn-save" onclick="saveConfig()">保存配置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前选中的配置
+        let selectedAvatar = '🎓';
+        let selectedRole = '学习导师';
+        let selectedPersonalities = ['耐心细致', '逻辑清晰', '善于引导'];
+        
+        // 当前技能图类型
+        let currentSkillGraphType = 'network';
+        
+        // 初始化图表
+        document.addEventListener('DOMContentLoaded', function() {
+            initSkillChart();
+            initEngagementRadarChart();
+            initEngagementTimelineChart();
+            initEfficiencyChart();
+            initHeatmapGrid();
+            startLiveStatsAnimation();
+            initGradeDistribution();
+            initSkillHeatmap();
+        });
+        
+        // ========== 学习参与度分析图表 ==========
+        
+        // 多维度雷达图
+        function initEngagementRadarChart() {
+            const chart = echarts.init(document.getElementById('engagementRadarChart'));
+            const option = {
+                radar: {
+                    indicator: [
+                        { name: '学习时长', max: 100 },
+                        { name: '互动频率', max: 100 },
+                        { name: '实验完成', max: 100 },
+                        { name: '提问质量', max: 100 },
+                        { name: '知识掌握', max: 100 },
+                        { name: '协作能力', max: 100 }
+                    ],
+                    shape: 'polygon',
+                    splitNumber: 4,
+                    axisName: { color: '#8c9eb0', fontSize: 12 },
+                    splitLine: { lineStyle: { color: '#3d3d5c' } },
+                    splitArea: { areaStyle: { color: ['rgba(0, 168, 255, 0.05)', 'rgba(0, 168, 255, 0.1)'] } }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [85, 72, 68, 90, 78, 65],
+                            name: '当前水平',
+                            areaStyle: { color: 'rgba(0, 168, 255, 0.3)' },
+                            lineStyle: { color: '#00a8ff', width: 2 },
+                            itemStyle: { color: '#00a8ff' }
+                        }
+                    ],
+                    animationDuration: 2000,
+                    animationEasing: 'elasticOut'
+                }]
+            };
+            chart.setOption(option);
+            window.engagementRadarChart = chart;
+        }
+        
+        // 学习行为时间分布图
+        function initEngagementTimelineChart() {
+            const chart = echarts.init(document.getElementById('engagementTimelineChart'));
+            const option = {
+                tooltip: { trigger: 'axis' },
+                xAxis: {
+                    type: 'category',
+                    data: ['6:00', '8:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
+                    axisLine: { lineStyle: { color: '#3d3d5c' } },
+                    axisLabel: { color: '#8c9eb0', fontSize: 10 }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '学习时长(分钟)',
+                    axisLine: { lineStyle: { color: '#3d3d5c' } },
+                    axisLabel: { color: '#8c9eb0' },
+                    splitLine: { lineStyle: { color: '#3d3d5c', type: 'dashed' } }
+                },
+                series: [{
+                    data: [15, 45, 90, 30, 120, 80, 40, 60, 20],
+                    type: 'bar',
+                    barWidth: '60%',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#00a8ff' },
+                            { offset: 1, color: '#00d4aa' }
+                        ]),
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    animationDuration: 1500,
+                    animationEasing: 'elasticOut'
+                }]
+            };
+            chart.setOption(option);
+            window.engagementTimelineChart = chart;
+        }
+        
+        // 学习效率趋势图
+        function initEfficiencyChart() {
+            const chart = echarts.init(document.getElementById('efficiencyChart'));
+            const days = [];
+            const values = [];
+            for (let i = 30; i >= 1; i--) {
+                days.push(`Day ${i}`);
+                values.push(Math.floor(Math.random() * 30 + 60));
+            }
+            const option = {
+                tooltip: { trigger: 'axis' },
+                xAxis: {
+                    type: 'category',
+                    data: days,
+                    axisLine: { lineStyle: { color: '#3d3d5c' } },
+                    axisLabel: { color: '#8c9eb0', fontSize: 8, interval: 4 }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '效率%',
+                    min: 50,
+                    max: 100,
+                    axisLine: { lineStyle: { color: '#3d3d5c' } },
+                    axisLabel: { color: '#8c9eb0' },
+                    splitLine: { lineStyle: { color: '#3d3d5c', type: 'dashed' } }
+                },
+                series: [{
+                    data: values,
+                    type: 'line',
+                    smooth: true,
+                    lineStyle: { color: '#00a8ff', width: 3 },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(0, 168, 255, 0.4)' },
+                            { offset: 1, color: 'rgba(0, 168, 255, 0.05)' }
+                        ])
+                    },
+                    itemStyle: { color: '#00a8ff' },
+                    animationDuration: 2000
+                }]
+            };
+            chart.setOption(option);
+            window.efficiencyChart = chart;
+        }
+        
+        // 热力图网格
+        function initHeatmapGrid() {
+            const grid = document.getElementById('heatmapGrid');
+            const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            const intensities = [
+                [0.8, 0.6, 0.9, 0.7, 0.5, 0.3, 0.2],
+                [0.7, 0.8, 0.6, 0.9, 0.8, 0.4, 0.3],
+                [0.5, 0.7, 0.8, 0.6, 0.9, 0.5, 0.4],
+                [0.6, 0.5, 0.7, 0.8, 0.6, 0.2, 0.1]
+            ];
+            
+            grid.innerHTML = '';
+            intensities.forEach((row, rowIndex) => {
+                row.forEach((intensity, colIndex) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'heatmap-cell';
+                    cell.style.background = getHeatmapColor(intensity);
+                    cell.title = `${days[colIndex]} - 第${rowIndex + 1}时段: ${Math.round(intensity * 100)}%`;
+                    grid.appendChild(cell);
+                });
+            });
+        }
+        
+        function getHeatmapColor(intensity) {
+            if (intensity >= 0.8) return 'rgba(0, 212, 170, 0.9)';
+            if (intensity >= 0.6) return 'rgba(0, 168, 255, 0.7)';
+            if (intensity >= 0.4) return 'rgba(255, 165, 2, 0.5)';
+            return 'rgba(61, 61, 92, 0.3)';
+        }
+        
+        // 实时数据动画
+        function startLiveStatsAnimation() {
+            setInterval(() => {
+                // 随机更新数据
+                const questions = Math.floor(Math.random() * 10 + 28);
+                const answers = Math.floor(Math.random() * 8 + 24);
+                const accuracy = Math.floor(Math.random() * 10 + 82);
+                const score = (Math.random() * 0.5 + 4.5).toFixed(1);
+                
+                animateValue('liveQuestions', questions);
+                animateValue('liveAnswers', answers);
+                animateValue('liveAccuracy', accuracy + '%');
+                animateValue('liveScore', score);
+            }, 3000);
+        }
+        
+        function animateValue(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            element.style.transform = 'scale(1.2)';
+            element.style.color = '#00d4aa';
+            setTimeout(() => {
+                element.textContent = newValue;
+                element.style.transform = 'scale(1)';
+                element.style.color = '#ffffff';
+            }, 300);
+        }
+        
+        // 切换参与度视图
+        function switchEngagementView(view) {
+            document.querySelectorAll('.engagement-section .card-action-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 可以根据不同视图切换显示内容
+            if (view === 'overview') {
+                document.getElementById('engagementOverview').style.display = 'grid';
+            } else if (view === 'behavior') {
+                document.getElementById('engagementOverview').style.display = 'grid';
+            } else if (view === 'experiment') {
+                document.getElementById('engagementOverview').style.display = 'grid';
+            }
+        }
+        
+        // 技能图谱
+        function initSkillChart() {
+            const chart = echarts.init(document.getElementById('skillChart'));
+            const option = getSkillChartOption('network');
+            chart.setOption(option);
+            window.skillChart = chart;
+        }
+        
+        function getSkillChartOption(type) {
+            if (type === 'network') {
+                return {
+                    tooltip: {},
+                    series: [{
+                        type: 'graph',
+                        layout: 'force',
+                        data: [
+                            { name: '编程基础', symbolSize: 60, category: 0, itemStyle: { color: '#475569' } },
+                            { name: '数据结构', symbolSize: 50, category: 1, itemStyle: { color: '#64748B' } },
+                            { name: '算法设计', symbolSize: 45, category: 1, itemStyle: { color: '#64748B' } },
+                            { name: '操作系统', symbolSize: 40, category: 2, itemStyle: { color: '#10B981' } },
+                            { name: '计算机网络', symbolSize: 42, category: 2, itemStyle: { color: '#10B981' } },
+                            { name: '数据库', symbolSize: 48, category: 2, itemStyle: { color: '#10B981' } },
+                            { name: '前端开发', symbolSize: 35, category: 3, itemStyle: { color: '#F59E0B' } },
+                            { name: '后端开发', symbolSize: 55, category: 3, itemStyle: { color: '#F59E0B' } },
+                            { name: '系统设计', symbolSize: 38, category: 4, itemStyle: { color: '#3B82F6' } },
+                            { name: '项目管理', symbolSize: 30, category: 4, itemStyle: { color: '#3B82F6' } }
+                        ],
+                        links: [
+                            { source: '编程基础', target: '数据结构' },
+                            { source: '编程基础', target: '算法设计' },
+                            { source: '数据结构', target: '算法设计' },
+                            { source: '数据结构', target: '数据库' },
+                            { source: '算法设计', target: '系统设计' },
+                            { source: '操作系统', target: '系统设计' },
+                            { source: '计算机网络', target: '后端开发' },
+                            { source: '数据库', target: '后端开发' },
+                            { source: '前端开发', target: '后端开发' },
+                            { source: '后端开发', target: '系统设计' },
+                            { source: '系统设计', target: '项目管理' }
+                        ],
+                        label: { show: true, fontSize: 12, color: '#e6e6e6' },
+                        force: { repulsion: 200, edgeLength: 80 },
+                        emphasis: { focus: 'adjacency', lineStyle: { width: 3 } }
+                    }]
+                };
+            } else if (type === 'tree') {
+                return {
+                    tooltip: {},
+                    series: [{
+                        type: 'tree',
+                        data: [{
+                            name: '技能体系',
+                            children: [
+                                {
+                                    name: '编程基础',
+                                    children: [
+                                        { name: '数据结构', value: 85 },
+                                        { name: '算法设计', value: 72 },
+                                        { name: '编程语言', value: 90 }
+                                    ]
+                                },
+                                {
+                                    name: '系统知识',
+                                    children: [
+                                        { name: '操作系统', value: 68 },
+                                        { name: '计算机网络', value: 75 },
+                                        { name: '数据库', value: 82 }
+                                    ]
+                                },
+                                {
+                                    name: '工程实践',
+                                    children: [
+                                        { name: '前端开发', value: 65 },
+                                        { name: '后端开发', value: 85 },
+                                        { name: '系统设计', value: 70 }
+                                    ]
+                                }
+                            ]
+                        }],
+                        top: '5%',
+                        left: '15%',
+                        bottom: '5%',
+                        right: '15%',
+                        symbolSize: 14,
+                        orient: 'TB',
+                        label: { position: 'top', verticalAlign: 'middle', fontSize: 12, color: '#e6e6e6' },
+                        leaves: { label: { position: 'bottom' } },
+                        expandAndCollapse: true,
+                        animationDuration: 550,
+                        animationDurationUpdate: 750
+                    }]
+                };
+            } else {
+                return {
+                    tooltip: { trigger: 'item' },
+                    series: [{
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['50%', '50%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 8,
+                            borderColor: '#16213e',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: true,
+                            formatter: '{b}: {d}%',
+                            fontSize: 12,
+                            color: '#8c9eb0'
+                        },
+                        data: [
+                            { value: 85, name: '编程基础', itemStyle: { color: '#475569' } },
+                            { value: 72, name: '算法能力', itemStyle: { color: '#64748B' } },
+                            { value: 68, name: '系统设计', itemStyle: { color: '#10B981' } },
+                            { value: 75, name: '网络知识', itemStyle: { color: '#F59E0B' } },
+                            { value: 82, name: '数据库', itemStyle: { color: '#3B82F6' } },
+                            { value: 65, name: '前端开发', itemStyle: { color: '#8B5CF6' } }
+                        ]
+                    }]
+                };
+            }
+        }
+        
+        function switchSkillGraph(type) {
+            currentSkillGraphType = type;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.card-action-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新图表
+            const option = getSkillChartOption(type);
+            window.skillChart.setOption(option, true);
+        }
+        
+        // 学习参与度分析（雷达图）
+        function initEngagementChart() {
+            const chart = echarts.init(document.getElementById('engagementChart'));
+            const option = {
+                tooltip: {},
+                radar: {
+                    indicator: [
+                        { name: '平台行为', max: 100 },
+                        { name: '软件实验', max: 100 },
+                        { name: '硬件实验', max: 100 },
+                        { name: '课程学习', max: 100 },
+                        { name: '项目实践', max: 100 },
+                        { name: '互动交流', max: 100 }
+                    ],
+                    center: ['50%', '50%'],
+                    radius: '65%',
+                    axisName: {
+                        color: '#8c9eb0',
+                        fontSize: 13,
+                        fontWeight: 600
+                    },
+                    splitArea: {
+                        areaStyle: {
+                            color: ['rgba(71, 85, 105, 0.02)', 'rgba(71, 85, 105, 0.04)', 'rgba(71, 85, 105, 0.06)', 'rgba(71, 85, 105, 0.08)', 'rgba(71, 85, 105, 0.1)']
+                        }
+                    },
+                    axisLine: { lineStyle: { color: 'rgba(71, 85, 105, 0.2)' } },
+                    splitLine: { lineStyle: { color: 'rgba(71, 85, 105, 0.15)' } }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [85, 72, 68, 90, 78, 82],
+                            name: '参与度',
+                            areaStyle: {
+                                color: 'rgba(71, 85, 105, 0.3)'
+                            },
+                            lineStyle: {
+                                color: '#475569',
+                                width: 2
+                            },
+                            itemStyle: {
+                                color: '#475569'
+                            }
+                        }
+                    ]
+                }]
+            };
+            chart.setOption(option);
+        }
+        
+        // 班级成绩分布
+        function initGradeDistribution() {
+            const chart = echarts.init(document.getElementById('gradeDistribution'));
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}人 ({d}%)'
+                },
+                legend: {
+                    orient: 'vertical',
+                    right: '5%',
+                    top: 'center',
+                    textStyle: { color: '#8c9eb0', fontSize: 13 }
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['35%', '60%'],
+                    center: ['40%', '50%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 8,
+                        borderColor: '#16213e',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: 14,
+                            fontWeight: 'bold'
+                        }
+                    },
+                    data: [
+                        { value: 5, name: '优秀(90-100)', itemStyle: { color: '#10B981' } },
+                        { value: 18, name: '良好(80-89)', itemStyle: { color: '#3B82F6' } },
+                        { value: 25, name: '中等(70-79)', itemStyle: { color: '#475569' } },
+                        { value: 12, name: '及格(60-69)', itemStyle: { color: '#F59E0B' } },
+                        { value: 3, name: '不及格(<60)', itemStyle: { color: '#EF4444' } }
+                    ]
+                }]
+            };
+            chart.setOption(option);
+        }
+        
+        // 技能热力图
+        function initSkillHeatmap() {
+            const chart = echarts.init(document.getElementById('skillHeatmap'));
+            const skills = ['编程', '算法', '系统', '网络', '数据库', '前端', '后端', '测试'];
+            const weeks = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            
+            const data = [];
+            for (let i = 0; i < skills.length; i++) {
+                for (let j = 0; j < weeks.length; j++) {
+                    data.push([j, i, Math.floor(Math.random() * 100)]);
+                }
+            }
+            
+            const option = {
+                tooltip: {
+                    position: 'top',
+                    formatter: function(params) {
+                        return weeks[params.value[0]] + ' - ' + skills[params.value[1]] + '<br/>活跃度: ' + params.value[2];
+                    }
+                },
+                grid: {
+                    top: '10%',
+                    left: '15%',
+                    right: '5%',
+                    bottom: '15%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: weeks,
+                    splitArea: { show: true },
+                    axisLabel: { color: '#8c9eb0', fontSize: 11 }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: skills,
+                    splitArea: { show: true },
+                    axisLabel: { color: '#8c9eb0', fontSize: 11 }
+                },
+                visualMap: {
+                    min: 0,
+                    max: 100,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '0%',
+                    inRange: {
+                        color: ['#1a1a2e', '#16213e', '#0f3460', '#00a8ff', '#00d4aa']
+                    },
+                    textStyle: { color: '#8c9eb0' }
+                },
+                series: [{
+                    type: 'heatmap',
+                    data: data,
+                    label: { show: false },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            chart.setOption(option);
+        }
+        
+        // 弹窗控制
+        function openModal() {
+            document.getElementById('configModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('configModal').classList.remove('active');
+        }
+        
+        // 选择头像
+        function selectAvatar(element) {
+            document.querySelectorAll('.avatar-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedAvatar = element.dataset.avatar;
+        }
+        
+        // 选择角色
+        function selectRole(element) {
+            document.querySelectorAll('.role-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedRole = element.dataset.role;
+        }
+        
+        // 切换性格特点
+        function togglePersonality(element) {
+            element.classList.toggle('selected');
+            const personality = element.textContent;
+            if (element.classList.contains('selected')) {
+                if (!selectedPersonalities.includes(personality)) {
+                    selectedPersonalities.push(personality);
+                }
+            } else {
+                selectedPersonalities = selectedPersonalities.filter(p => p !== personality);
+            }
+        }
+        
+        // 保存配置
+        function saveConfig() {
+            const name = document.getElementById('companionNameInput').value || '智学小助手';
+            const signature = document.getElementById('companionSignature').value || '我是您的专属AI学伴，让我们一起学习进步！';
+            
+            // 更新页面显示
+            document.getElementById('companionAvatar').textContent = selectedAvatar;
+            document.getElementById('companionName').textContent = name;
+            document.getElementById('companionRole').textContent = selectedRole;
+            document.getElementById('companionDesc').textContent = signature;
+            
+            // 更新性格标签
+            const traitsContainer = document.getElementById('companionTraits');
+            traitsContainer.innerHTML = selectedPersonalities.map(p => 
+                `<span class="trait-tag">${p}</span>`
+            ).join('');
+            
+            closeModal();
+        }
+        
+        // 窗口大小变化时重绘图表
+        window.addEventListener('resize', function() {
+            if (window.skillChart) window.skillChart.resize();
+            echarts.getInstanceByDom(document.getElementById('engagementChart'))?.resize();
+            echarts.getInstanceByDom(document.getElementById('gradeDistribution'))?.resize();
+            echarts.getInstanceByDom(document.getElementById('skillHeatmap'))?.resize();
+        });
+        
+        // 点击弹窗外部关闭
+        document.getElementById('configModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
