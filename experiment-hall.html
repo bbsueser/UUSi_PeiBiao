@@ -267,7 +267,7 @@
                     <span class="sidebar-icon">☁️</span>
                     科研云服务
                 </a>
-                <a href="3d-designer.html" class="sidebar-item" data-page="design">
+                <a href="3d-designer-enhanced.html" class="sidebar-item" data-page="design">
                     <span class="sidebar-icon">🎨</span>
                     创意设计
                 </a>
@@ -734,7 +734,7 @@
             btn.addEventListener('click', function() {
                 const card = this.closest('.experiment-card');
                 const title = card.querySelector('.experiment-title').textContent;
-                alert(`即将开始实验：${title}`);
+                window.location.href = `experiment-detail.html?experiment=${encodeURIComponent(title)}`;
             });
         });
     </script>

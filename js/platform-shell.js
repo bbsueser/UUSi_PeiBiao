@@ -80,6 +80,13 @@
         } else {
             normalizeExistingBrand();
         }
+
+        document.addEventListener('click', (event) => {
+            const trigger = event.target.closest('[data-platform-notice]');
+            if (!trigger) return;
+            event.preventDefault();
+            showPlatformNotice(trigger.dataset.platformNotice || '演示模块暂未开放', 'info');
+        });
     }
 
     window.PlatformShell = {

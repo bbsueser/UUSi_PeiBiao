@@ -1343,7 +1343,7 @@ top_articles = articles[:10]</pre>
                             }
                         </style>
                     </head>
-                    <body data-platform-page="course-detail" data-platform-shell="standard">
+                    <body>
                         <div class="terminal">
                             <div><span class="prompt">user@django-lab:~$</span> <span class="command">python --version</span></div>
                             <div class="output">Python 3.11.5</div>
@@ -1480,7 +1480,7 @@ top_articles = articles[:10]</pre>
         // 返回
         function goBack() {
             if (confirm('确定要离开当前课程吗？')) {
-                history.back();
+                window.location.href = 'course-hall.html';
             }
         }
 

@@ -1463,8 +1463,26 @@
         document.head.appendChild(style);
 
         // 操作按钮事件
+        function launchSelectedExperiment() {
+            const selected = document.querySelector('.env-card.active');
+            const env = selected?.dataset.env;
+            const route = window.PlatformShell?.experimentRoutes?.[env];
+
+            if (route) {
+                window.location.href = route;
+                return;
+            }
+
+            const name = selected?.querySelector('.env-card-title')?.textContent?.trim() || '该实验环境';
+            if (window.PlatformShell) {
+                window.PlatformShell.showNotice(`${name}当前为演示入口，暂未配置独立页面`, 'info');
+            } else {
+                showNotification(`${name}当前为演示入口，暂未配置独立页面`);
+            }
+        }
+
         function startExperiment() {
-            showNotification('正在启动实验环境...');
+            launchSelectedExperiment();
         }
 
         function previewExperiment() {

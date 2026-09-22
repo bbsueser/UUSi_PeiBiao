@@ -104,6 +104,16 @@ Assert-True ($appJs -match 'const isLoginPage = .*index\.html') '缺少登录页
 Assert-True ($appJs -match 'if \(isLoginPage\)') '角色清理未受登录页条件保护'
 Assert-True ($appJs -match "localStorage\.removeItem\('userRole'\)") '退出流程必须能清理角色'
 
+$courseHall = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'course-hall.html')
+$experimentDetail = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'experiment-detail.html')
+$adminDashboard = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'admin-dashboard.html')
+$blockchainLab = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'blockchain-lab.html')
+
+Assert-True ($courseHall -match 'course-detail\.html') '课程大厅不能进入课程详情'
+Assert-True ($experimentDetail -match 'launchSelectedExperiment') '实验详情缺少启动路由'
+Assert-True ($blockchainLab -match 'blockchain-dev\.html') '区块链仿真不能进入开发环境'
+Assert-True ($adminDashboard -notmatch 'href="(?:user-management|system-settings)\.html"') '管理员页面仍含死链'
+
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ -ErrorAction Continue }
     exit 1
