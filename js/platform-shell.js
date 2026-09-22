@@ -148,7 +148,7 @@
 
     function normalizeLocalNavigationIcons() {
         document.querySelectorAll('[data-platform-navigation="local"] .sidebar-icon').forEach((mark) => {
-            const item = mark.closest('a, button');
+            const item = mark.closest('a, button, .sidebar-item, .sidebar-group-title, .sidebar-header');
             const label = item ? item.textContent.trim() : '';
             let icon = 'task';
             if (/工作台|首页/.test(label)) icon = 'home';
@@ -181,6 +181,7 @@
 
         if (document.body.dataset.platformShell === 'workspace') {
             normalizeExistingBrand();
+            normalizeLocalNavigationIcons();
             renderWorkspaceBar();
         } else {
             normalizeExistingBrand();

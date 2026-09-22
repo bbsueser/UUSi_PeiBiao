@@ -224,6 +224,11 @@ body[data-platform-page="3d-designer"] .designer-page {
     margin-top: 60px;
 }
 
+body[data-platform-page="industry-cloud"] .industry-sidebar {
+    top: calc(60px + var(--platform-workspace-bar-height));
+    height: calc(100vh - 60px - var(--platform-workspace-bar-height));
+}
+
 @media (max-width: 720px) {
     .platform-workspace-bar {
         padding-right: 10px;

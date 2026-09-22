@@ -129,6 +129,7 @@ $blockchainLab = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'blockchain-
 $taskManagement = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'task-management.html')
 $examManagement = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'exam-management.html')
 $hardwareAgent = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'hardware-agent.html')
+$industryCloud = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'industry-cloud.html')
 
 Assert-True ($courseHall -match 'course-detail\.html') '课程大厅不能进入课程详情'
 Assert-True ($experimentDetail -match 'launchSelectedExperiment') '实验详情缺少启动路由'
@@ -164,6 +165,10 @@ Assert-True ($shell -match '\.top-nav-logo \.logo-icon') '考试防作弊页品�
 Assert-True ($shell -match '\.header-logo-icon') '专业工作台品牌图标未纳入归一化'
 Assert-True ($shell -match '\[data-platform-navigation="local"\] \.sidebar-icon') '本地功能菜单的 Emoji 图标未做无损归一化'
 Assert-True ($shell -match 'dataset\.platformShell === ''workspace''\)[\s\S]*?normalizeExistingBrand\(\);[\s\S]*?renderWorkspaceBar\(\)') '工作台页面未执行已有品牌归一化'
+Assert-True ($industryCloud -match 'class="industry-sidebar" data-platform-navigation="local"') '行业云功能侧栏未声明为本地导航'
+Assert-True ($industryCloud -match 'class="sidebar-icon"') '行业云侧栏 Emoji 未包裹为可归一化图标'
+Assert-True ($shell -match "closest\('a, button, \.sidebar-item, \.sidebar-group-title, \.sidebar-header'\)") '行业云本地导航图标无法读取所在项目语义'
+Assert-True ($theme -match 'data-platform-page="industry-cloud"\] \.industry-sidebar\s*\{[\s\S]*?top:\s*calc\(60px \+ var\(--platform-workspace-bar-height\)\)') '行业云吸顶侧栏未避让平台栏与原导航'
 
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ -ErrorAction Continue }
