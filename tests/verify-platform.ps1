@@ -98,6 +98,9 @@ foreach ($pair in $expectedRoutes.GetEnumerator()) {
 
 $appJs = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'js/app.js')
 Assert-True ($appJs -match 'isLoginPage') 'app.js 尚未限制登录页状态清理'
+Assert-True ($appJs -match 'const isLoginPage = .*index\.html') '缺少登录页判断'
+Assert-True ($appJs -match 'if \(isLoginPage\)') '角色清理未受登录页条件保护'
+Assert-True ($appJs -match "localStorage\.removeItem\('userRole'\)") '退出流程必须能清理角色'
 
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ -ErrorAction Continue }

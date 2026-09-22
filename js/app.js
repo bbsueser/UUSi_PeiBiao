@@ -8,19 +8,21 @@ let currentRole = 'student';
 
 // ========== 页面加载完成后初始化 ==========
 document.addEventListener('DOMContentLoaded', function() {
-    // 清除之前的角色信息（在登录页面）
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    
-    initFormValidation();
-    loadRememberedUser();
-    initRoleSelector();
-    
-    // 默认选中学生角色
-    const defaultRole = document.querySelector('.role-option[data-role="student"]');
-    if (defaultRole) {
-        defaultRole.classList.add('selected');
-        currentRole = 'student';
+    const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+    const isLoginPage = currentFile === 'index.html' || currentFile === '';
+
+    if (isLoginPage) {
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userName');
+        initFormValidation();
+        loadRememberedUser();
+        initRoleSelector();
+
+        const defaultRole = document.querySelector('.role-option[data-role="student"]');
+        if (defaultRole) {
+            defaultRole.classList.add('selected');
+            currentRole = 'student';
+        }
     }
 });
 

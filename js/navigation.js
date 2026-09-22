@@ -7,28 +7,28 @@
 const NAV_CONFIG = {
     // 学生端导航
     student: [
-        { name: '我的工作台', icon: '📊', url: 'dashboard.html', id: 'dashboard' },
-        { name: '课程大厅', icon: '📚', url: 'course-hall.html', id: 'course-hall' },
-        { name: '实验大厅', icon: '🔬', url: 'experiment-hall.html', id: 'experiment-hall' },
-        { name: '考试大厅', icon: '📝', url: 'exam-hall.html', id: 'exam-hall' },
-        { name: 'AI学习助手', icon: '🤖', url: 'ai-assistant.html', id: 'ai-assistant' },
-        { name: 'AI分析', icon: '📈', url: 'ai-analysis.html', id: 'ai-analysis' },
-        { name: '任务中心', icon: '📋', url: 'task-management.html', id: 'task-center' },
-        { name: '硬件智能体', icon: '🔌', url: 'hardware-agent.html', id: 'hardware-agent' },
-        { name: '个人中心', icon: '👤', url: 'profile.html', id: 'profile' }
+        { name: '我的工作台', icon: 'home', url: 'dashboard.html', id: 'dashboard' },
+        { name: '课程大厅', icon: 'course', url: 'course-hall.html', id: 'course-hall' },
+        { name: '实验大厅', icon: 'experiment', url: 'experiment-hall.html', id: 'experiment-hall' },
+        { name: '考试大厅', icon: 'exam', url: 'exam-hall.html', id: 'exam-hall' },
+        { name: 'AI学习助手', icon: 'ai', url: 'ai-assistant.html', id: 'ai-assistant' },
+        { name: 'AI分析', icon: 'ai', url: 'ai-analysis.html', id: 'ai-analysis' },
+        { name: '任务中心', icon: 'course', url: 'task-management.html', id: 'task-management' },
+        { name: '硬件智能体', icon: 'experiment', url: 'hardware-agent.html', id: 'hardware-agent' },
+        { name: '个人中心', icon: 'home', url: 'profile.html', id: 'profile' }
     ],
     
     // 教师端导航
     teacher: [
-        { name: '教师工作台', icon: '📊', url: 'teacher-dashboard.html', id: 'teacher-dashboard' },
-        { name: '课程管理', icon: '📚', url: 'course-hall.html', id: 'course-management' },
-        { name: '任务管理', icon: '📋', url: 'task-management.html', id: 'task-management' },
-        { name: '考试管理', icon: '📝', url: 'exam-management.html', id: 'exam-management' },
-        { name: '实验大厅', icon: '🔬', url: 'experiment-hall.html', id: 'experiment-hall' },
-        { name: '实验详情', icon: '🧪', url: 'experiment-detail.html', id: 'experiment-detail' },
-        { name: 'AI分析中心', icon: '📈', url: 'ai-analysis.html', id: 'ai-analysis' },
-        { name: 'AI学习助手', icon: '🤖', url: 'ai-assistant.html', id: 'ai-assistant' },
-        { name: '个人中心', icon: '👤', url: 'profile.html', id: 'profile' }
+        { name: '教师工作台', icon: 'home', url: 'teacher-dashboard.html', id: 'teacher-dashboard' },
+        { name: '课程管理', icon: 'course', url: 'course-hall.html', id: 'course-hall' },
+        { name: '任务管理', icon: 'course', url: 'task-management.html', id: 'task-management' },
+        { name: '考试管理', icon: 'exam', url: 'exam-management.html', id: 'exam-management' },
+        { name: '实验大厅', icon: 'experiment', url: 'experiment-hall.html', id: 'experiment-hall' },
+        { name: '实验详情', icon: 'experiment', url: 'experiment-detail.html', id: 'experiment-detail' },
+        { name: 'AI分析中心', icon: 'ai', url: 'ai-analysis.html', id: 'ai-analysis' },
+        { name: 'AI学习助手', icon: 'ai', url: 'ai-assistant.html', id: 'ai-assistant' },
+        { name: '个人中心', icon: 'home', url: 'profile.html', id: 'profile' }
     ]
 };
 
@@ -48,9 +48,10 @@ function renderNavigation(role = 'student') {
     
     navConfig.forEach(item => {
         const isActive = currentPage === item.id ? 'active' : '';
+        const icon = window.PlatformShell?.icon(item.icon) || '';
         navHTML += `
             <a href="${item.url}" class="sidebar-item ${isActive}" data-page="${item.id}">
-                <span class="sidebar-icon">${item.icon}</span>
+                <span class="platform-nav-icon">${icon}</span>
                 ${item.name}
             </a>
         `;

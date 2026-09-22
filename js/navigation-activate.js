@@ -29,7 +29,16 @@ const PAGE_NAV_MAP = {
     'profile': 'nav-profile',
     'profile.html': 'nav-profile',
     'course-detail': 'nav-course-hall',
-    'course-detail.html': 'nav-course-hall'
+    'course-detail.html': 'nav-course-hall',
+    'engineering-simulation.html': 'nav-experiment-hall',
+    'industry-cloud.html': 'nav-experiment-hall',
+    '2d-designer.html': 'nav-experiment-hall',
+    '3d-designer.html': 'nav-experiment-hall',
+    '3d-designer-enhanced.html': 'nav-experiment-hall',
+    'embedded-sim.html': 'nav-experiment-hall',
+    'jupyter-lab.html': 'nav-experiment-hall',
+    'blockchain-lab.html': 'nav-experiment-hall',
+    'blockchain-dev.html': 'nav-experiment-hall'
 };
 
 // ========== 自动激活导航项 ==========
@@ -56,10 +65,6 @@ function activateNavigation() {
         // 激活当前导航项
         navItem.classList.add('active');
         
-        // 添加视觉反馈
-        navItem.style.background = 'rgba(71, 85, 105, 0.1)';
-        navItem.style.color = '#475569';
-        navItem.style.fontWeight = '600';
     }
 }
 
