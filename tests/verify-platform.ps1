@@ -141,15 +141,18 @@ foreach ($entry in $roleLandingPages.GetEnumerator()) {
     Assert-True ($landingHtml -match ('data-platform-role="' + $entry.Value + '"')) "$($entry.Key) 缺少权威角色标识"
 }
 
-$globalNavigationPages = @(
-    'dashboard.html', 'teacher-dashboard.html', 'course-hall.html',
-    'experiment-hall.html', 'experiment-detail.html', 'exam-hall.html',
-    'exam-management.html', 'task-management.html', 'ai-assistant.html',
-    'ai-analysis.html', 'profile.html'
-)
-foreach ($page in $globalNavigationPages) {
+$globalNavigationPages = @{
+    'dashboard.html' = 2; 'teacher-dashboard.html' = 2; 'course-hall.html' = 2
+    'experiment-hall.html' = 2; 'experiment-detail.html' = 2; 'exam-hall.html' = 2
+    'exam-management.html' = 1; 'task-management.html' = 1; 'ai-assistant.html' = 2
+    'ai-analysis.html' = 1; 'profile.html' = 2
+}
+foreach ($entry in $globalNavigationPages.GetEnumerator()) {
+    $page = $entry.Key
     $pageHtml = Get-Content -Raw -LiteralPath (Join-Path $repoRoot $page)
-    foreach ($match in [regex]::Matches($pageHtml, '<(?:div|nav) class="(?:nav-menu|sidebar-menu)" data-platform-navigation="global">([\s\S]*?)</(?:div|nav)>')) {
+    $globalMenus = [regex]::Matches($pageHtml, '<(?:div|nav) class="(?:nav-menu|sidebar-menu)" data-platform-navigation="global"[^>]*>([\s\S]*?)</(?:div|nav)>')
+    Assert-True ($globalMenus.Count -eq $entry.Value) "$page 的全局导航容器数量异常"
+    foreach ($match in $globalMenus) {
         Assert-True ($match.Groups[1].Value -notmatch '<a\b') "$page 仍携带会闪回的旧全局菜单项"
     }
 }
