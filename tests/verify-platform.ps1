@@ -67,6 +67,15 @@ $shell = if (Test-Path -LiteralPath $shellPath) {
 } else {
     ''
 }
+foreach ($signature in @(
+    'window.PlatformShell',
+    'function initPlatformShell',
+    'function iconSvg',
+    'function showPlatformNotice',
+    "const PLATFORM_NAME = '人工智能算法训练平台'"
+)) {
+    Assert-True ($shell -match [regex]::Escape($signature)) "共享壳层缺少接口: $signature"
+}
 foreach ($pair in $expectedRoutes.GetEnumerator()) {
     $routeLiteral = "'$($pair.Key)': '$($pair.Value)'"
     Assert-True ($shell -match [regex]::Escape($routeLiteral)) "实验路由缺失: $($pair.Key)"
