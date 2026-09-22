@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>嵌入式仿真平台</title>
+    <title>嵌入式仿真平台 - 人工智能算法训练平台</title>
     <style>
         /* ==================== 全局样式 ==================== */
         * {
@@ -686,8 +686,9 @@
             overflow: hidden;
         }
     </style>
+    <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body>
+<body data-platform-page="embedded-sim" data-platform-shell="workspace">
     <div class="main-layout">
         <!-- 顶部工具栏 -->
         <div class="toolbar">
@@ -1811,5 +1812,6 @@
         // 初始化
         init();
     </script>
+    <script src="js/platform-shell.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jupyter实验平台</title>
+    <title>Jupyter实验平台 - 人工智能算法训练平台</title>
     <!-- ECharts CDN -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
@@ -861,8 +861,9 @@
             color: var(--text-secondary);
         }
     </style>
+    <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body>
+<body data-platform-page="jupyter-lab" data-platform-shell="workspace">
     <!-- 顶部导航栏 -->
     <header class="header">
         <div class="header-logo">
@@ -2461,5 +2462,6 @@ print("分数标准差:", df['score'].std())</textarea>
             showChartTemplate('bar');
         });
     </script>
+    <script src="js/platform-shell.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D应用设计器 - 智慧教学实验平台</title>
+    <title>3D应用设计器 - 人工智能算法训练平台</title>
     <link rel="stylesheet" href="css/common.css">
     <style>
         /* 3D设计器深色主题 */
@@ -764,15 +764,16 @@
             text-decoration: underline;
         }
     </style>
+    <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body>
+<body data-platform-page="3d-designer" data-platform-shell="workspace">
     <!-- 顶部导航栏 -->
     <header class="top-nav">
         <div class="top-nav-left">
             <div class="top-nav-logo">
                 <span class="logo-icon">📚</span>
                 <div class="logo-text">
-                    <div class="logo-title">智慧教育综合实训平台</div>
+                    <div class="logo-title">人工智能算法训练平台</div>
                     <div class="logo-subtitle">INTELLIGENT EDUCATION TRAINING PLATFORM</div>
                 </div>
             </div>
@@ -915,7 +916,7 @@
             <div class="toolbar-left">
                 <button class="toolbar-btn" onclick="showAppsPage()">← 管理列表</button>
                 <div class="toolbar-breadcrumb">
-                    智慧教育综合实训平台 / 应用设计器 3D
+                    人工智能算法训练平台 / 应用设计器 3D
                 </div>
                 <div class="toolbar-app-name" id="currentAppName">当前应用: 智慧温室 3D 监控应用</div>
             </div>
@@ -1423,5 +1424,6 @@
         `;
         document.head.appendChild(style);
     </script>
+    <script src="js/platform-shell.js"></script>
 </body>
 </html>

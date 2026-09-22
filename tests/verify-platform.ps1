@@ -31,8 +31,21 @@ $expectedRoutes = @{
     'embedded'       = 'embedded-sim.html'
 }
 
+$workspacePages = @(
+    'engineering-simulation.html', 'industry-cloud.html', '2d-designer.html',
+    '3d-designer.html', '3d-designer-enhanced.html', 'embedded-sim.html',
+    'jupyter-lab.html', 'blockchain-lab.html', 'blockchain-dev.html'
+)
+
 foreach ($page in $businessPages) {
     Assert-True (Test-Path -LiteralPath (Join-Path $repoRoot $page)) "缺少业务页面: $page"
+}
+
+foreach ($page in $workspacePages) {
+    $html = Get-Content -Raw -LiteralPath (Join-Path $repoRoot $page)
+    Assert-True ($html -match 'data-platform-shell="workspace"') "$page 未声明工作台壳层"
+    Assert-True ($html -match 'css/platform-theme\.css') "$page 未接入共享主题"
+    Assert-True ($html -match 'js/platform-shell\.js') "$page 未接入共享脚本"
 }
 
 $missingTargets = [System.Collections.Generic.List[string]]::new()
