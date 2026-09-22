@@ -131,6 +131,29 @@ $examManagement = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'exam-manag
 $hardwareAgent = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'hardware-agent.html')
 $industryCloud = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'industry-cloud.html')
 
+$roleLandingPages = @{
+    'dashboard.html'         = 'student'
+    'teacher-dashboard.html' = 'teacher'
+    'admin-dashboard.html'   = 'admin'
+}
+foreach ($entry in $roleLandingPages.GetEnumerator()) {
+    $landingHtml = Get-Content -Raw -LiteralPath (Join-Path $repoRoot $entry.Key)
+    Assert-True ($landingHtml -match ('data-platform-role="' + $entry.Value + '"')) "$($entry.Key) 缺少权威角色标识"
+}
+
+$globalNavigationPages = @(
+    'dashboard.html', 'teacher-dashboard.html', 'course-hall.html',
+    'experiment-hall.html', 'experiment-detail.html', 'exam-hall.html',
+    'exam-management.html', 'task-management.html', 'ai-assistant.html',
+    'ai-analysis.html', 'profile.html'
+)
+foreach ($page in $globalNavigationPages) {
+    $pageHtml = Get-Content -Raw -LiteralPath (Join-Path $repoRoot $page)
+    foreach ($match in [regex]::Matches($pageHtml, '<(?:div|nav) class="(?:nav-menu|sidebar-menu)" data-platform-navigation="global">([\s\S]*?)</(?:div|nav)>')) {
+        Assert-True ($match.Groups[1].Value -notmatch '<a\b') "$page 仍携带会闪回的旧全局菜单项"
+    }
+}
+
 Assert-True ($courseHall -match 'course-detail\.html') '课程大厅不能进入课程详情'
 Assert-True ($experimentDetail -match 'launchSelectedExperiment') '实验详情缺少启动路由'
 Assert-True ($blockchainLab -match 'blockchain-dev\.html') '区块链仿真不能进入开发环境'
@@ -165,6 +188,8 @@ Assert-True ($shell -match '\.top-nav-logo \.logo-icon') '考试防作弊页品�
 Assert-True ($shell -match '\.header-logo-icon') '专业工作台品牌图标未纳入归一化'
 Assert-True ($shell -match '\[data-platform-navigation="local"\] \.sidebar-icon') '本地功能菜单的 Emoji 图标未做无损归一化'
 Assert-True ($shell -match 'dataset\.platformShell === ''workspace''\)[\s\S]*?normalizeExistingBrand\(\);[\s\S]*?renderWorkspaceBar\(\)') '工作台页面未执行已有品牌归一化'
+Assert-True ($shell -match 'document\.body\.dataset\.platformRole') '共享壳层未读取页面权威角色'
+Assert-True ($shell -match 'localStorage\.setItem\(''userRole'', pageRole\)') '共享壳层未持久化页面权威角色'
 Assert-True ($industryCloud -match 'class="industry-sidebar" data-platform-navigation="local"') '行业云功能侧栏未声明为本地导航'
 Assert-True ($industryCloud -match 'class="sidebar-icon"') '行业云侧栏 Emoji 未包裹为可归一化图标'
 Assert-True ($shell -match "closest\('a, button, \.sidebar-item, \.sidebar-group-title, \.sidebar-header'\)") '行业云本地导航图标无法读取所在项目语义'

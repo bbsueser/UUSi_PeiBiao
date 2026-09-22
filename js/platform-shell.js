@@ -65,10 +65,16 @@
 
     function getRole() {
         try {
-            const role = localStorage.getItem('userRole');
-            return VALID_ROLES.has(role) ? role : 'student';
+            const pageRole = document.body.dataset.platformRole;
+            const storedRole = localStorage.getItem('userRole');
+            if (VALID_ROLES.has(pageRole)) {
+                if (storedRole !== pageRole) localStorage.setItem('userRole', pageRole);
+                return pageRole;
+            }
+            return VALID_ROLES.has(storedRole) ? storedRole : 'student';
         } catch (error) {
-            return 'student';
+            const pageRole = document.body.dataset.platformRole;
+            return VALID_ROLES.has(pageRole) ? pageRole : 'student';
         }
     }
 
@@ -200,6 +206,7 @@
 
     window.PlatformShell = {
         init: initPlatformShell,
+        resolveRole: getRole,
         icon: iconSvg,
         showNotice: showPlatformNotice,
         experimentRoutes

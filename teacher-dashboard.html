@@ -353,7 +353,7 @@
     </style>
     <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body data-platform-page="teacher-dashboard" data-platform-shell="standard">
+<body data-platform-page="teacher-dashboard" data-platform-shell="standard" data-platform-role="teacher">
     <div class="app-layout">
         <!-- 顶部导航栏 -->
         <nav class="top-nav" style="grid-column: 1 / -1;">
@@ -361,13 +361,7 @@
                 <div class="nav-brand-icon">智</div>
                 <span class="nav-brand-text">人工智能算法训练平台</span>
             </div>
-        <div class="nav-menu" data-platform-navigation="global">
-                <a href="#" class="nav-link">首页</a>
-                <a href="#" class="nav-link active">工作台</a>
-                <a href="#" class="nav-link">课程管理</a>
-                <a href="#" class="nav-link">学生管理</a>
-                <a href="#" class="nav-link">数据中心</a>
-            </div>
+        <div class="nav-menu" data-platform-navigation="global" aria-label="主导航"></div>
             <div style="display: flex; align-items: center; gap: var(--space-3);">
                 <span style="font-size: var(--font-size-sm); opacity: 0.9;">欢迎，张老师</span>
                 <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #667EEA, #764BA2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">张</div>
@@ -376,40 +370,7 @@
         
         <!-- 左侧侧边栏 -->
         <aside class="sidebar">
-            <div class="sidebar-menu" data-platform-navigation="global">
-                <a href="teacher-dashboard.html" class="sidebar-item active">
-                    <span class="sidebar-icon">📊</span>
-                    工作台
-                </a>
-                <a href="course-hall.html" class="sidebar-item">
-                    <span class="sidebar-icon">📚</span>
-                    我的课程
-                </a>
-                <a href="task-management.html" class="sidebar-item">
-                    <span class="sidebar-icon">👥</span>
-                    班级管理
-                </a>
-                <a href="task-management.html" class="sidebar-item">
-                    <span class="sidebar-icon">📝</span>
-                    作业中心
-                </a>
-                <a href="exam-management.html" class="sidebar-item">
-                    <span class="sidebar-icon">📋</span>
-                    考试管理
-                </a>
-                <a href="ai-assistant.html" class="sidebar-item">
-                    <span class="sidebar-icon">🤖</span>
-                    AI学习助手
-                </a>
-                <a href="ai-analysis.html" class="sidebar-item">
-                    <span class="sidebar-icon">📈</span>
-                    数据分析
-                </a>
-                <a href="profile.html" class="sidebar-item">
-                    <span class="sidebar-icon">⚙️</span>
-                    系统设置
-                </a>
-            </div>
+            <div class="sidebar-menu" data-platform-navigation="global" aria-label="功能导航"></div>
         </aside>
         
         <!-- 主内容区 -->
