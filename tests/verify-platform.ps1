@@ -126,11 +126,44 @@ $courseHall = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'course-hall.ht
 $experimentDetail = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'experiment-detail.html')
 $adminDashboard = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'admin-dashboard.html')
 $blockchainLab = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'blockchain-lab.html')
+$taskManagement = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'task-management.html')
+$examManagement = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'exam-management.html')
+$hardwareAgent = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'hardware-agent.html')
 
 Assert-True ($courseHall -match 'course-detail\.html') '课程大厅不能进入课程详情'
 Assert-True ($experimentDetail -match 'launchSelectedExperiment') '实验详情缺少启动路由'
 Assert-True ($blockchainLab -match 'blockchain-dev\.html') '区块链仿真不能进入开发环境'
 Assert-True ($adminDashboard -notmatch 'href="(?:user-management|system-settings)\.html"') '管理员页面仍含死链'
+
+# 共享导航只能改写显式声明为 global 的容器，页面内部功能菜单必须保留。
+Assert-True ($shell -match 'querySelectorAll\(''\[data-platform-navigation="global"\]''\)') '共享壳层仍会扫描通用菜单类'
+Assert-True ($shell -notmatch 'querySelectorAll\(''\.nav-menu''\)|querySelectorAll\(''\.sidebar-menu''\)') '共享壳层仍会无条件替换通用菜单'
+Assert-True ($taskManagement -match '<nav class="sidebar-menu" data-platform-navigation="local">[\s\S]*?data-tab="task-assign"') '任务管理功能标签未声明为本地导航'
+Assert-True ($examManagement -match '<nav class="sidebar-menu" data-platform-navigation="local">[\s\S]*?data-tab="exam-create"') '考试管理功能标签未声明为本地导航'
+Assert-True ($hardwareAgent -notmatch 'class="nav-menu" data-platform-navigation="global"') '硬件智能体功能菜单被错误声明为全局导航'
+Assert-True ($adminDashboard -match 'class="nav-menu" data-platform-navigation="local"[\s\S]*?data-platform-notice') '管理员顶部演示入口未受本地导航保护'
+Assert-True ($adminDashboard -match 'class="sidebar-menu" data-platform-navigation="local"[\s\S]*?data-platform-notice') '管理员侧栏演示入口未受本地导航保护'
+
+# 工作台壳层必须为固定 44px 顶栏留出真实空间，不能遮挡或裁切原工作区。
+foreach ($layoutRule in @(
+    'data-platform-page="embedded-sim"\] \.main-layout',
+    'data-platform-page="blockchain-dev"\] \.ide-layout',
+    'data-platform-page="2d-designer"\] \.main-container',
+    'data-platform-page="engineering-simulation"\] \.main-content',
+    'data-platform-page="jupyter-lab"\] \.header',
+    'data-platform-page="industry-cloud"\] \.top-nav',
+    'data-platform-page="3d-designer"\] \.top-nav',
+    'data-platform-page="3d-designer-enhanced"\] \.top-nav'
+)) {
+    Assert-True ($theme -match $layoutRule) "共享主题缺少工作台占位规则: $layoutRule"
+}
+Assert-True ($theme -match '@media \(max-width: 720px\)[\s\S]*?\.platform-breadcrumbs\s*\{[\s\S]*?display:\s*none') '窄屏工作台顶栏高度仍可能换行变化'
+
+# 非标准品牌结构也要在不替换功能控件的前提下去除 Emoji 标识。
+Assert-True ($shell -match '\.top-nav-logo \.logo-icon') '考试防作弊页品牌图标未纳入归一化'
+Assert-True ($shell -match '\.header-logo-icon') '专业工作台品牌图标未纳入归一化'
+Assert-True ($shell -match '\[data-platform-navigation="local"\] \.sidebar-icon') '本地功能菜单的 Emoji 图标未做无损归一化'
+Assert-True ($shell -match 'dataset\.platformShell === ''workspace''\)[\s\S]*?normalizeExistingBrand\(\);[\s\S]*?renderWorkspaceBar\(\)') '工作台页面未执行已有品牌归一化'
 
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ -ErrorAction Continue }

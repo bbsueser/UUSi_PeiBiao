@@ -45,7 +45,9 @@
 }
 
 .platform-workspace-bar {
+    height: var(--platform-workspace-bar-height);
     min-height: var(--platform-workspace-bar-height);
+    flex: 0 0 var(--platform-workspace-bar-height);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -184,16 +186,52 @@ body[data-platform-shell="workspace"] .app-container {
     min-height: calc(100vh - var(--platform-workspace-bar-height));
 }
 
+body[data-platform-page="embedded-sim"] .main-layout,
+body[data-platform-page="blockchain-dev"] .ide-layout {
+    height: calc(100vh - var(--platform-workspace-bar-height));
+}
+
+body[data-platform-page="2d-designer"] .main-container {
+    height: calc(100vh - 50px - var(--platform-workspace-bar-height));
+}
+
+body[data-platform-page="engineering-simulation"] .main-content {
+    height: calc(100vh - var(--toolbar-height) - var(--platform-workspace-bar-height));
+}
+
+body[data-platform-page="jupyter-lab"] .header {
+    top: var(--platform-workspace-bar-height);
+}
+
+body[data-platform-page="jupyter-lab"] .main-content {
+    min-height: calc(100vh - var(--header-height) - var(--platform-workspace-bar-height));
+}
+
+body[data-platform-page="jupyter-lab"] .split-layout,
+body[data-platform-page="jupyter-lab"] .notebook-container {
+    height: calc(100vh - var(--header-height) - 48px - var(--platform-workspace-bar-height));
+}
+
+body[data-platform-page="industry-cloud"] .top-nav,
+body[data-platform-page="3d-designer"] .top-nav,
+body[data-platform-page="3d-designer-enhanced"] .top-nav {
+    top: var(--platform-workspace-bar-height);
+}
+
+body[data-platform-page="industry-cloud"] .industry-layout,
+body[data-platform-page="3d-designer"] .apps-page,
+body[data-platform-page="3d-designer"] .designer-page {
+    margin-top: 60px;
+}
+
 @media (max-width: 720px) {
     .platform-workspace-bar {
-        flex-wrap: wrap;
-        padding-top: 7px;
-        padding-bottom: 7px;
+        padding-right: 10px;
+        padding-left: 10px;
     }
 
     .platform-breadcrumbs {
-        order: 3;
-        flex-basis: 100%;
+        display: none;
     }
 }
 

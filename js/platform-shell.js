@@ -89,6 +89,11 @@
         document.querySelectorAll('.nav-brand').forEach((brand) => {
             brand.innerHTML = `<span class="platform-brand-mark">${iconSvg('brand')}</span><span class="nav-brand-text">${PLATFORM_NAME}</span>`;
         });
+
+        document.querySelectorAll('.top-nav-logo .logo-icon, .header-logo-icon').forEach((mark) => {
+            mark.classList.add('platform-brand-mark');
+            mark.innerHTML = iconSvg('brand');
+        });
     }
 
     function renderWorkspaceBar() {
@@ -132,14 +137,30 @@
 
     function renderStandardNavigation(role) {
         const items = navigationByRole[role] || navigationByRole.student;
-        document.querySelectorAll('.nav-menu').forEach((menu) => {
+        document.querySelectorAll('[data-platform-navigation="global"]').forEach((menu) => {
+            if (menu.classList.contains('sidebar-menu')) {
+                menu.innerHTML = items.map(sidebarLink).join('');
+                return;
+            }
             menu.innerHTML = items.slice(0, 5).map(navigationLink).join('');
         });
-        if (document.body.dataset.platformNavigation !== 'local') {
-            document.querySelectorAll('.sidebar-menu').forEach((menu) => {
-                menu.innerHTML = items.map(sidebarLink).join('');
-            });
-        }
+    }
+
+    function normalizeLocalNavigationIcons() {
+        document.querySelectorAll('[data-platform-navigation="local"] .sidebar-icon').forEach((mark) => {
+            const item = mark.closest('a, button');
+            const label = item ? item.textContent.trim() : '';
+            let icon = 'task';
+            if (/工作台|首页/.test(label)) icon = 'home';
+            else if (/课程|题库/.test(label)) icon = 'course';
+            else if (/实验/.test(label)) icon = 'experiment';
+            else if (/考试|试卷|阅卷|成绩|防作弊/.test(label)) icon = 'exam';
+            else if (/分析|统计/.test(label)) icon = 'analysis';
+            else if (/用户|学生|个人/.test(label)) icon = 'user';
+            else if (/AI|智能体|设备|系统设置/.test(label)) icon = 'hardware';
+            mark.classList.add('platform-nav-icon');
+            mark.innerHTML = iconSvg(icon);
+        });
     }
 
     function normalizePageTitles() {
@@ -159,10 +180,12 @@
         document.documentElement.dataset.platformRole = role;
 
         if (document.body.dataset.platformShell === 'workspace') {
+            normalizeExistingBrand();
             renderWorkspaceBar();
         } else {
             normalizeExistingBrand();
             renderStandardNavigation(role);
+            normalizeLocalNavigationIcons();
             normalizePageTitles();
         }
 
