@@ -52,6 +52,21 @@ $themePath = Join-Path $repoRoot 'css/platform-theme.css'
 Assert-True (Test-Path -LiteralPath $shellPath) '缺少 js/platform-shell.js'
 Assert-True (Test-Path -LiteralPath $themePath) '缺少 css/platform-theme.css'
 
+$theme = if (Test-Path -LiteralPath $themePath) {
+    Get-Content -Raw -LiteralPath $themePath
+} else {
+    ''
+}
+foreach ($selector in @(
+    '.platform-brand-mark',
+    '.platform-workspace-bar',
+    '.platform-breadcrumbs',
+    '.platform-back-link',
+    '.platform-notice'
+)) {
+    Assert-True ($theme -match [regex]::Escape($selector)) "共享主题缺少选择器: $selector"
+}
+
 foreach ($page in $businessPages) {
     $html = Get-Content -Raw -LiteralPath (Join-Path $repoRoot $page)
     Assert-True ($html -match '人工智能算法训练平台') "$page 未统一品牌名"

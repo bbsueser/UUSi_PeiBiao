@@ -1,0 +1,173 @@
+:root {
+    --platform-navy-950: #071521;
+    --platform-navy-900: #0c2233;
+    --platform-navy-800: #13364c;
+    --platform-cyan-600: #0785a8;
+    --platform-cyan-500: #0aa7c8;
+    --platform-cyan-100: #dff6fb;
+    --platform-surface: #ffffff;
+    --platform-canvas: #f3f7f9;
+    --platform-border: #d7e1e7;
+    --platform-text: #173042;
+    --platform-muted: #607583;
+    --platform-radius: 6px;
+    --platform-shadow: 0 4px 16px rgba(7, 31, 45, 0.08);
+    --platform-workspace-bar-height: 44px;
+}
+
+.platform-brand-mark {
+    width: 34px;
+    height: 34px;
+    display: inline-grid;
+    flex: 0 0 34px;
+    place-items: center;
+    color: #fff;
+    background: var(--platform-cyan-600);
+    border-radius: 5px;
+}
+
+.platform-brand-mark svg,
+.platform-icon svg,
+.platform-back-link svg,
+.platform-nav-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.platform-brand-mark svg {
+    fill: currentColor;
+    stroke: none;
+}
+
+.platform-workspace-bar {
+    min-height: var(--platform-workspace-bar-height);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    color: #eaf8fb;
+    background: var(--platform-navy-950);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    position: relative;
+    z-index: 500;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.platform-workspace-bar strong {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.platform-breadcrumbs {
+    color: #8fb2c0;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.platform-back-link {
+    margin-left: auto;
+    color: #d8f4f8;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.platform-back-link:hover,
+.platform-back-link:focus-visible {
+    color: #fff;
+}
+
+.platform-back-link:focus-visible,
+.platform-nav-link:focus-visible,
+[data-platform-notice]:focus-visible {
+    outline: 2px solid var(--platform-cyan-500);
+    outline-offset: 3px;
+}
+
+.platform-notice {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    z-index: 10000;
+    padding: 11px 16px;
+    color: #fff;
+    background: var(--platform-navy-800);
+    border-left: 3px solid var(--platform-cyan-500);
+    border-radius: var(--platform-radius);
+    box-shadow: var(--platform-shadow);
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.platform-notice.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.platform-nav-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 20px;
+}
+
+body[data-platform-shell="standard"] .top-nav {
+    background: var(--platform-navy-950);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 10px rgba(7, 31, 45, 0.12);
+}
+
+body[data-platform-shell="standard"] .nav-brand-text {
+    color: #f1fbfd;
+    letter-spacing: 0.01em;
+}
+
+body[data-platform-shell="standard"] .nav-link {
+    border-radius: var(--platform-radius);
+}
+
+body[data-platform-shell="standard"] .card,
+body[data-platform-shell="standard"] .stat-card,
+body[data-platform-shell="standard"] .course-card,
+body[data-platform-shell="standard"] .exam-card,
+body[data-platform-shell="standard"] .experiment-card {
+    border-radius: 8px;
+    box-shadow: var(--platform-shadow);
+}
+
+body[data-platform-shell="workspace"] .workspace,
+body[data-platform-shell="workspace"] .app-container {
+    min-height: calc(100vh - var(--platform-workspace-bar-height));
+}
+
+@media (max-width: 720px) {
+    .platform-workspace-bar {
+        flex-wrap: wrap;
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+
+    .platform-breadcrumbs {
+        order: 3;
+        flex-basis: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .platform-notice {
+        transition: none;
+    }
+}

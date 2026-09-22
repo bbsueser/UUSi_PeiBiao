@@ -49,12 +49,37 @@
         window.setTimeout(() => notice.remove(), 2600);
     }
 
+    function normalizeExistingBrand() {
+        document.querySelectorAll('.nav-brand').forEach((brand) => {
+            brand.innerHTML = `<span class="platform-brand-mark">${iconSvg('brand')}</span><span class="nav-brand-text">${PLATFORM_NAME}</span>`;
+        });
+    }
+
+    function renderWorkspaceBar() {
+        if (document.querySelector('.platform-workspace-bar')) return;
+
+        const bar = document.createElement('header');
+        bar.className = 'platform-workspace-bar';
+        bar.innerHTML = `
+            <span class="platform-brand-mark">${iconSvg('brand')}</span>
+            <strong>${PLATFORM_NAME}</strong>
+            <span class="platform-breadcrumbs">实验中心 / ${document.title.split(' - ')[0]}</span>
+            <a class="platform-back-link" href="experiment-detail.html">${iconSvg('back')} 返回实验详情</a>`;
+        document.body.prepend(bar);
+    }
+
     function initPlatformShell() {
         const pageId = document.body.dataset.platformPage;
         if (!pageId || document.documentElement.dataset.platformReady === 'true') return;
 
         document.documentElement.dataset.platformReady = 'true';
         document.documentElement.dataset.platformRole = getRole();
+
+        if (document.body.dataset.platformShell === 'workspace') {
+            renderWorkspaceBar();
+        } else {
+            normalizeExistingBrand();
+        }
     }
 
     window.PlatformShell = {

@@ -140,6 +140,12 @@ a:hover {
     color: white;
 }
 
+/* 统一品牌标志由 platform-theme.css 提供；旧容器仅保留兼容布局。 */
+body[data-platform-page] .nav-brand-icon {
+    display: none;
+    background: none;
+}
+
 .nav-brand-text {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
