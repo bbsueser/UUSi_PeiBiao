@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课程大厅 - 智联网综合实践平台</title>
+    <title>课程大厅 - 人工智能算法训练平台</title>
 
     <!-- 引入样式文件 -->
     <link rel="stylesheet" href="css/common.css">
@@ -194,13 +194,14 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body>
+<body data-platform-page="course-hall" data-platform-shell="standard">
     <!-- 顶部导航栏 -->
     <header class="top-nav">
         <div class="nav-brand">
             <div class="nav-brand-icon">E</div>
-            <span class="nav-brand-text">智联网综合实践平台</span>
+            <span class="nav-brand-text">人工智能算法训练平台</span>
         </div>
         <div class="nav-menu">
             <a href="dashboard.html" class="nav-link">首页</a>
@@ -701,5 +702,6 @@
         document.getElementById('majorFilter').addEventListener('change', searchCourses);
         document.getElementById('typeFilter').addEventListener('change', searchCourses);
     </script>
+    <script src="js/platform-shell.js"></script>
 </body>
 </html>

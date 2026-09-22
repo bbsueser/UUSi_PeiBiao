@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理员工作台 - 智联网综合实践平台</title>
+    <title>管理员工作台 - 人工智能算法训练平台</title>
     
     <!-- 引入样式文件 -->
     <link rel="stylesheet" href="css/common.css">
@@ -234,13 +234,14 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body>
+<body data-platform-page="admin-dashboard" data-platform-shell="standard">
     <!-- 顶部导航栏 -->
     <nav class="top-nav">
         <div class="nav-brand">
             <span class="brand-icon">🎓</span>
-            <span class="brand-text">智联网综合实践平台</span>
+            <span class="brand-text">人工智能算法训练平台</span>
         </div>
         <div class="nav-menu">
             <a href="admin-dashboard.html" class="nav-link active">工作台</a>
@@ -462,5 +463,6 @@
             });
         });
     </script>
+    <script src="js/platform-shell.js"></script>
 </body>
 </html>

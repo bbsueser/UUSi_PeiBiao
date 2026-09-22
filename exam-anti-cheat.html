@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>考试防作弊系统 - 智慧教学实验平台</title>
+    <title>考试防作弊系统 - 人工智能算法训练平台</title>
     <link rel="stylesheet" href="css/common.css">
     <style>
         /* 考试防作弊系统专属样式 */
@@ -774,8 +774,9 @@
             display: none;
         }
     </style>
+    <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body>
+<body data-platform-page="exam-anti-cheat" data-platform-shell="standard">
     <!-- Toast容器 -->
     <div class="toast-container" id="toastContainer"></div>
     
@@ -798,7 +799,7 @@
                 <div class="top-nav-logo">
                     <span class="logo-icon">📚</span>
                     <div class="logo-text">
-                        <div class="logo-title">智慧教育综合实训平台</div>
+                        <div class="logo-title">人工智能算法训练平台</div>
                         <div class="logo-subtitle">INTELLIGENT EDUCATION TRAINING PLATFORM</div>
                     </div>
                 </div>
@@ -929,7 +930,7 @@
             
             <!-- 底部Footer -->
             <div style="text-align: center; padding: 16px; color: #999; font-size: 12px; margin-top: 16px;">
-                智慧教育综合实训平台 统考安全终端 © 2026 同步安全环境已激活
+                人工智能算法训练平台 统考安全终端 © 2026 同步安全环境已激活
             </div>
         </div>
     </div>
@@ -942,7 +943,7 @@
                 <div class="top-nav-logo">
                     <span class="logo-icon">📚</span>
                     <div class="logo-text">
-                        <div class="logo-title">智慧教育综合实训平台</div>
+                        <div class="logo-title">人工智能算法训练平台</div>
                         <div class="logo-subtitle">INTELLIGENT EDUCATION TRAINING PLATFORM</div>
                     </div>
                 </div>
@@ -1049,7 +1050,7 @@
                 <div class="top-nav-logo">
                     <span class="logo-icon">📚</span>
                     <div class="logo-text">
-                        <div class="logo-title">智慧教育综合实训平台</div>
+                        <div class="logo-title">人工智能算法训练平台</div>
                         <div class="logo-subtitle">INTELLIGENT EDUCATION TRAINING PLATFORM</div>
                     </div>
                 </div>
@@ -1549,5 +1550,6 @@
         // 页面加载时显示入场确认页
         showPage('entryPage');
     </script>
+    <script src="js/platform-shell.js"></script>
 </body>
 </html>

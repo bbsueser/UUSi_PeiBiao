@@ -72,8 +72,10 @@ foreach ($page in $businessPages) {
     Assert-True ($html -match '人工智能算法训练平台') "$page 未统一品牌名"
     Assert-True ($html -match 'css/platform-theme\.css') "$page 未接入共享主题"
     if ($page -ne 'index.html') {
-        Assert-True ($html -match 'js/platform-shell\.js') "$page 未接入共享壳层"
+        $shellRefs = ([regex]::Matches($html, 'js/platform-shell\.js')).Count
+        Assert-True ($shellRefs -eq 1) "$page 的共享壳层引用次数不是 1"
         Assert-True ($html -match 'data-platform-page=') "$page 缺少页面元数据"
+        Assert-True ($html -match 'data-platform-shell="standard"|data-platform-shell="workspace"') "$page 未声明壳层类型"
     }
 }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>考试管理 - 智联网综合实践平台</title>
+    <title>考试管理 - 人工智能算法训练平台</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/variables.css">
     <style>
@@ -1188,14 +1188,15 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body>
+<body data-platform-page="exam-management" data-platform-shell="standard">
     <div class="exam-management-page">
         <!-- 顶部导航栏 -->
         <nav class="top-nav">
             <div class="nav-brand">
                 <div class="nav-brand-icon">E</div>
-                <span class="nav-brand-text">智联网综合实践平台</span>
+                <span class="nav-brand-text">人工智能算法训练平台</span>
             </div>
             <div class="nav-menu">
                 <a href="dashboard.html" class="nav-link">工作台</a>
@@ -2716,5 +2717,6 @@
             checkboxes.forEach(cb => cb.checked = this.checked);
         });
     </script>
+    <script src="js/platform-shell.js"></script>
 </body>
 </html>

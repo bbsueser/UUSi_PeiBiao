@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课程学习详情</title>
+    <title>课程学习详情 - 人工智能算法训练平台</title>
     <style>
         * {
             margin: 0;
@@ -836,8 +836,9 @@
             font-size: 14px;
         }
     </style>
+    <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body>
+<body data-platform-page="course-detail" data-platform-shell="standard">
     <!-- 顶部导航 -->
     <header class="header">
         <div class="header-left">
@@ -1342,7 +1343,7 @@ top_articles = articles[:10]</pre>
                             }
                         </style>
                     </head>
-                    <body>
+                    <body data-platform-page="course-detail" data-platform-shell="standard">
                         <div class="terminal">
                             <div><span class="prompt">user@django-lab:~$</span> <span class="command">python --version</span></div>
                             <div class="output">Python 3.11.5</div>
@@ -1490,5 +1491,6 @@ top_articles = articles[:10]</pre>
             }
         });
     </script>
+    <script src="js/platform-shell.js"></script>
 </body>
 </html>
