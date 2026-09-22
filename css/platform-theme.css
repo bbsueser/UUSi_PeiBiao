@@ -124,6 +124,29 @@
     flex: 0 0 20px;
 }
 
+.platform-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.platform-tool-link {
+    display: inline-flex;
+    align-items: center;
+    margin: 10px 16px;
+    padding: 8px 12px;
+    color: #eaf8fb;
+    background: var(--platform-navy-800);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--platform-radius);
+    text-decoration: none;
+}
+
+.platform-tool-link:hover {
+    color: #fff;
+    border-color: var(--platform-cyan-500);
+}
+
 body[data-platform-shell="standard"] .top-nav {
     background: var(--platform-navy-950);
     border-bottom-color: rgba(255, 255, 255, 0.1);
@@ -137,6 +160,14 @@ body[data-platform-shell="standard"] .nav-brand-text {
 
 body[data-platform-shell="standard"] .nav-link {
     border-radius: var(--platform-radius);
+    background-image: none;
+    box-shadow: none;
+}
+
+body[data-platform-shell="standard"] .nav-link.active,
+body[data-platform-shell="standard"] .sidebar-item.active {
+    color: var(--platform-cyan-500);
+    background: rgba(10, 167, 200, 0.12);
 }
 
 body[data-platform-shell="standard"] .card,

@@ -13,6 +13,38 @@
         'embedded': 'embedded-sim.html'
     };
 
+    const navigationByRole = {
+        student: [
+            ['dashboard.html', '工作台', 'home'],
+            ['course-hall.html', '课程', 'course'],
+            ['experiment-hall.html', '实验', 'experiment'],
+            ['exam-hall.html', '考试', 'exam'],
+            ['ai-assistant.html', 'AI 学伴', 'ai'],
+            ['ai-analysis.html', '学习分析', 'analysis'],
+            ['task-management.html', '任务', 'task'],
+            ['hardware-agent.html', '硬件智能体', 'hardware'],
+            ['profile.html', '个人中心', 'user']
+        ],
+        teacher: [
+            ['teacher-dashboard.html', '工作台', 'home'],
+            ['course-hall.html', '课程', 'course'],
+            ['task-management.html', '任务', 'task'],
+            ['exam-management.html', '考试', 'exam'],
+            ['experiment-hall.html', '实验', 'experiment'],
+            ['ai-analysis.html', '教学分析', 'analysis'],
+            ['ai-assistant.html', 'AI 助手', 'ai'],
+            ['profile.html', '个人中心', 'user']
+        ],
+        admin: [
+            ['admin-dashboard.html', '工作台', 'home'],
+            ['course-hall.html', '课程', 'course'],
+            ['experiment-hall.html', '实验', 'experiment'],
+            ['ai-analysis.html', '数据分析', 'analysis'],
+            ['ai-assistant.html', 'AI 助手', 'ai'],
+            ['profile.html', '个人中心', 'user']
+        ]
+    };
+
     const icons = {
         brand: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 25 14 7h4l8 18h-5l-1.5-4H12l-1.5 4H6Zm7.5-8h4.4L16 12l-2.5 5Z"/><path d="M24 7h4v11h-4z"/></svg>',
         home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9Z"/></svg>',
@@ -20,6 +52,10 @@
         experiment: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M8 15h8"/></svg>',
         exam: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v4h3v14H4V7h3V3Zm0 8h10M7 15h7"/></svg>',
         ai: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="14" rx="3"/><path d="M9 11h.01M15 11h.01M9 16h6M12 2v4"/></svg>',
+        analysis: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+        task: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10M7 9h10M7 14h7M4 4h.01M4 9h.01M4 14h.01M4 19h.01M7 19h5"/></svg>',
+        hardware: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M19 9h3M2 15h3M19 15h3"/></svg>',
+        user: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
         back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>'
     };
 
@@ -68,17 +104,66 @@
         document.body.prepend(bar);
     }
 
+    function currentFile() {
+        return window.location.pathname.split('/').pop() || 'dashboard.html';
+    }
+
+    function activeFile() {
+        const file = currentFile();
+        if (file === 'course-detail.html') return 'course-hall.html';
+        if (file === 'exam-anti-cheat.html') return 'exam-hall.html';
+        if (Object.values(experimentRoutes).includes(file) || file === 'blockchain-dev.html') {
+            return 'experiment-hall.html';
+        }
+        return file;
+    }
+
+    function navigationLink(item) {
+        const [url, label, icon] = item;
+        const active = activeFile() === url ? ' active' : '';
+        return `<a href="${url}" class="platform-nav-link nav-link${active}"><span class="platform-nav-icon">${iconSvg(icon)}</span><span>${label}</span></a>`;
+    }
+
+    function sidebarLink(item) {
+        const [url, label, icon] = item;
+        const active = activeFile() === url ? ' active' : '';
+        return `<a href="${url}" class="platform-nav-link sidebar-item${active}"><span class="platform-nav-icon">${iconSvg(icon)}</span><span>${label}</span></a>`;
+    }
+
+    function renderStandardNavigation(role) {
+        const items = navigationByRole[role] || navigationByRole.student;
+        document.querySelectorAll('.nav-menu').forEach((menu) => {
+            menu.innerHTML = items.slice(0, 5).map(navigationLink).join('');
+        });
+        if (document.body.dataset.platformNavigation !== 'local') {
+            document.querySelectorAll('.sidebar-menu').forEach((menu) => {
+                menu.innerHTML = items.map(sidebarLink).join('');
+            });
+        }
+    }
+
+    function normalizePageTitles() {
+        const decorativePrefix = /^[\s📚🔬📝🧠👤🎓🤖📊⚙️]+/u;
+        document.querySelectorAll('.page-title, main h1').forEach((heading) => {
+            const textNode = Array.from(heading.childNodes).find((node) => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim());
+            if (textNode) textNode.nodeValue = textNode.nodeValue.replace(decorativePrefix, '');
+        });
+    }
+
     function initPlatformShell() {
         const pageId = document.body.dataset.platformPage;
         if (!pageId || document.documentElement.dataset.platformReady === 'true') return;
 
         document.documentElement.dataset.platformReady = 'true';
-        document.documentElement.dataset.platformRole = getRole();
+        const role = getRole();
+        document.documentElement.dataset.platformRole = role;
 
         if (document.body.dataset.platformShell === 'workspace') {
             renderWorkspaceBar();
         } else {
             normalizeExistingBrand();
+            renderStandardNavigation(role);
+            normalizePageTitles();
         }
 
         document.addEventListener('click', (event) => {

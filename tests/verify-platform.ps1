@@ -106,6 +106,11 @@ foreach ($signature in @(
 )) {
     Assert-True ($shell -match [regex]::Escape($signature)) "共享壳层缺少接口: $signature"
 }
+$navTemplateMatch = [regex]::Match($shell, 'const navigationByRole\s*=\s*\{[\s\S]*?\n\s*\};')
+Assert-True $navTemplateMatch.Success '缺少统一角色导航配置'
+if ($navTemplateMatch.Success) {
+    Assert-True ($navTemplateMatch.Value -notmatch '[📊📚🔬📝🤖📈📋🔌👤🎓]') '正式导航仍包含 Emoji'
+}
 foreach ($pair in $expectedRoutes.GetEnumerator()) {
     $routeLiteral = "'$($pair.Key)': '$($pair.Value)'"
     Assert-True ($shell -match [regex]::Escape($routeLiteral)) "实验路由缺失: $($pair.Key)"
