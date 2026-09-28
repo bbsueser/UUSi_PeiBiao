@@ -1,3 +1,6 @@
+# 依赖（体积大，不进仓库；clone 后 npm install 安装）
+node_modules/
+
 # OS
 Thumbs.db
 .DS_Store
@@ -6,8 +9,18 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Logs
+# IDE / 工具本地数据
+.codebuddy/
+
+# 日志
 *.log
 
-# Temp
+# 临时打包目录
+_pkg_tmp/
+_pkg_tmp_yf/
+
+# 临时文件
 *.tmp
+
+# 交付压缩包
+*.zip

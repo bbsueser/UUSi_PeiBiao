@@ -1,0 +1,8 @@
+{
+  "name": "人工智能算法训练平台",
+  "description": "基于人工智能算法训练平台的工业级模拟仿真实训环境，支撑多能级仿真、全真容器沙箱与考试研判综合教学实操大盘。",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

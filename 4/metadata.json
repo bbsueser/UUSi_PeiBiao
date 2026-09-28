@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Smart Teaching Experimental Platform",
+  "description": "Professional web platform featuring integrated course, laboratory, and examination modules for a seamless browser-based educational experience.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
