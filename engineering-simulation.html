@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工程虚拟仿真 - 人工智能算法训练平台</title>
+    <title>工程虚拟仿真 - 星朴XP-AI001人工智能算法训练平台</title>
     <style>
         :root {
             --primary: #409eff;
@@ -176,7 +176,7 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             background: white;
-            font-size: 18px;
+            color: var(--text-primary);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -185,8 +185,15 @@
             position: relative;
         }
         
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+        
         .icon-btn:hover {
             border-color: var(--primary);
+            color: var(--primary);
             background: rgba(64, 158, 255, 0.1);
             transform: translateY(-1px);
         }
@@ -514,6 +521,14 @@
             font-size: 14px;
         }
 
+        .tree-item-img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
         .tree-item-address {
             font-size: 11px;
             color: var(--text-secondary);
@@ -565,7 +580,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 3; /* 连线层在设备层之上 */
+            z-index: 1; /* 连线层在设备层之下，避免连线path遮挡端口导致无法拖拽连线 */
             pointer-events: none; /* SVG容器不阻挡点击 */
         }
 
@@ -628,6 +643,21 @@
 
         .device-icon {
             font-size: 16px;
+        }
+
+        .device-icon-img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            border-radius: 3px;
+            vertical-align: middle;
+        }
+
+        .device-visual-img {
+            width: 46px;
+            height: 46px;
+            object-fit: contain;
+            border-radius: 4px;
         }
 
         .device-name {
@@ -765,6 +795,7 @@
             cursor: crosshair;
             transition: transform 0.2s;
             position: relative;
+            z-index: 10; /* 端口位于连线层之上，避免连线path遮挡导致无法按下 */
         }
 
         .port:hover {
@@ -798,6 +829,20 @@
 
         .port:hover::after {
             opacity: 1;
+        }
+
+        /* 排错演示需要持续显示端口名称，避免演示时接错相邻端口。 */
+        .device-component.troubleshooting-device .port::after {
+            top: 20px;
+            padding: 1px 3px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--text-regular);
+            opacity: 1;
+        }
+
+        .device-component.troubleshooting-device {
+            margin-bottom: 18px;
         }
 
         .port.connected {
@@ -1710,8 +1755,12 @@
         }
 
         .quick-prompts {
-            padding: 12px 16px;
+            padding: 10px 16px;
             border-top: 1px solid var(--border-color);
+        }
+
+        .quick-prompts.hidden {
+            display: none;
         }
 
         .quick-prompts-title {
@@ -2438,18 +2487,30 @@
                 ⚪ 模拟实验
             </button>
             
-            <button class="icon-btn" onclick="toggleAIPanel()">
-                🤖
+            <button class="icon-btn" onclick="toggleAIPanel()" aria-label="虚拟仿真助手">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="10" rx="2"/>
+                    <circle cx="12" cy="5" r="2"/>
+                    <path d="M12 7v4"/>
+                    <line x1="8" y1="16" x2="8" y2="16"/>
+                    <line x1="16" y1="16" x2="16" y2="16"/>
+                </svg>
                 <span class="btn-tooltip">虚拟仿真助手</span>
             </button>
             
-            <button class="icon-btn" id="cloudBtn" onclick="toggleCloudPanel()">
-                ☁️
+            <button class="icon-btn" id="cloudBtn" onclick="toggleCloudPanel()" aria-label="云平台">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 10h-1.26A6 6 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                </svg>
                 <span class="btn-tooltip">云平台</span>
             </button>
             
-            <button class="icon-btn" id="desktopBtn" onclick="showDesktopAssistantModal()">
-                💻
+            <button class="icon-btn" id="desktopBtn" onclick="showDesktopAssistantModal()" aria-label="桌面助手">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
                 <span class="btn-tooltip">桌面助手</span>
             </button>
             
@@ -2576,6 +2637,12 @@
                             <span class="quick-prompt" onclick="sendQuickPrompt('检查当前连线错误')">检查当前连线错误</span>
                             <span class="quick-prompt" onclick="sendQuickPrompt('如何连接传感器？')">如何连接传感器？</span>
                             <span class="quick-prompt" onclick="sendQuickPrompt('创建智慧温室工程')">创建智慧温室工程</span>
+                            <span class="quick-prompt" onclick="sendQuickPrompt('电压不匹配如何排查')">电压不匹配如何排查</span>
+                            <span class="quick-prompt" onclick="sendQuickPrompt('传感器读数偏差大怎么办')">传感器读数偏差大怎么办</span>
+                            <span class="quick-prompt" onclick="sendQuickPrompt('RS485总线通信不稳定')">RS485总线通信不稳定</span>
+                            <span class="quick-prompt" onclick="sendQuickPrompt('网关频繁掉线怎么定位')">网关频繁掉线怎么定位</span>
+                            <span class="quick-prompt" onclick="sendQuickPrompt('执行器收到指令不动作')">执行器收到指令不动作</span>
+                            <span class="quick-prompt" onclick="sendQuickPrompt('采集器地址码冲突怎么办')">采集器地址码冲突怎么办</span>
                         </div>
                     </div>
                     
@@ -2606,21 +2673,6 @@
             <div class="property-body" id="propertyBody">
                 <!-- 属性内容将通过JS生成 -->
             </div>
-        </div>
-    </div>
-
-    <!-- 消息面板 -->
-    <div class="message-panel" id="messagePanel">
-        <div class="message-panel-header">
-            <span class="message-panel-title">📨 设备通信消息</span>
-            <div class="message-panel-actions">
-                <button class="message-panel-btn" onclick="pauseMessages()">暂停</button>
-                <button class="message-panel-btn" onclick="clearMessages()">清空</button>
-                <button class="message-panel-btn" onclick="toggleMessagePanel()">最小化</button>
-            </div>
-        </div>
-        <div class="message-list" id="messageList">
-            <!-- 消息将通过JS生成 -->
         </div>
     </div>
 
@@ -2657,6 +2709,11 @@
                         <option value="humidity">湿度 (%)</option>
                         <option value="light">光照 (Lux)</option>
                         <option value="co2">CO2 (ppm)</option>
+                        <option value="gas">可燃气/燃气泄漏 (ppm)</option>
+                        <option value="air_quality">空气质量 (AQI)</option>
+                        <option value="flame">火焰检测 (有/无)</option>
+                        <option value="water">水浸检测 (有/无)</option>
+                        <option value="alarm">声光报警 (开/关)</option>
                         <option value="pressure">压力 (Pa)</option>
                         <option value="flow">流量 (L/min)</option>
                         <option value="level">液位 (cm)</option>
@@ -2735,6 +2792,11 @@
             <div class="cloud-status">
                 <div class="cloud-status-indicator" id="cloudStatusIndicator"></div>
                 <span id="cloudStatusText">云平台连接状态: 等待连接</span>
+            </div>
+            <div style="margin: 10px 0 14px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 8px; background: rgba(255,255,255,.07); font-size: 12px; line-height: 1.8;">
+                <div id="cloudSyncDetail">遥测同步：尚未启动</div>
+                <div id="cloudCommandDetail">最近指令：暂无</div>
+                <button class="cloud-control-btn on" style="width: 100%; margin-top: 8px;" onclick="window.open('industry-cloud.html', 'industry-cloud-demo')">打开行业云控制台</button>
             </div>
             
             <div id="cloudDeviceList">
@@ -2824,6 +2886,7 @@
         <div class="message-panel-header">
             <span class="message-panel-title">📨 设备通信消息</span>
             <div class="message-panel-controls">
+                <button class="message-panel-btn" id="messagePauseBtn" onclick="pauseMessages()" title="暂停消息">暂停</button>
                 <button class="message-panel-btn" onclick="clearMessages()" title="清空消息">🗑️</button>
                 <button class="message-panel-btn" onclick="toggleMessagePanel()" title="最小化">▼</button>
             </div>
@@ -2835,6 +2898,9 @@
         </div>
     </div>
 
+    <script src="js/wiring-utils.js"></script>
+    <script src="js/troubleshooting-scenario.js"></script>
+    <script src="js/demo-cloud-bridge.js"></script>
     <script>
         // ==================== 数据定义 ====================
         const deviceLibrary = {
@@ -2971,6 +3037,27 @@
                 { id: "wgps_tracker", name: "GPS定位传感器", icon: "📍", ports: [{type:"gps", color:"#67c23a", label:"GPS"}], address: null },
                 { id: "wbeacon", name: "BLE Beacon", icon: "📡", ports: [{type:"ble", color:"#409eff", label:"BLE"}], address: null },
                 { id: "wtag", name: "RFID标签", icon: "🏷️", ports: [{type:"rfid", color:"#e6a23c", label:"RFID"}], address: null },
+                { id: "wairq_zigbee", name: "ZigBee空气质量传感器", icon: "🌬️", ports: [{type:"zigbee", color:"#67c23a", label:"ZB"}], address: null },
+                { id: "wairq_lora", name: "LoRa空气质量传感器", icon: "🌬️", ports: [{type:"lora", color:"#e6a23c", label:"LoRa"}], address: null },
+                { id: "wairq_wifi", name: "WiFi空气质量传感器", icon: "🌬️", ports: [{type:"wifi", color:"#67c23a", label:"WIFI"}], address: null },
+                { id: "wflame_zigbee", name: "ZigBee火焰传感器", icon: "🧯", ports: [{type:"zigbee", color:"#67c23a", label:"ZB"}], address: null },
+                { id: "wflame_lora", name: "LoRa火焰传感器", icon: "🧯", ports: [{type:"lora", color:"#e6a23c", label:"LoRa"}], address: null },
+                { id: "wflame_wifi", name: "WiFi火焰传感器", icon: "🧯", ports: [{type:"wifi", color:"#67c23a", label:"WIFI"}], address: null },
+                { id: "wcombgas_zigbee", name: "ZigBee可燃气体传感器", icon: "⛽", ports: [{type:"zigbee", color:"#67c23a", label:"ZB"}], address: null },
+                { id: "wcombgas_lora", name: "LoRa可燃气体传感器", icon: "⛽", ports: [{type:"lora", color:"#e6a23c", label:"LoRa"}], address: null },
+                { id: "wcombgas_wifi", name: "WiFi可燃气体传感器", icon: "⛽", ports: [{type:"wifi", color:"#67c23a", label:"WIFI"}], address: null },
+                { id: "wgasleak_zigbee", name: "ZigBee燃气泄漏传感器", icon: "🛢️", ports: [{type:"zigbee", color:"#67c23a", label:"ZB"}], address: null },
+                { id: "wgasleak_lora", name: "LoRa燃气泄漏传感器", icon: "🛢️", ports: [{type:"lora", color:"#e6a23c", label:"LoRa"}], address: null },
+                { id: "wgasleak_wifi", name: "WiFi燃气泄漏传感器", icon: "🛢️", ports: [{type:"wifi", color:"#67c23a", label:"WIFI"}], address: null },
+                { id: "walarm_zigbee", name: "ZigBee声光报警器", icon: "🚨", ports: [{type:"zigbee", color:"#67c23a", label:"ZB"}], address: null },
+                { id: "walarm_lora", name: "LoRa声光报警器", icon: "🚨", ports: [{type:"lora", color:"#e6a23c", label:"LoRa"}], address: null },
+                { id: "walarm_wifi", name: "WiFi声光报警器", icon: "🚨", ports: [{type:"wifi", color:"#67c23a", label:"WIFI"}], address: null },
+                { id: "wwater_zigbee", name: "ZigBee水浸探测器", icon: "💦", ports: [{type:"zigbee", color:"#67c23a", label:"ZB"}], address: null },
+                { id: "wwater_lora", name: "LoRa水浸探测器", icon: "💦", ports: [{type:"lora", color:"#e6a23c", label:"LoRa"}], address: null },
+                { id: "wwater_wifi", name: "WiFi水浸探测器", icon: "💦", ports: [{type:"wifi", color:"#67c23a", label:"WIFI"}], address: null },
+                { id: "whuman_zigbee", name: "ZigBee人体传感器", icon: "👤", ports: [{type:"zigbee", color:"#67c23a", label:"ZB"}], address: null },
+                { id: "whuman_lora", name: "LoRa人体传感器", icon: "👤", ports: [{type:"lora", color:"#e6a23c", label:"LoRa"}], address: null },
+                { id: "whuman_wifi", name: "WiFi人体传感器", icon: "👤", ports: [{type:"wifi", color:"#67c23a", label:"WIFI"}], address: null },
             ],
             "继电器": [
                 { id: "relay_1ch", name: "单路继电器", icon: "⚡", ports: [{type:"ctrl", color:"#409eff", label:"CTRL"}, {type:"out", color:"#f56c6c", label:"OUT"}], address: null },
@@ -3071,6 +3158,30 @@
             ],
         };
 
+        /* 无线传感器实物图（与招标要求的 11 类无线传感器一一对应） */
+        const wirelessSensorImages = [
+            { match: "温度传感器", image: "images/sensors/temp-humidity.png" },
+            { match: "湿度传感器", image: "images/sensors/temp-humidity.png" },
+            { match: "光照传感器", image: "images/sensors/light.png" },
+            { match: "烟雾传感器", image: "images/sensors/smoke.png" },
+            { match: "门磁传感器", image: "images/sensors/door-magnet.png" },
+            { match: "人体传感器", image: "images/sensors/human-presence.png" },
+            { match: "水浸探测器", image: "images/sensors/water-immersion.png" },
+            { match: "空气质量传感器", image: "images/sensors/air-quality.png" },
+            { match: "火焰传感器", image: "images/sensors/flame.png" },
+            { match: "可燃气体传感器", image: "images/sensors/combustible-gas.png" },
+            { match: "燃气泄漏传感器", image: "images/sensors/gas-leak.png" },
+            { match: "声光报警器", image: "images/sensors/sound-light-alarm.png" }
+        ];
+
+        /* 仅无线传感器（id 以 w 开头）返回实物图 */
+        function getSensorImage(device) {
+            const key = device.templateId || device.id || "";
+            if (!key.startsWith("w")) return null;
+            const hit = wirelessSensorImages.find(item => (device.name || "").includes(item.match));
+            return hit ? hit.image : null;
+        }
+
         const scenePresets = {
             "智慧牧场": [
                 // 左侧传感器区
@@ -3089,11 +3200,28 @@
             ],
             "工程排错演示": [
                 // 错误场景：设备连接错误，用于演示工程排错功能
-                { deviceId: "temp_pt100", x: 80, y: 80, name: "温度传感器" },
-                { deviceId: "humi_capacitive", x: 200, y: 80, name: "湿度传感器" },
-                { deviceId: "gw_chipstack", x: 300, y: 200, name: "ChipStack网关" },
-                { deviceId: "load_fan", x: 80, y: 320, name: "通风风扇" },
-                { deviceId: "power_5v", x: 400, y: 320, name: "5V电源" }, // 错误：电压不足
+                { deviceId: "temp_pt100", x: 60, y: 70, name: "温度传感器" },
+                { deviceId: "humi_capacitive", x: 60, y: 230, name: "湿度传感器" },
+                {
+                    deviceId: "gw_chipstack", x: 310, y: 140, name: "ChipStack网关",
+                    ports: [
+                        { type: "data", role: "temperature", color: "#409eff", label: "温度" },
+                        { type: "data", role: "humidity", color: "#409eff", label: "湿度" },
+                        { type: "ctrl", role: "actuator", color: "#409eff", label: "风扇" },
+                        { type: "power", role: "power", color: "#f56c6c", label: "VCC" },
+                        { type: "gnd", color: "#303133", label: "GND" }
+                    ]
+                },
+                { deviceId: "load_fan", x: 60, y: 390, name: "通风风扇" },
+                { deviceId: "power_5v", x: 530, y: 390, name: "5V电源" }, // 错误：电压不足
+                {
+                    deviceId: "power_12v", x: 530, y: 70, name: "12V电源",
+                    ports: [
+                        { type: "vcc", role: "gateway-power", color: "#f56c6c", label: "网关+" },
+                        { type: "vcc", role: "fan-power", color: "#f56c6c", label: "风扇+" },
+                        { type: "gnd", color: "#303133", label: "GND-" }
+                    ]
+                }, // 用两个独立正极端口修复网关与风扇供电，避免线路重叠
             ],
             "智慧家居": [
                 { deviceId: "load_led", x: 100, y: 100, name: "客厅灯" },
@@ -3130,6 +3258,12 @@
             "创建一个智慧温室": `正在为您创建智慧温室工程...\n\n✅ 已添加：温度传感器 x3\n✅ 已添加：湿度传感器 x2\n✅ 已添加：光照传感器 x1\n✅ 已添加：CO2传感器 x1\n✅ 已添加：通风风扇 x2\n✅ 已添加：灌溉电磁阀 x1\n✅ 已连接：采集器 -> 网关\n\n工程创建完成！`,
             "如何连接传感器": `传感器连接步骤：\n\n1. 将传感器的DATA端口连接到采集器的485-A端口\n2. 将传感器的VCC端口连接到电源的正极\n3. 将传感器的GND端口连接到电源的负极\n4. 配置采集器的地址码和波特率\n\n注意事项：\n- 确保电源电压匹配传感器要求\n- 485总线需要终端电阻\n- 地址码不能冲突`,
             "什么是物联网": `物联网（IoT）是指通过信息传感设备，按约定的协议，将任何物品与互联网相连接，进行信息交换和通信，以实现智能化识别、定位、跟踪、监控和管理的一种网络。\n\n在工程虚拟仿真中，物联网设备包括：\n- 传感器：采集环境数据\n- 采集器：汇聚传感器数据\n- 网关：连接互联网\n- 执行器：执行控制命令`,
+            "电压不匹配如何排查": `⚡ 电压匹配排查指引\n\n📌 典型现象\n· 通风风扇 / 继电器接入后不转，或转速明显偏低\n· 网关通电后反复重启，指示灯闪烁异常\n· 执行器短时动作后发烫，长时间运行直接停机\n\n❌ 本演示场景中的具体问题\n【通风风扇】当前接入 5V 电源，而风扇额定电压为 12V\n→ 端电压仅为额定值的 42%，驱动电流不足，无法正常启动\n\n🔍 排查步骤\n1. 查看电源铭牌：本场景电源为 5V，需替换为 12V\n2. 用万用表测量执行器 VCC 与 GND 之间的实际电压\n3. 对照设备手册核定额定电压及允许波动范围（一般 ±5%）\n4. 检查线路压降：线径过细或线缆过长会造成额外压降\n\n✅ 解决方案\n· 将 5V 电源更换为 12V 电源（设备库 → 电源类 → 12V Power Supply）\n· 重新接线：12V电源 VCC+ → 通风风扇 VCC\n· 大功率执行器单独供电，避免与传感器共用同一路电源\n· 更换后重新开启仿真，确认风扇正常启动\n\n💡 记忆要点：传感器多用 5V/3.3V，执行器（风扇、水泵、电磁阀）多用 12V/24V`,
+            "传感器读数偏差大怎么办": `🌡️ 传感器读数偏差排查指引\n\n📌 典型现象\n· 温度读数恒定为 -40℃ 或 85℃，明显超出量程\n· 湿度长时间停在 0%RH 或 100%RH 不变\n· 同一环境下两只同类传感器读数相差 5 个单位以上\n\n❌ 本演示场景中的具体问题\n【湿度传感器】DATA 端口未接入总线，采集端读到空值\n【温度传感器】DATA 端口直连网关，未经过采集器，地址码无法被解析\n\n🔍 排查步骤\n1. 确认 DATA 端口已连接：传感器 → 采集器 485-A\n2. 测量 VCC 供电电压是否符合额定值\n3. 核对传感器量程与环境实际范围是否匹配\n4. 检查 485 总线的 A/B 线是否接反\n\n✅ 解决方案\n· 温度传感器 DATA 改接采集器 485-A，不要直连网关\n· 湿度传感器补齐 VCC / GND / DATA 三根线\n· 采集器侧设置正确的地址码与波特率（如 9600-8-N-1）\n· 校准：用标准仪器对比，通过偏移量补偿修正读数\n\n💡 记忆要点：先看供电，再看接线，最后才是标定`,
+            "RS485总线通信不稳定": `🔌 RS485 总线通信排查指引\n\n📌 典型现象\n· 数据时有时无，遥测序号跳变或断流\n· 多只传感器轮询时只有部分设备响应\n· 通信距离超过 20 米后误码率明显升高\n\n❌ 本演示场景中的具体问题\n【温度传感器】DATA 直连网关，未挂到采集器的 485 总线，轮询无法寻址\n总线末端缺少 120Ω 终端电阻，长线信号反射导致波形畸变\n\n🔍 排查步骤\n1. 确认所有传感器都挂在同一条 485 总线上（菊花链，不要星型分支）\n2. 检查总线首末两端是否各有一个 120Ω 终端电阻\n3. 核对波特率、数据位、校验位与采集器是否完全一致\n4. 检查 A / B 极性是否接反\n\n✅ 解决方案\n· 温度传感器改接：DATA → 采集器 485-A\n· 总线首末端各加 120Ω 终端电阻\n· 统一波特率 9600，数据位 8，无校验，停止位 1\n· 总线长度控制在 1200 米以内，节点数不超过 32 个\n· 远离变频器等强干扰源，使用屏蔽双绞线并单端接地\n\n💡 记忆要点：485 三要素 —— 终端电阻、统一波特率、菊花链拓扑`,
+            "网关频繁掉线怎么定位": `📡 网关掉线排查指引\n\n📌 典型现象\n· 网关指示灯由常亮变为闪烁或熄灭\n· 云平台连接状态在"已连接"与"等待连接"之间反复跳变\n· 遥测上送间隔由 2 秒变为 10 秒以上甚至中断\n\n❌ 本演示场景中的具体问题\n【ChipStack网关】VCC 端口未接入电源，仅靠数据线无法维持工作\n网关掉电后重新上电，导致 MQTT 会话反复重建\n\n🔍 排查步骤\n1. 确认网关 VCC 已接电源正极、GND 已接负极\n2. 测量网关供电电压是否稳定在额定值\n3. 查看网关上送日志中是否出现重连记录\n4. 检查采集器与网关之间的数据线是否松动\n\n✅ 解决方案\n· 补齐连线：12V电源 VCC+ → ChipStack网关 VCC\n· 网关单独供电，避免与执行器共用造成瞬时压降\n· 配置 MQTT 保活心跳（KeepAlive 60s）与断线自动重连\n· 中心侧订阅遗嘱消息（LWT），实现掉线自动告警\n\n💡 记忆要点：网关掉线九成是供电问题，先量电压再看信号`,
+            "执行器收到指令不动作": `⚙️ 执行器不动作排查指引\n\n📌 典型现象\n· 云平台下发开启指令后，风扇 / 水泵无任何响应\n· 执行器有嗡嗡声但不转动\n· 回执状态一直是 pending，收不到 acknowledge\n\n❌ 本演示场景中的具体问题\n【通风风扇】CTRL 控制线已接网关，但供电取自 5V 电源\n电压不足导致线圈吸合无力，指令下发后无法实际动作\n\n🔍 排查步骤\n1. 确认 CTRL 端口已连接到网关的控制输出\n2. 确认 VCC 供电电压与执行器额定电压一致\n3. 测量驱动电流是否达到执行器启动电流\n4. 查看仿真侧是否弹出 MQTT 下行日志\n\n✅ 解决方案\n· 更换电源：5V电源 → 12V电源，重新接入风扇 VCC\n· 保持 CTRL → 网关 控制端口连接不变\n· 大电流执行器加装继电器或驱动模块，避免网关直驱\n· 设备收到下行指令后回执 acknowledge，形成双向闭环\n\n💡 记忆要点：执行器不动作 = 控制线断、电压不足、驱动能力不够`,
+            "采集器地址码冲突怎么办": `🔢 采集器地址码排查指引\n\n📌 典型现象\n· 多只传感器数据互相覆盖，温度值跳动异常\n· 采集器轮询时部分从站始终无应答\n· 新增设备后原有设备突然失联\n\n❌ 本演示场景中的具体问题\n【温度传感器】与【湿度传感器】未经采集器统一编址\n若两站地址码相同，总线上会同时应答，造成数据冲撞\n\n🔍 排查步骤\n1. 列出总线上所有从站的地址码，检查是否唯一\n2. 确认地址码在采集器支持范围内（通常 1~247）\n3. 检查是否存在地址码为 0 的广播站干扰通信\n4. 逐个断开从站，观察数据是否恢复稳定\n\n✅ 解决方案\n· 为每只传感器分配唯一地址码，建议按功能区段规划\n  温区 1~20 / 湿区 21~40 / 光照 41~60 / 执行器 61~80\n· 修改地址码后断电重启采集器，使其重新枚举\n· 建立设备地址台账，新增设备前先查询已用地址\n· 采集器配置合理的轮询周期与超时重试次数\n\n💡 记忆要点：地址码唯一是 485 总线正常通信的前提`,
             "默认回复": `您好！我是虚拟仿真AI助手，我可以帮助您：\n\n1. 🔧 工程排错 - 检查连线错误\n2. 🏗️ 自然语言建工程 - 描述需求创建工程\n3. ❓ 设备问答 - 解答设备相关问题\n4. 🔌 连线指导 - 指导正确连接设备\n\n请问有什么可以帮助您的？`,
         };
 
@@ -3142,6 +3276,10 @@
         let isSimulationRunning = false;
         let isValidationEnabled = false; // 初始关闭连线验证
         let currentScene = "自定义场景";
+        const industryCloudBridge = DemoCloudBridge.getDemoCloudBridge();
+        let industryCloudTimer = null;
+        let lastIndustryCommandId = null;
+        let greenhouseTelemetry = { temperature: 26.4, humidity: 68.0, light: 842, door: '关闭' };
         let zoomLevel = 100;
         let messageInterval = null;
         let deviceIdCounter = 0;
@@ -3153,6 +3291,7 @@
         let wireStartPort = null;
         let isDrawingWire = false;
         let tempWire = null;
+        let activeWireMouseUpHandler = null;
 
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function() {
@@ -3399,8 +3538,11 @@
                     const item = document.createElement('div');
                     item.className = 'tree-item';
                     item.draggable = true;
+                    const sensorImage = getSensorImage(device);
                     item.innerHTML = `
-                        <span class="tree-item-icon">${device.icon}</span>
+                        ${sensorImage
+                            ? `<img class="tree-item-img" src="${sensorImage}" alt="${device.name}">`
+                            : `<span class="tree-item-icon">${device.icon}</span>`}
                         <span>${device.name}</span>
                         ${device.address ? `<span class="tree-item-address">${device.address}</span>` : ''}
                     `;
@@ -3546,7 +3688,7 @@
         }
 
         // ==================== 设备操作 ====================
-        function addDeviceToCanvas(deviceTemplate, x, y, name = null) {
+        function addDeviceToCanvas(deviceTemplate, x, y, name = null, ports = null) {
             console.log('addDeviceToCanvas 被调用:', { templateId: deviceTemplate.id, name, x, y });
             
             const device = {
@@ -3554,7 +3696,7 @@
                 templateId: deviceTemplate.id,
                 name: name || deviceTemplate.name,
                 icon: deviceTemplate.icon,
-                ports: deviceTemplate.ports,
+                ports: (ports || deviceTemplate.ports).map(port => ({ ...port })),
                 address: deviceTemplate.address,
                 x: x,
                 y: y,
@@ -3572,6 +3714,7 @@
             
             const div = document.createElement('div');
             div.className = 'device-component';
+            if (currentScene === '工程排错演示') div.classList.add('troubleshooting-device');
             div.id = device.id;
             div.style.left = device.x + 'px';
             div.style.top = device.y + 'px';
@@ -3582,6 +3725,7 @@
             if (device.templateId.includes('gateway')) visualClass = 'gateway';
             if (device.templateId.includes('collector')) visualClass = 'collector';
             
+            const sensorImage = getSensorImage(device);
             let visualContent = '';
             if (device.templateId.includes('gateway') || device.templateId.includes('collector')) {
                 visualContent = `
@@ -3592,10 +3736,12 @@
             } else if (device.templateId.includes('power')) {
                 visualContent = `
                     <div style="font-size: 24px;">🔌</div>
-                    <div style="font-size: 10px; margin-top: 4px;">${device.name.includes('12V') ? '12V' : '24V'}</div>
+                    <div style="font-size: 10px; margin-top: 4px;">${device.name.replace('电源', '')}</div>
                 `;
             } else {
-                visualContent = `<div style="font-size: 28px;">${device.icon}</div>`;
+                visualContent = sensorImage
+                    ? `<img class="device-visual-img" src="${sensorImage}" alt="${device.name}">`
+                    : `<div style="font-size: 28px;">${device.icon}</div>`;
             }
             
             let portsHTML = '';
@@ -3608,7 +3754,7 @@
             div.innerHTML = `
                 <div class="sensor-value" id="value_${device.id}">--</div>
                 <div class="device-header">
-                    <span class="device-icon">${device.icon}</span>
+                    <span class="device-icon">${sensorImage ? `<img class="device-icon-img" src="${sensorImage}" alt="">` : device.icon}</span>
                     <span class="device-name">${device.name}</span>
                     ${device.address ? `<span class="device-address">${device.address}</span>` : ''}
                 </div>
@@ -3740,6 +3886,11 @@
         // ==================== 连线操作 ====================
         function onPortMouseDown(e, device, portIndex) {
             e.stopPropagation();
+            // 防止上一次 mouseup 丢失导致残留的旧监听器被再次触发（其闭包记录的是旧设备，会把新线起点连错设备）
+            if (activeWireMouseUpHandler) {
+                document.removeEventListener('mouseup', activeWireMouseUpHandler, true);
+                activeWireMouseUpHandler = null;
+            }
             isDrawingWire = true;
             wireStartPort = { device, portIndex };
             
@@ -3770,17 +3921,13 @@
             const handleWireMouseUp = (e) => {
                 if (!isDrawingWire) return;
                 
-                // 使用elementsFromPoint获取鼠标位置下的所有元素
-                const elements = document.elementsFromPoint(e.clientX, e.clientY);
-                
-                // 查找第一个.port元素
-                let targetPort = null;
-                for (const el of elements) {
-                    if (el.classList.contains('port')) {
-                        targetPort = el;
-                        break;
-                    }
-                }
+                // 端口只有 16px，释放点稍有偏差时吸附到 24px 内最近的其他设备端口。
+                const targetPort = WiringUtils.findTargetPort(
+                    document.querySelectorAll('.port'),
+                    e.clientX,
+                    e.clientY,
+                    { snapDistance: 24, excludeDeviceId: device.id }
+                );
                 
                 if (targetPort) {
                     const targetDeviceId = targetPort.dataset.deviceId;
@@ -3805,9 +3952,11 @@
                 }
                 isDrawingWire = false;
                 wireStartPort = null;
-                document.removeEventListener('mouseup', handleWireMouseUp);
+                document.removeEventListener('mouseup', handleWireMouseUp, true);
+                activeWireMouseUpHandler = null;
             };
             
+            activeWireMouseUpHandler = handleWireMouseUp;
             document.addEventListener('mouseup', handleWireMouseUp, true);
         }
 
@@ -3824,6 +3973,8 @@
             wires.push(wire);
             renderWire(wire);
             updateValidation();
+            // 连线变化后实时检测排错进展
+            notifyWireChangedForTroubleshoot();
         }
 
         function renderWire(wire) {
@@ -3970,6 +4121,8 @@
             
             // 更新验证面板
             updateValidation();
+            // 连线变化后实时检测排错进展
+            notifyWireChangedForTroubleshoot();
         }
 
         // ==================== 右键菜单 ====================
@@ -4250,12 +4403,39 @@
             dataSimIntervals = {};
         }
 
+        function startSimulation() {
+            if (!selectedDevice) {
+                showAlert('请先选择一个传感器设备');
+                return;
+            }
+            if (!deviceDataSimConfigs[selectedDevice.id]) {
+                showDataSimConfig();
+                return;
+            }
+            startDataSimulation(selectedDevice.id);
+            showAlert(`${selectedDevice.name} 数据模拟已启动`);
+        }
+
+        function stopSimulation() {
+            if (!selectedDevice) {
+                showAlert('请先选择一个传感器设备');
+                return;
+            }
+            stopDataSimulation(selectedDevice.id);
+            showAlert(`${selectedDevice.name} 数据模拟已停止`);
+        }
+
         function getUnitByDataType(dataType) {
             const units = {
                 'temperature': '°C',
                 'humidity': '%',
                 'light': 'Lux',
                 'co2': 'ppm',
+                'gas': 'ppm',
+                'air_quality': 'AQI',
+                'flame': '',
+                'water': '',
+                'alarm': '',
                 'pressure': 'Pa',
                 'flow': 'L/min',
                 'level': 'cm',
@@ -4418,12 +4598,26 @@
             const indicator = document.getElementById('cloudStatusIndicator');
             const statusText = document.getElementById('cloudStatusText');
             
-            if (isSimulationRunning) {
+            const sharedCloudState = industryCloudBridge.getState();
+            if (sharedCloudState.simulation.connected) {
                 indicator.classList.remove('offline');
-                statusText.textContent = '云平台连接状态: 已连接';
+                statusText.textContent = '云平台连接状态: 已连接（行业云）';
             } else {
                 indicator.classList.add('offline');
                 statusText.textContent = '云平台连接状态: 等待仿真启动';
+            }
+
+            const syncDetail = document.getElementById('cloudSyncDetail');
+            const commandDetail = document.getElementById('cloudCommandDetail');
+            if (syncDetail) {
+                syncDetail.textContent = sharedCloudState.telemetry.updatedAt
+                    ? `遥测同步：#${sharedCloudState.telemetry.sequence} · ${formatCloudTime(sharedCloudState.telemetry.updatedAt)}`
+                    : '遥测同步：等待仿真数据';
+            }
+            if (commandDetail) {
+                commandDetail.textContent = sharedCloudState.command.id
+                    ? `最近指令：${sharedCloudState.command.message}`
+                    : '最近指令：暂无';
             }
             
             // 更新设备数据列表
@@ -4661,6 +4855,74 @@
             console.log(`云平台远程控制: ${device.name} -> ${isOn ? '开启' : '关闭'}`);
         }
 
+        function formatCloudTime(value) {
+            if (!value) return '--:--:--';
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleTimeString('zh-CN', { hour12: false });
+        }
+
+        function updateGreenhouseDeviceValue(templatePart, value) {
+            const device = canvasDevices.find(item => item.templateId && item.templateId.includes(templatePart));
+            if (!device) return;
+            const target = document.getElementById(`value_${device.id}`);
+            if (target) target.textContent = value;
+        }
+
+        function publishIndustryCloudTelemetry() {
+            if (!isSimulationRunning) return;
+            const isGreenhouse = currentScene === '智慧温室';
+            greenhouseTelemetry = {
+                temperature: +(greenhouseTelemetry.temperature + (Math.random() - 0.48) * 0.4).toFixed(1),
+                humidity: +(greenhouseTelemetry.humidity + (Math.random() - 0.5) * 1.2).toFixed(1),
+                light: Math.max(600, Math.min(980, greenhouseTelemetry.light + Math.round((Math.random() - 0.5) * 36))),
+                door: isGreenhouse ? greenhouseTelemetry.door : null
+            };
+            updateGreenhouseDeviceValue('temp', `${greenhouseTelemetry.temperature}°C`);
+            updateGreenhouseDeviceValue('humi', `${greenhouseTelemetry.humidity}%`);
+            updateGreenhouseDeviceValue('light', `${greenhouseTelemetry.light}Lux`);
+            industryCloudBridge.publishTelemetry(greenhouseTelemetry);
+            const telDesc = `温度 ${greenhouseTelemetry.temperature}℃ / 湿度 ${greenhouseTelemetry.humidity}%RH / 光照 ${greenhouseTelemetry.light}Lux${isGreenhouse ? ` / 门磁 ${greenhouseTelemetry.door}` : ''}`;
+            addMessageToPanel(`${currentScene}网关`, 'MQTT 上报', telDesc);
+            updateCloudPanel();
+        }
+
+        function startIndustryCloudLinkage() {
+            industryCloudBridge.startSimulation(currentScene);
+            if (industryCloudTimer) clearInterval(industryCloudTimer);
+            publishIndustryCloudTelemetry();
+            industryCloudTimer = setInterval(publishIndustryCloudTelemetry, 2000);
+        }
+
+        function stopIndustryCloudLinkage() {
+            if (industryCloudTimer) clearInterval(industryCloudTimer);
+            industryCloudTimer = null;
+            industryCloudBridge.stopSimulation();
+            updateCloudPanel();
+        }
+
+        function handleIndustryCloudState(state) {
+            if (!isSimulationRunning || !state.command.id || state.command.status !== 'pending') return;
+            if (state.command.id === lastIndustryCommandId) return;
+            lastIndustryCommandId = state.command.id;
+
+            const fan = canvasDevices.find(device => device.templateId && device.templateId.includes('load_fan'));
+            if (!fan) {
+                addMessageToPanel('行业云平台', '控制失败', '当前场景未找到通风风扇');
+                return;
+            }
+
+            addMessageToPanel('行业云平台', 'MQTT 下行', `commandId=${state.command.id}，通风风扇${state.command.desiredOn ? '开启' : '关闭'}`);
+            setDeviceState(fan.id, state.command.desiredOn);
+            industryCloudBridge.acknowledgeCommand(
+                state.command.id,
+                state.command.desiredOn,
+                `通风风扇已${state.command.desiredOn ? '开启' : '关闭'}，执行器回执 SUCCESS`
+            );
+            updateCloudPanel();
+        }
+
+        industryCloudBridge.subscribe(handleIndustryCloudState);
+
         // ==================== 虚拟仿真桌面助手程序 ====================
         let desktopConnected = false;
         let desktopDataStreamInterval = null;
@@ -4822,6 +5084,10 @@
             if (!text) return;
             
             console.log('sendMessage called with text:', text);
+            
+            // 用户发送消息后自动隐藏示例问题，避免遮挡会话框
+            const quickPrompts = document.querySelector('.quick-prompts');
+            if (quickPrompts) quickPrompts.classList.add('hidden');
             
             addUserMessage(text);
             input.value = '';
@@ -5009,8 +5275,16 @@
             return response;
         }
         
-        // 检测连线错误
-        function checkConnectionErrors() {
+        // ==================== 工程排错：动态检测与修复 ====================
+        // 最近一次排错检测结果快照（用于处理后对比："处理前 N 个错误 → 处理后 M 个错误"）
+        let lastTroubleshootSnapshot = null; // { errors: [], warnings: [], success: [] }
+
+        // 逐一检查连线，返回结构化检测结果（供手动检测与实时监控共用）
+        function collectConnectionIssues() {
+            if (currentScene === '工程排错演示') {
+                return TroubleshootingScenario.evaluate(canvasDevices, wires);
+            }
+
             let errors = [];
             let warnings = [];
             let success = [];
@@ -5037,24 +5311,42 @@
                         errors.push({
                             device: device.name,
                             issue: '数据端口未连接',
+                            category: '连线',
                             suggestion: '将DATA端口连接到采集器或网关的数据端口'
+                        });
+                    } else {
+                        success.push({
+                            device: device.name,
+                            issue: '数据线连接正常',
+                            category: '连线'
                         });
                     }
                     
-                    // 检查是否有电源连接
-                    const hasPowerConnection = deviceWires.some(w => {
-                        const startPort = w.device1.ports[w.portIndex1];
-                        const endPort = w.device2.ports[w.portIndex2];
-                        return (startPort && (startPort.type === 'power' || startPort.type === 'vcc')) ||
-                               (endPort && (endPort.type === 'power' || endPort.type === 'vcc'));
-                    });
-                    
-                    if (!hasPowerConnection) {
-                        warnings.push({
-                            device: device.name,
-                            issue: '电源端口未连接',
-                            suggestion: '连接电源VCC端口'
+                    // 仅当传感器本身带有供电端口（power/vcc）时才检查电源，
+                    // 避免"仅数据供电"型传感器永远提示无法修复的电源警告
+                    const hasPowerPort = device.ports.some(p => p.type === 'power' || p.type === 'vcc');
+                    if (hasPowerPort) {
+                        const hasPowerConnection = deviceWires.some(w => {
+                            const startPort = w.device1.ports[w.portIndex1];
+                            const endPort = w.device2.ports[w.portIndex2];
+                            return (startPort && (startPort.type === 'power' || startPort.type === 'vcc')) ||
+                                   (endPort && (endPort.type === 'power' || endPort.type === 'vcc'));
                         });
+                        
+                        if (!hasPowerConnection) {
+                            warnings.push({
+                                device: device.name,
+                                issue: '电源端口未连接',
+                                category: '连线',
+                                suggestion: '连接电源VCC端口'
+                            });
+                        } else {
+                            success.push({
+                                device: device.name,
+                                issue: '电源连接正常',
+                                category: '连线'
+                            });
+                        }
                     }
                 }
                 
@@ -5071,7 +5363,14 @@
                         errors.push({
                             device: device.name,
                             issue: '网关电源未连接',
+                            category: '连线',
                             suggestion: '连接电源VCC+端口到网关VCC端口'
+                        });
+                    } else {
+                        success.push({
+                            device: device.name,
+                            issue: '网关电源正常',
+                            category: '连线'
                         });
                     }
                 }
@@ -5089,52 +5388,120 @@
                         warnings.push({
                             device: device.name,
                             issue: '控制端口未连接',
+                            category: '连线',
                             suggestion: '将CTRL端口连接到网关或控制器的数据端口'
+                        });
+                    } else {
+                        success.push({
+                            device: device.name,
+                            issue: '控制线连接正常',
+                            category: '连线'
                         });
                     }
                     
-                    // 检查电源电压是否匹配
-                    const powerWire = deviceWires.find(w => {
+                    // 检查电源电压是否匹配（遍历该执行器所有已接电源线）
+                    const powerWires = deviceWires.filter(w => {
                         const otherDevice = w.device1.id === device.id ? w.device2 : w.device1;
                         return otherDevice.templateId && otherDevice.templateId.includes('power_');
                     });
                     
-                    if (powerWire) {
-                        const powerDevice = powerWire.device1.id === device.id ? powerWire.device2 : powerWire.device1;
-                        if (powerDevice.templateId && powerDevice.templateId.includes('power_5v')) {
+                    if (powerWires.length > 0) {
+                        // 该执行器上是否接入了符合要求的电源（12V）
+                        const hasProperPower = powerWires.some(w => {
+                            const powerDevice = w.device1.id === device.id ? w.device2 : w.device1;
+                            return powerDevice.templateId && powerDevice.templateId.includes('power_12v');
+                        });
+                        // 是否仍残留错误的电源（5V）
+                        const hasWrongPower = powerWires.some(w => {
+                            const powerDevice = w.device1.id === device.id ? w.device2 : w.device1;
+                            return powerDevice.templateId && powerDevice.templateId.includes('power_5v');
+                        });
+                        
+                        if (hasProperPower && hasWrongPower) {
+                            // 12V已接但5V未拆，提示移除错误电源
+                            errors.push({
+                                device: device.name,
+                                issue: '电源接线冗余',
+                                category: '设备选型',
+                                suggestion: `已检测到12V电源连接正常，但5V电源仍与${device.name}相连。请删除5V电源的连线，仅保留12V供电。`
+                            });
+                        } else if (hasProperPower) {
+                            success.push({
+                                device: device.name,
+                                issue: '电源连接正确',
+                                category: '设备选型'
+                            });
+                        } else if (hasWrongPower) {
                             errors.push({
                                 device: device.name,
                                 issue: '电源电压不足',
-                                suggestion: `当前使用5V电源，建议更换为12V电源。通风风扇等执行器设备通常需要12V电压才能正常工作。`
-                            });
-                        } else if (powerDevice.templateId && powerDevice.templateId.includes('power_12v')) {
-                            success.push({
-                                device: device.name,
-                                issue: '电源连接正确'
+                                category: '设备选型',
+                                suggestion: `当前使用5V电源，建议更换为12V电源。${device.name}等执行器设备通常需要12V电压才能正常工作。`
                             });
                         }
+                    } else {
+                        // 未接任何电源，作为连线问题提示
+                        warnings.push({
+                            device: device.name,
+                            issue: '电源端口未连接',
+                            category: '连线',
+                            suggestion: `连接12V电源的VCC+端口到${device.name}的电源端口`
+                        });
                     }
                 }
             });
             
-            // 构建回复消息
+            return { errors, warnings, success };
+        }
+
+        // 检测连线错误（含处理前后对比）
+        function checkConnectionErrors() {
+            const { errors, warnings, success } = collectConnectionIssues();
+            
+            // 记录本次检测前的结果，用于对比处理进展
             let response = `📋 工程排错检测结果\n\n`;
-            response += `当前工程共有 ${canvasDevices.length} 个设备，${wires.length} 条连线。\n\n`;
+            response += `当前工程共有 ${canvasDevices.length} 个设备，${wires.length} 条连线。\n`;
             
-            if (errors.length > 0) {
-                response += `❌ 发现 ${errors.length} 个错误：\n\n`;
-                errors.forEach((e, i) => {
-                    response += `${i+1}. 【${e.device}】${e.issue}\n`;
-                    response += `   💡 建议：${e.suggestion}\n\n`;
-                });
+            if (lastTroubleshootSnapshot) {
+                const prevErrorCount = lastTroubleshootSnapshot.errors.length;
+                const prevWarningCount = lastTroubleshootSnapshot.warnings.length;
+                const curErrorCount = errors.length;
+                const curWarningCount = warnings.length;
+                if (curErrorCount < prevErrorCount || curWarningCount < prevWarningCount) {
+                    response += `\n✅ 处理进展：上次 ${prevErrorCount} 错误 / ${prevWarningCount} 警告 → 本次 ${curErrorCount} 错误 / ${curWarningCount} 警告\n`;
+                } else if (curErrorCount === 0 && curWarningCount === 0) {
+                    response += `\n✅ 工程已恢复到正常工作状态\n`;
+                }
             }
+            response += `\n`;
             
-            if (warnings.length > 0) {
-                response += `⚠️ 发现 ${warnings.length} 个警告：\n\n`;
-                warnings.forEach((w, i) => {
-                    response += `${i+1}. 【${w.device}】${w.issue}\n`;
-                    response += `   💡 建议：${w.suggestion}\n\n`;
-                });
+            if (errors.length > 0 || warnings.length > 0) {
+                // 按"连线 / 设备选型"分类，分别输出，保证信息更清晰
+                const errorItems = [...errors, ...warnings];
+                const wireIssues = errorItems.filter(item => item.category === '连线');
+                const selectionIssues = errorItems.filter(item => item.category === '设备选型');
+
+                // 渲染某一类问题：错误用❌、警告用⚠️，各自独立编号
+                const renderGroup = (items) => {
+                    let part = '';
+                    let errIndex = 0, warnIndex = 0;
+                    items.forEach(e => {
+                        const isError = errors.includes(e);
+                        isError ? errIndex++ : warnIndex++;
+                        const mark = isError ? '❌' : '⚠️';
+                        const num = isError ? errIndex : warnIndex;
+                        part += `${mark} ${num}. 【${e.device}】${e.issue}\n`;
+                        part += `   💡 建议：${e.suggestion}\n\n`;
+                    });
+                    return part;
+                };
+
+                if (wireIssues.length > 0) {
+                    response += `🔌 连线问题：\n\n${renderGroup(wireIssues)}`;
+                }
+                if (selectionIssues.length > 0) {
+                    response += `🔧 设备选型问题：\n\n${renderGroup(selectionIssues)}`;
+                }
             }
             
             if (success.length > 0) {
@@ -5145,17 +5512,55 @@
             }
             
             if (errors.length === 0 && warnings.length === 0) {
-                response += `🎉 工程连线检测完成，未发现明显错误！\n\n`;
-                response += `所有设备连接正常，可以进行仿真测试。`;
+                response += `🎉 恭喜！工程连线检测全部通过，所有设备连接正常！\n\n`;
+                response += `已从排错状态恢复为正常状态，可以进行仿真测试。`;
             } else {
                 response += `\n📌 操作说明：\n`;
-                response += `1. 点击设备可以选中并拖拽调整位置\n`;
-                response += `2. 点击设备端口可以开始连线\n`;
-                response += `3. 点击连线可以选中，按Delete键删除\n`;
-                response += `4. 从左侧设备库拖拽新设备到画布\n`;
+                response += `1. 选中错误连线按 Delete 键删除，重新拖拽端口连线\n`;
+                response += `2. 供电错误：删除 5V 电源连线，改接 12V 电源\n`;
+                response += `3. 连线正确后，再次发送"检查连线"即可看到错误消除\n`;
             }
             
+            // 保存本次检测快照，供下次对比
+            lastTroubleshootSnapshot = { errors, warnings, success };
+            
             return response;
+        }
+
+        // 连线变化后的实时排错监控：错误消除时自动推送反馈
+        function notifyWireChangedForTroubleshoot() {
+            // 仅在工程排错演示场景中进行实时反馈
+            if (currentScene !== '工程排错演示') return;
+            if (!lastTroubleshootSnapshot) return; // 尚未检测过，不打扰
+            if (!document.getElementById('aiChat').classList.contains('active')) return; // AI会话未开启
+            
+            const { errors, warnings, success } = collectConnectionIssues();
+            const prevErrors = lastTroubleshootSnapshot.errors.length;
+            const prevWarnings = lastTroubleshootSnapshot.warnings.length;
+            const curErrors = errors.length;
+            const curWarnings = warnings.length;
+            
+            // 没有变化则不打扰
+            if (curErrors === prevErrors && curWarnings === prevWarnings) return;
+            
+            lastTroubleshootSnapshot = { errors, warnings, success };
+            
+            if (curErrors === 0 && curWarnings === 0) {
+                // 全部恢复
+                addAIMessage(`🎉 已检测到您完成了所有修复操作！\n\n✅ 错误 0 个 / 警告 0 个\n✅ 工程连线已完全恢复正常，可以进行仿真测试了！`);
+            } else if (curErrors < prevErrors || curWarnings < prevWarnings) {
+                // 部分修复
+                let msg = `✅ 已检测到您修复了 ${prevErrors - curErrors} 个错误、${prevWarnings - curWarnings} 个警告，加油！\n\n`;
+                msg += `📊 当前剩余：${curErrors} 个错误 / ${curWarnings} 个警告\n`;
+                if (errors.length > 0) {
+                    msg += `\n❌ 还需要处理:\n`;
+                    errors.forEach(e => { msg += `· 【${e.device}】${e.issue}\n`; });
+                }
+                addAIMessage(msg);
+            } else if (curErrors > prevErrors || curWarnings > prevWarnings) {
+                // 引入了新问题
+                addAIMessage(`⚠️ 检测到连线调整后出现了 ${curErrors} 个错误 / ${curWarnings} 个警告，请检查刚才的操作。`);
+            }
         }
 
         function sendQuickPrompt(text) {
@@ -5172,6 +5577,9 @@
 
         function newSession() {
             document.getElementById('chatMessages').innerHTML = '';
+            // 新会话恢复显示示例问题
+            const quickPrompts = document.querySelector('.quick-prompts');
+            if (quickPrompts) quickPrompts.classList.remove('hidden');
             document.getElementById('aiConfig').classList.remove('hidden');
             document.getElementById('aiChat').classList.remove('active');
         }
@@ -5192,6 +5600,7 @@
                 for (const deviceId in deviceDataSimConfigs) {
                     startDataSimulation(deviceId);
                 }
+                startIndustryCloudLinkage();
             } else {
                 btn.classList.remove('active');
                 btn.innerHTML = '⚪ 模拟实验 (已关闭)';
@@ -5200,13 +5609,18 @@
                 stopSensorSimulation();
                 // 停止所有数据模拟
                 stopAllDataSimulation();
+                stopIndustryCloudLinkage();
             }
         }
+
+        let messagesPaused = false;
 
         function startMessagePanel() {
             const panel = document.getElementById('messagePanel');
             panel.classList.add('show');
-            
+
+            if (messageInterval) clearInterval(messageInterval);
+            if (messagesPaused) return;
             messageInterval = setInterval(() => {
                 addSimulationMessage();
             }, 2000);
@@ -5264,6 +5678,33 @@
             }
         }
 
+        function addMessageToPanel(source, action, data) {
+            if (messagesPaused) return;
+            const list = document.getElementById('messageList');
+            if (!list) return;
+
+            const item = document.createElement('div');
+            item.className = 'message-item';
+            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            [
+                ['time', time],
+                ['source', source],
+                ['arrow', action],
+                ['data', data]
+            ].forEach(([className, text]) => {
+                const part = document.createElement('span');
+                part.className = className;
+                part.textContent = text;
+                item.appendChild(part);
+            });
+            list.appendChild(item);
+
+            while (list.children.length > 20) {
+                list.removeChild(list.firstChild);
+            }
+            list.scrollTop = list.scrollHeight;
+        }
+
         function toggleMessagePanel() {
             const panel = document.getElementById('messagePanel');
             const body = document.getElementById('messagePanelBody');
@@ -5282,6 +5723,20 @@
 
         function clearMessages() {
             document.getElementById('messageList').innerHTML = '';
+        }
+
+        function pauseMessages() {
+            messagesPaused = !messagesPaused;
+            const button = document.getElementById('messagePauseBtn');
+            button.textContent = messagesPaused ? '继续' : '暂停';
+            button.title = messagesPaused ? '继续消息' : '暂停消息';
+
+            if (messagesPaused) {
+                if (messageInterval) clearInterval(messageInterval);
+                messageInterval = null;
+            } else if (isSimulationRunning) {
+                startMessagePanel();
+            }
         }
         let sensorSimulationInterval = null;
 
@@ -5477,6 +5932,9 @@
             console.log('switchScene 被调用:', sceneName);
             currentScene = sceneName;
             
+            // 切换场景时重置排错检测快照，避免跨场景对比干扰
+            lastTroubleshootSnapshot = null;
+            
             // 更新场景按钮文字
             const sceneBtn = document.getElementById('sceneSelectBtn');
             if (sceneBtn) {
@@ -5528,7 +5986,7 @@
                     const template = findDeviceTemplate(p.deviceId);
                     console.log('查找设备模板:', p.deviceId, '结果:', template);
                     if (template) {
-                        addDeviceToCanvas(template, p.x, p.y, p.name);
+                        addDeviceToCanvas(template, p.x, p.y, p.name, p.ports);
                     } else {
                         console.warn('未找到设备模板:', p.deviceId);
                     }
@@ -5565,7 +6023,7 @@
             const fan = canvasDevices.find(d => d.name === "通风风扇");
             const power = canvasDevices.find(d => d.name === "5V电源");
             
-            // 错误连线1：温度传感器直接连到网关（应该通过采集器）
+            // 正常连线1：温度传感器接入网关的专用温度数据端口
             if (tempSensor && gateway) {
                 createWire(tempSensor, 0, gateway, 0);
             }
@@ -5573,9 +6031,9 @@
             // 错误连线2：湿度传感器未连接（缺少连线）
             // 不添加连线
             
-            // 错误连线3：通风风扇连接到网关，但电源电压不足（5V而非12V）
+            // 正常连线2：通风风扇接入网关的专用控制端口；供电故意保留5V错误
             if (fan && gateway) {
-                createWire(fan, 0, gateway, 0);
+                createWire(fan, 0, gateway, 2);
             }
             if (power && fan) {
                 createWire(power, 0, fan, 1); // 5V电源连接到风扇（电压不足）

@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jupyter实验平台 - 人工智能算法训练平台</title>
+    <title>Jupyter实验平台 - 星朴XP-AI001人工智能算法训练平台</title>
     <!-- ECharts CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="js/demo-chart-fallback.js"></script>
     <style>
         /* ==================== 全局样式 ==================== */
         * {
@@ -740,6 +740,12 @@
             font-size: 48px;
             color: var(--primary-color);
             margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .upload-text {
@@ -1201,21 +1207,21 @@ print("分数标准差:", df['score'].std())</textarea>
         <div id="page-train" class="page">
             <div class="card">
                 <div class="steps">
-                    <div class="step finished">
+                    <div class="step active">
                         <div class="step-icon">1</div>
                         <div class="step-content">
                             <div class="step-title">数据上传</div>
                         </div>
                         <div class="step-line"></div>
                     </div>
-                    <div class="step finished">
+                    <div class="step">
                         <div class="step-icon">2</div>
                         <div class="step-content">
                             <div class="step-title">数据生产</div>
                         </div>
                         <div class="step-line"></div>
                     </div>
-                    <div class="step active">
+                    <div class="step">
                         <div class="step-icon">3</div>
                         <div class="step-content">
                             <div class="step-title">参数配置</div>
@@ -1247,31 +1253,49 @@ print("分数标准差:", df['score'].std())</textarea>
                 <!-- 步骤内容 -->
                 <div id="trainStepContent">
                     <!-- 步骤1: 数据上传 -->
-                    <div id="train-step-1" class="training-card" style="display: none;">
+                    <div id="train-step-1" class="training-card">
                         <div class="training-header">
                             <div class="card-title">步骤1: 数据上传与预处理</div>
-                            <span class="tag tag-green">已完成</span>
+                            <span class="tag tag-blue">待上传</span>
                         </div>
-                        <div class="upload-area" onclick="uploadData()">
+                        <input type="file" id="dataFileInput" accept=".zip,.rar,.7z" style="display:none" onchange="handleDataUpload(event)">
+                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('dataFileInput').click()">
                             <div class="upload-icon">📁</div>
                             <div class="upload-text">点击或拖拽上传标注数据 (zip格式)</div>
                         </div>
-                        <div style="margin-top: 16px;">
-                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">数据概览</div>
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                                <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
-                                    <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">1,200</div>
-                                    <div style="font-size: 12px; color: var(--text-secondary);">样本数量</div>
-                                </div>
-                                <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
-                                    <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">5</div>
-                                    <div style="font-size: 12px; color: var(--text-secondary);">标注类别</div>
-                                </div>
-                                <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
-                                    <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">224×224</div>
-                                    <div style="font-size: 12px; color: var(--text-secondary);">图像尺寸</div>
+                        <div id="dataOverviewSection" style="display:none;">
+                            <div style="margin-top: 16px;">
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">数据概览</div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                                    <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
+                                        <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);" id="dataSampleCount">1,200</div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">样本数量</div>
+                                    </div>
+                                    <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
+                                        <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">5</div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">标注类别</div>
+                                    </div>
+                                    <div style="background: #fafafa; padding: 12px; border-radius: 4px;">
+                                        <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">224×224</div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">图像尺寸</div>
+                                    </div>
                                 </div>
                             </div>
+                            <div style="margin-top: 16px; padding: 16px; background: #fafafa; border: 1px solid var(--border-color); border-radius: 8px;">
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">数据预处理配置</div>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 13px;">
+                                    <label><input type="checkbox" checked> 图像尺寸统一为 224×224</label>
+                                    <label><input type="checkbox" checked> 像素归一化到 0～1</label>
+                                    <label><input type="checkbox" checked> 随机翻转与裁剪增强</label>
+                                    <label><input type="checkbox" checked> 异常图片与缺失标注检查</label>
+                                </div>
+                                <div style="margin-top: 12px; color: var(--success-color); font-size: 13px;">
+                                    ✓ 预处理检查已就绪：无效图片 0 张，缺失标注 0 条
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+                            <button class="btn btn-primary" onclick="nextTrainStep()">下一步</button>
                         </div>
                     </div>
 
@@ -1279,7 +1303,7 @@ print("分数标准差:", df['score'].std())</textarea>
                     <div id="train-step-2" class="training-card" style="display: none;">
                         <div class="training-header">
                             <div class="card-title">步骤2: 数据生产</div>
-                            <span class="tag tag-green">已完成</span>
+                            <span class="tag tag-blue">待生产</span>
                         </div>
                         <div style="margin-bottom: 16px;">
                             <div style="font-size: 14px; margin-bottom: 8px;">数据集划分比例</div>
@@ -1310,10 +1334,14 @@ print("分数标准差:", df['score'].std())</textarea>
                         <div style="background: #f6ffed; padding: 12px; border-radius: 4px; border: 1px solid #b7eb8f;">
                             <div style="color: #52c41a; font-size: 14px;">✓ 数据生产完成，生成训练样本840张，验证样本240张，测试样本120张</div>
                         </div>
+                        <div style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+                            <button class="btn" onclick="prevTrainStep()">上一步</button>
+                            <button class="btn btn-primary" onclick="nextTrainStep()">下一步</button>
+                        </div>
                     </div>
 
                     <!-- 步骤3: 参数配置 -->
-                    <div id="train-step-3" class="training-card">
+                    <div id="train-step-3" class="training-card" style="display: none;">
                         <div class="training-header">
                             <div class="card-title">步骤3: 训练参数配置</div>
                             <span class="tag tag-blue">进行中</span>
@@ -1372,7 +1400,7 @@ print("分数标准差:", df['score'].std())</textarea>
                                 <div class="metric-label">准确率</div>
                             </div>
                             <div class="metric-item">
-                                <div class="metric-value" id="trainEpoch">17/50</div>
+                                <div class="metric-value" id="trainEpoch">0/50</div>
                                 <div class="metric-label">当前轮次</div>
                             </div>
                             <div class="metric-item">
@@ -1889,7 +1917,7 @@ print("分数标准差:", df['score'].std())</textarea>
 
         function showChartTemplate(chartType) {
             const chartDom = document.getElementById('previewChart');
-            const myChart = echarts.init(chartDom);
+            const myChart = DemoCharts.init(chartDom, '图表模板预览');
             
             const options = {
                 // 基础图表
@@ -2119,7 +2147,7 @@ print("分数标准差:", df['score'].std())</textarea>
         }
 
         // ==================== 模型训练功能 ====================
-        let trainStep = 3;
+        let trainStep = 1;
         let isTraining = false;
 
         function initTrainPage() {
@@ -2173,7 +2201,7 @@ print("分数标准差:", df['score'].std())</textarea>
         function startTraining() {
             isTraining = true;
             let progress = 0;
-            let epoch = 0;
+            const maxEpochs = parseInt(document.getElementById('epochs').value) || 50;
             
             const trainInterval = setInterval(() => {
                 if (!isTraining || progress >= 100) {
@@ -2189,16 +2217,16 @@ print("分数标准差:", df['score'].std())</textarea>
                 }
                 
                 progress += 2;
-                epoch = Math.floor(progress / 2);
+                epoch = Math.floor(progress / 100 * maxEpochs);
                 
                 document.getElementById('trainProgress').textContent = progress + '%';
                 document.getElementById('trainProgressBar').style.width = progress + '%';
-                document.getElementById('trainEpoch').textContent = epoch + '/50';
+                document.getElementById('trainEpoch').textContent = Math.min(epoch, maxEpochs) + '/' + maxEpochs;
                 document.getElementById('trainLoss').textContent = (0.5 - progress * 0.004).toFixed(2);
                 document.getElementById('trainAcc').textContent = (50 + progress * 0.4).toFixed(1) + '%';
                 
                 // 更新图表
-                updateTrainChart(progress);
+                updateTrainChart(progress, maxEpochs);
             }, 200);
         }
 
@@ -2211,7 +2239,7 @@ print("分数标准差:", df['score'].std())</textarea>
 
         function initTrainChart() {
             const chartDom = document.getElementById('trainChart');
-            trainChartInstance = echarts.init(chartDom);
+            trainChartInstance = DemoCharts.init(chartDom, '训练曲线');
             
             trainChartInstance.setOption({
                 title: { text: '训练曲线', textStyle: { color: '#262626' } },
@@ -2229,17 +2257,18 @@ print("分数标准差:", df['score'].std())</textarea>
             });
         }
 
-        function updateTrainChart(progress) {
+        function updateTrainChart(progress, maxEpochs) {
             if (!trainChartInstance) return;
             
             const epochs = [];
             const losses = [];
             const accs = [];
             
-            for (let i = 1; i <= Math.floor(progress / 2); i++) {
+            const currentEpoch = Math.floor(progress / 100 * maxEpochs);
+            for (let i = 1; i <= currentEpoch; i++) {
                 epochs.push('Epoch ' + i);
-                losses.push((0.5 - i * 0.008).toFixed(2));
-                accs.push((50 + i * 0.8).toFixed(1));
+                losses.push((0.5 - i * (0.4 / maxEpochs)).toFixed(2));
+                accs.push((50 + i * (40 / maxEpochs)).toFixed(1));
             }
             
             trainChartInstance.setOption({
@@ -2253,7 +2282,7 @@ print("分数标准差:", df['score'].std())</textarea>
 
         function initConfusionMatrix() {
             const chartDom = document.getElementById('confusionMatrix');
-            const myChart = echarts.init(chartDom);
+            const myChart = DemoCharts.init(chartDom, '模型验证混淆矩阵');
             
             myChart.setOption({
                 tooltip: {},
@@ -2274,8 +2303,22 @@ print("分数标准差:", df['score'].std())</textarea>
             });
         }
 
-        function uploadData() {
-            showMessage('success', '数据已上传');
+        function handleDataUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const area = document.getElementById('uploadArea');
+            const origHTML = area.innerHTML;
+            area.innerHTML = '<div class="upload-icon" style="animation:spin 1s linear infinite">⏳</div><div class="upload-text">正在上传 ' + file.name + ' …</div>';
+            area.style.pointerEvents = 'none';
+            setTimeout(function() {
+                area.innerHTML = '<div class="upload-icon">✅</div><div class="upload-text">' + file.name + ' 已上传（' + (file.size / 1024).toFixed(0) + ' KB）— 点击重新上传</div>';
+                area.style.pointerEvents = '';
+                area.style.borderColor = 'var(--success-color)';
+                document.getElementById('dataOverviewSection').style.display = '';
+                const tag = document.querySelector('#train-step-1 .tag');
+                if (tag) { tag.textContent = '已上传'; tag.className = 'tag tag-green'; }
+                showMessage('success', '数据集 ' + file.name + ' 上传成功，预处理检查已就绪');
+            }, 1200);
         }
 
         function uploadTestImage() {

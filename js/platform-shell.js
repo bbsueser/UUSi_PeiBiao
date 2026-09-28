@@ -2,6 +2,9 @@
     'use strict';
 
     const PLATFORM_NAME = '人工智能算法训练平台';
+    const PLATFORM_BRAND = '星朴XP-AI001';
+    const PLATFORM_LOGO = 'images/brand/xingpu-logo.png';
+    const PLATFORM_ICON = 'images/brand/xingpu-icon.png';
     const VALID_ROLES = new Set(['student', 'teacher', 'admin']);
     const experimentRoutes = {
         'virtual-sim': 'engineering-simulation.html',
@@ -59,8 +62,91 @@
         back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>'
     };
 
+    const emojiSequencePattern = /\p{Extended_Pictographic}(?:\uFE0F|[\u{1F3FB}-\u{1F3FF}])?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|[\u{1F3FB}-\u{1F3FF}])?)*/gu;
+    const emojiIconMap = [
+        [/📚|📖|📄|📑|📝/, 'course'],
+        [/🔬|🧪|🧫|🧬/, 'experiment'],
+        [/📊|📈|📉|🕸/, 'analysis'],
+        [/🤖|🧠|💬/, 'ai'],
+        [/👤|👥|🎓|👨|👩/, 'user'],
+        [/⚙|🔧|🔌|📡|☁|💻|🖥|📱/, 'hardware'],
+        [/🏠|🏫/, 'home'],
+        [/📋|📅|🗓|📁|📦|💾|📥|📤|🔍|💡|🚀|🔗|🛡|🔒|🔔/, 'task']
+    ];
+
     function iconSvg(name) {
         return icons[name] || icons.home;
+    }
+
+    function stripDecorativeEmoji(text) {
+        return String(text).replace(emojiSequencePattern, (symbol) => symbol.startsWith('⚠') ? symbol : '').replace(/\s{2,}/g, ' ').trim();
+    }
+
+    function decorativeIcon(symbol) {
+        const match = emojiIconMap.find(([pattern]) => pattern.test(symbol));
+        return match ? match[1] : 'task';
+    }
+
+    function normalizeDecorativeEmoji(root = document) {
+        const selector = [
+            '.brand-icon', '.nav-brand-icon', '.logo-icon', '.header-logo-icon',
+            '[class~="icon"]', '[class$="-icon"]', '[class*="-icon "]',
+            'button', 'h1', 'h2', 'h3', 'h4', '.page-title', '.sidebar-title',
+            '.message-panel-title', '.property-title', '.cloud-panel-title',
+            '.desktop-modal-title', '.desktop-serial-title', '.desktop-data-title',
+            '.telemetry-label', '.experiment-title', '.context-menu-item',
+            'body *:not(script):not(style)'
+        ].join(',');
+        const elements = [];
+        if (root.nodeType === 1 && root.matches && root.matches(selector)) elements.push(root);
+        if (root.querySelectorAll) elements.push(...root.querySelectorAll(selector));
+
+        elements.forEach((element) => {
+            const textNodes = Array.from(element.childNodes).filter((node) => node.nodeType === 3 && node.nodeValue.match(emojiSequencePattern));
+            if (textNodes.length === 0) return;
+            const rawText = textNodes.map((node) => node.nodeValue).join(' ').trim();
+            const symbols = rawText.match(emojiSequencePattern);
+            if (!symbols || symbols.every((symbol) => symbol.startsWith('⚠'))) return;
+
+            if (element.children.length === 0 && stripDecorativeEmoji(rawText) === '') {
+                element.classList.add('platform-inline-icon');
+                element.innerHTML = iconSvg(decorativeIcon(symbols[0]));
+                return;
+            }
+
+            if (stripDecorativeEmoji(rawText) === '' && !element.querySelector?.(':scope > .platform-inline-icon')) {
+                const icon = document.createElement('span');
+                icon.className = 'platform-inline-icon';
+                icon.innerHTML = iconSvg(decorativeIcon(symbols[0]));
+                element.insertBefore(icon, element.firstChild);
+            }
+
+            textNodes.forEach((node) => {
+                const leadingSpace = /^\s/.test(node.nodeValue) ? ' ' : '';
+                const trailingSpace = /\s$/.test(node.nodeValue) ? ' ' : '';
+                const normalized = stripDecorativeEmoji(node.nodeValue);
+                node.nodeValue = normalized ? `${leadingSpace}${normalized}${trailingSpace}` : '';
+            });
+        });
+    }
+
+    function normalizeAddedNode(node) {
+        if (node.nodeType === 1) {
+            normalizeDecorativeEmoji(node);
+        } else if (node.nodeType === 3 && node.parentElement) {
+            normalizeDecorativeEmoji(node.parentElement);
+        }
+    }
+
+    function observeDecorativeEmoji() {
+        if (typeof MutationObserver === 'undefined') return;
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach(normalizeAddedNode);
+                if (mutation.type === 'characterData') normalizeAddedNode(mutation.target);
+            });
+        });
+        observer.observe(document.body, { childList: true, characterData: true, subtree: true });
     }
 
     function getRole() {
@@ -91,14 +177,18 @@
         window.setTimeout(() => notice.remove(), 2600);
     }
 
+    function brandLockup() {
+        return `<span class="platform-brand-lockup"><img class="platform-brand-logo" src="${PLATFORM_LOGO}" alt="${PLATFORM_BRAND} ${PLATFORM_NAME}"></span>`;
+    }
+
     function normalizeExistingBrand() {
         document.querySelectorAll('.nav-brand').forEach((brand) => {
-            brand.innerHTML = `<span class="platform-brand-mark">${iconSvg('brand')}</span><span class="nav-brand-text">${PLATFORM_NAME}</span>`;
+            brand.innerHTML = brandLockup();
         });
 
         document.querySelectorAll('.top-nav-logo .logo-icon, .header-logo-icon').forEach((mark) => {
-            mark.classList.add('platform-brand-mark');
-            mark.innerHTML = iconSvg('brand');
+            mark.classList.add('platform-brand-mark', 'platform-brand-mark--image');
+            mark.innerHTML = `<img class="platform-brand-icon-img" src="${PLATFORM_ICON}" alt="${PLATFORM_BRAND}">`;
         });
     }
 
@@ -108,8 +198,7 @@
         const bar = document.createElement('header');
         bar.className = 'platform-workspace-bar';
         bar.innerHTML = `
-            <span class="platform-brand-mark">${iconSvg('brand')}</span>
-            <strong>${PLATFORM_NAME}</strong>
+            ${brandLockup()}
             <span class="platform-breadcrumbs">实验中心 / ${document.title.split(' - ')[0]}</span>
             <a class="platform-back-link" href="experiment-detail.html">${iconSvg('back')} 返回实验详情</a>`;
         document.body.prepend(bar);
@@ -196,6 +285,9 @@
             normalizePageTitles();
         }
 
+        normalizeDecorativeEmoji();
+        observeDecorativeEmoji();
+
         document.addEventListener('click', (event) => {
             const trigger = event.target.closest('[data-platform-notice]');
             if (!trigger) return;
@@ -209,6 +301,10 @@
         resolveRole: getRole,
         icon: iconSvg,
         showNotice: showPlatformNotice,
+        stripDecorativeEmoji,
+        decorativeIcon,
+        normalizeDecorativeEmoji,
+        normalizeAddedNode,
         experimentRoutes
     };
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>硬件智能体系统 - 人工智能算法训练平台</title>
+    <title>硬件智能体系统 - 星朴XP-AI001人工智能算法训练平台</title>
     
     <!-- 引入样式文件 -->
     <link rel="stylesheet" href="css/common.css">
@@ -12,6 +12,14 @@
     
     <style>
         /* 硬件智能体系统专用样式 */
+        
+        /* 顶部导航 - 返回工作台入口 */
+        .back-link {
+            margin-left: var(--space-2);
+            padding-left: var(--space-4);
+            border-left: 1px solid var(--border-light);
+            color: var(--text-body);
+        }
         
         /* 设备卡片网格 */
         .device-grid {
@@ -135,19 +143,51 @@
             background: var(--bg-panel);
         }
         
-        /* 控制界面布局 */
-        .control-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr 300px;
-            gap: var(--space-3);
-            height: calc(100vh - 140px);
+        /* ========== 页面布局：最左侧指令库 + 主对话区 ========== */
+        .app-layout.with-sidebar {
+            display: flex;
+            align-items: stretch;
         }
         
-        .command-panel {
+        .command-sidebar {
+            width: 232px;
+            flex-shrink: 0;
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
             background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-light);
-            overflow: hidden;
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: var(--space-3) var(--space-2);
+        }
+        
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: 0 var(--space-2) var(--space-3);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+        
+        .command-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+        
+        .command-category {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .category-title {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            padding: var(--space-1) var(--space-2);
         }
         
         .panel-header {
@@ -156,23 +196,6 @@
             border-bottom: 1px solid var(--border-light);
             font-weight: var(--font-weight-semibold);
             color: var(--text-title);
-        }
-        
-        .command-list {
-            padding: var(--space-2);
-            max-height: calc(100% - 50px);
-            overflow-y: auto;
-        }
-        
-        .command-category {
-            margin-bottom: var(--space-2);
-        }
-        
-        .category-title {
-            font-size: var(--font-size-sm);
-            color: var(--text-secondary);
-            padding: var(--space-1) var(--space-2);
-            border-bottom: 1px solid var(--border-light);
         }
         
         .command-item {
@@ -185,15 +208,40 @@
             display: flex;
             align-items: center;
             gap: var(--space-2);
+            border: 1px solid transparent;
+            min-width: 0;
+        }
+        
+        .command-item .command-icon {
+            flex-shrink: 0;
         }
         
         .command-item:hover {
             background: rgba(0, 168, 255, 0.1);
+            border-color: rgba(0, 168, 255, 0.3);
             color: var(--primary-blue);
+        }
+        
+        .command-item:active {
+            transform: scale(0.98);
         }
         
         .command-icon {
             font-size: 16px;
+        }
+        
+        /* 主内容区：撑满剩余高度，对话区自动填满，比例自适应视口 */
+        .app-layout.with-sidebar .main-content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        #controlPage {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
         }
         
         /* 对话区域 */
@@ -204,6 +252,9 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            flex: 1;
+            height: auto;
+            min-height: 0;
         }
         
         .chat-header {
@@ -339,26 +390,160 @@
             background: var(--primary-blue-hover);
         }
         
-        /* 状态面板 */
-        .status-panel {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
+        /* ========== 状态抽屉：设备状态 / 传感器数据（按需出现） ========== */
+        .chat-toggle-btn {
+            padding: var(--space-1) var(--space-3);
+            background: var(--bg-input);
             border: 1px solid var(--border-light);
-            overflow: hidden;
+            border-radius: var(--radius-base);
+            color: var(--text-body);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            white-space: nowrap;
+        }
+        
+        .chat-toggle-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        
+        .drawer-mask {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 190;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--duration-slow) ease, visibility var(--duration-slow) ease;
+        }
+        
+        .drawer-mask.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .status-drawer {
+            position: fixed;
+            top: 60px;
+            right: 0;
+            bottom: 0;
+            width: 320px;
+            max-width: 86vw;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-light);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.35);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform var(--duration-slow) ease;
+        }
+        
+        .status-drawer.open {
+            transform: translateX(0);
+        }
+        
+        .drawer-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-3);
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .drawer-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-title);
+        }
+        
+        .drawer-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+        }
+        
+        .drawer-close:hover {
+            background: var(--bg-input);
+            color: var(--text-title);
+        }
+        
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-3);
+        }
+        
+        .drawer-device {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background: rgba(0, 168, 255, 0.1);
+            border: 1px solid rgba(0, 168, 255, 0.25);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-3);
+        }
+        
+        .drawer-device .dev-name {
+            color: var(--primary-blue);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+        }
+        
+        .drawer-device .dev-meta {
+            margin-left: auto;
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+        }
+        
+        .drawer-section {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: var(--space-2);
+        }
+        
+        .drawer-section + .status-grid {
+            margin-bottom: var(--space-4);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-2);
+        }
+        
+        .status-grid.three {
+            grid-template-columns: repeat(3, 1fr);
         }
         
         .status-content {
-            padding: var(--space-3);
+            padding: 0;
         }
         
         .status-item {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--space-2);
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            padding: var(--space-2) var(--space-3);
             background: var(--bg-panel);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-base);
-            margin-bottom: var(--space-2);
+            margin-bottom: 0;
         }
         
         .status-label {
@@ -419,42 +604,134 @@
         .node-type.AI { color: var(--warning); }
         .node-type.AO { color: var(--primary-purple); }
         
-        /* 图像验证 */
-        .vision-layout {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: var(--space-3);
-        }
-        
-        .vision-canvas {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-light);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .vision-image {
+        /* ========== 对话框内：富文本结果卡片 ========== */
+        .message.rich {
+            max-width: 100%;
             width: 100%;
-            height: 450px;
+            align-self: flex-start;
             background: var(--bg-panel);
-            display: block;
-            position: relative;
+            border: 1px solid var(--border-light);
+            color: var(--text-body);
         }
         
-        .vision-image img {
+        .msg-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+        }
+        
+        .msg-head .msg-tag {
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-muted);
+        }
+        
+        .msg-summary {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--space-2);
+        }
+        
+        .msg-summary strong { color: var(--primary-blue); }
+        .msg-summary .hl-err { color: var(--error); }
+        
+        .msg-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+        
+        .msg-stat {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        .msg-stat b {
+            font-size: var(--font-size-lg);
+            color: var(--text-title);
+        }
+        
+        .msg-stat b.ok { color: var(--success); }
+        .msg-stat b.err { color: var(--error); }
+        
+        .msg-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-xs);
+        }
+        
+        .msg-table th {
+            text-align: left;
+            padding: 6px 8px;
+            color: var(--text-muted);
+            font-weight: var(--font-weight-medium);
+            white-space: nowrap;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .msg-table td {
+            padding: 6px 8px;
+            color: var(--text-body);
+            border-bottom: 1px solid rgba(61, 61, 92, 0.4);
+        }
+        
+        .msg-table tr:last-child td { border-bottom: none; }
+        
+        .msg-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        
+        .msg-badge.ok { background: rgba(0, 212, 170, 0.15); color: var(--success); }
+        .msg-badge.warn { background: rgba(255, 165, 2, 0.15); color: var(--warning); }
+        .msg-badge.err { background: rgba(255, 71, 87, 0.15); color: var(--error); }
+        .msg-badge.mute { background: var(--bg-card); color: var(--text-muted); }
+        
+        /* ========== 对话框内：现场画面与检测框 ========== */
+        .msg-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: var(--radius-base);
+            overflow: hidden;
+            margin-bottom: var(--space-2);
+        }
+        
+        .msg-frame img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
         }
         
-        .vision-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+        /* 用户发送的图片气泡 */
+        .message.img { padding: var(--space-2); }
+        
+        .bubble-img {
+            display: block;
+            width: 320px;
+            max-width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: contain;
+            background: #000;
+            border-radius: var(--radius-base);
         }
         
         .detection-box {
@@ -474,12 +751,6 @@
             border-radius: var(--radius-sm);
             font-size: var(--font-size-xs);
             white-space: nowrap;
-        }
-        
-        .vision-results {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-light);
         }
         
         .result-header {
@@ -537,6 +808,57 @@
             color: var(--error);
             border: 1px solid var(--error);
         }
+        
+        /* ========== 识别明细：指示灯与接线标签 ========== */
+        
+        .vision-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-1);
+            margin-top: var(--space-1);
+        }
+        
+        .vision-tag {
+            padding: 1px 8px;
+            border-radius: 999px;
+            font-size: var(--font-size-xs);
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+        }
+        
+        .vision-tag.ok { color: var(--success); border-color: rgba(0, 212, 170, 0.4); }
+        .vision-tag.warn { color: var(--warning); border-color: rgba(255, 165, 2, 0.4); }
+        
+        .validate-card {
+            padding: var(--space-2) var(--space-3);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .validate-card:last-child { border-bottom: none; }
+        
+        .validate-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: var(--font-size-sm);
+            color: var(--text-title);
+            margin-bottom: var(--space-1);
+        }
+        
+        .validate-verdict.ok { color: var(--success); }
+        .validate-verdict.warn { color: var(--warning); }
+        
+        .validate-row {
+            display: grid;
+            grid-template-columns: 68px 1fr;
+            gap: var(--space-2);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            padding: 2px 0;
+        }
+        
+        .validate-row .col-head { color: var(--text-muted); }
         
         /* 联动控制弹窗 */
         .modal-overlay {
@@ -601,6 +923,78 @@
             justify-content: flex-end;
         }
         
+        /* ========== 摄像头取景框弹窗 ========== */
+        .camera-modal {
+            max-width: 760px;
+            width: 92%;
+        }
+        
+        .camera-viewport {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: var(--radius-base);
+            overflow: hidden;
+            margin-bottom: var(--space-3);
+        }
+        
+        .camera-viewport video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        
+        /* 取景框边角（模拟摄像头画面取景标尺） */
+        .camera-corner {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-color: rgba(0, 212, 170, 0.9);
+            border-style: solid;
+            border-width: 0;
+            z-index: 2;
+        }
+        .camera-corner.tl { top: 12px; left: 12px; border-top-width: 3px; border-left-width: 3px; }
+        .camera-corner.tr { top: 12px; right: 12px; border-top-width: 3px; border-right-width: 3px; }
+        .camera-corner.bl { bottom: 12px; left: 12px; border-bottom-width: 3px; border-left-width: 3px; }
+        .camera-corner.br { bottom: 12px; right: 12px; border-bottom-width: 3px; border-right-width: 3px; }
+        
+        .camera-hint {
+            position: absolute;
+            left: 12px;
+            bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.55);
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: var(--font-size-xs);
+            z-index: 2;
+        }
+        
+        .rec-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4757;
+            animation: rec-blink 1s infinite;
+        }
+        
+        @keyframes rec-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .capture-btn {
+            background: var(--primary-blue);
+            font-size: var(--font-size-md);
+            padding: var(--space-2) var(--space-4);
+        }
+        
         /* 筛选栏 */
         .filter-bar {
             display: flex;
@@ -646,18 +1040,190 @@
             display: block;
         }
         
+        /* ========== 设备总览：分类统计 ========== */
+        .device-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+        }
+        
+        .stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            line-height: 1.2;
+        }
+        
+        .stat-value.ok { color: var(--success); }
+        .stat-value.err { color: var(--error); }
+        
+        .stat-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-top: var(--space-1);
+        }
+        
+        .type-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+        
+        .type-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-3);
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 999px;
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        .type-chip strong { color: var(--primary-blue); }
+        
+        /* ========== 设备卡片：类型标签与状态明细 ========== */
+        .device-type-tag {
+            display: inline-block;
+            padding: 1px 8px;
+            margin-left: var(--space-1);
+            border-radius: 999px;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            color: var(--primary-blue);
+            background: rgba(0, 168, 255, 0.12);
+            border: 1px solid rgba(0, 168, 255, 0.35);
+            vertical-align: middle;
+        }
+        
+        .device-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-1) var(--space-3);
+            margin-bottom: var(--space-3);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+        
+        .device-meta .meta-label {
+            color: var(--text-muted);
+            margin-right: 2px;
+        }
+        
+        .device-meta .offline { color: var(--error); }
+        
+        /* ========== 设备详情弹窗 ========== */
+        .detail-modal {
+            max-width: 760px;
+            max-height: 82vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-body {
+            overflow-y: auto;
+            padding-right: var(--space-1);
+        }
+        
+        .info-section { margin-bottom: var(--space-4); }
+        
+        .info-section-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            padding-bottom: var(--space-1);
+            margin-bottom: var(--space-2);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-1) var(--space-4);
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            gap: var(--space-2);
+            font-size: var(--font-size-sm);
+            padding: var(--space-1) 0;
+            border-bottom: 1px dashed rgba(61, 61, 92, 0.5);
+        }
+        
+        .info-label { color: var(--text-secondary); white-space: nowrap; }
+        .info-value { color: var(--text-title); font-weight: var(--font-weight-medium); text-align: right; }
+        .info-value.ok { color: var(--success); }
+        .info-value.warn { color: var(--warning); }
+        .info-value.err { color: var(--error); }
+        
         /* 响应式 */
         @media (max-width: 1200px) {
-            .control-layout {
+            .info-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .vision-layout {
-                grid-template-columns: 1fr;
+        }
+        
+        /* 中窄屏：指令库保持最左侧，侧栏略窄，对话区弹性撑满 */
+        @media (max-width: 1024px) {
+            .command-sidebar {
+                width: 200px;
+            }
+        }
+        
+        /* 手机窄屏：指令库折叠为顶部横向列表，对话区占满整屏 */
+        @media (max-width: 640px) {
+            .app-layout.with-sidebar {
+                flex-direction: column;
             }
             
-            .detail-layout {
-                grid-template-columns: 1fr;
+            .app-layout.with-sidebar .main-content {
+                overflow-y: auto;
+            }
+            
+            #controlPage,
+            .chat-area {
+                flex: 1;
+                min-height: 0;
+            }
+            
+            .command-sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                border-right: none;
+                border-bottom: 1px solid var(--border-light);
+                padding: var(--space-2) var(--space-3);
+            }
+            
+            .sidebar-title {
+                padding: 0 0 var(--space-2);
+            }
+            
+            .command-list {
+                flex-direction: row;
+                gap: var(--space-3);
+                overflow-x: auto;
+                padding-bottom: var(--space-1);
+            }
+            
+            .command-category {
+                flex-shrink: 0;
+            }
+            
+            .chat-area {
+                height: auto;
+                min-height: 70vh;
             }
         }
     </style>
@@ -670,10 +1236,8 @@
             <div class="nav-brand-icon">🤖</div>
             <span class="nav-brand-text">硬件智能体系统</span>
         </div>
-        <div class="nav-menu">
-            <a href="#" class="nav-link active" onclick="switchPage('dashboard')">设备总览</a>
-            <a href="#" class="nav-link" onclick="switchPage('control')">智能体控制</a>
-            <a href="#" class="nav-link" onclick="switchPage('vision')">图像验证</a>
+        <div class="nav-menu" data-platform-navigation="local" aria-label="硬件智能体导航">
+            <a href="experiment-hall.html" class="nav-link back-link">返回实验中心</a>
         </div>
         <div class="user-info">
             <div class="user-details">
@@ -685,252 +1249,128 @@
     </nav>
     
     <!-- 主内容区 -->
-    <div class="app-layout no-sidebar">
-        <main class="main-content">
-            
-            <!-- 设备总览页面 -->
-            <div id="dashboardPage" class="page-view active">
-                <div class="page-header">
-                    <h1 class="page-title">设备总览</h1>
-                    <p class="page-subtitle">已接入 6 个硬件智能体设备</p>
+    <div class="app-layout with-sidebar">
+        
+        <!-- 最左侧：指令库 -->
+        <aside class="command-sidebar">
+            <div class="sidebar-title">📚 指令库</div>
+            <div class="command-list">
+                <div class="command-category">
+                    <div class="category-title">启停控制</div>
+                    <div class="command-item" onclick="executeCommand('启动设备')">
+                        <span class="command-icon">▶️</span>
+                        启动设备
+                    </div>
+                    <div class="command-item" onclick="executeCommand('停止设备')">
+                        <span class="command-icon">⏹️</span>
+                        停止设备
+                    </div>
                 </div>
-                
-                <!-- 筛选栏 -->
-                <div class="filter-bar">
-                    <select class="filter-select" id="deviceTypeFilter" onchange="filterDevices()">
-                        <option value="all">全部类型</option>
-                        <option value="gateway">网关</option>
-                        <option value="motor">电机</option>
-                        <option value="fan">风扇</option>
-                        <option value="light">灯光</option>
-                        <option value="sensor">传感器</option>
-                    </select>
-                    <input type="text" class="filter-input" id="deviceSearch" placeholder="搜索设备名称或IP地址..." onkeyup="filterDevices()">
+                <div class="command-category">
+                    <div class="category-title">开关控制</div>
+                    <div class="command-item" onclick="executeCommand('打开设备')">
+                        <span class="command-icon">🔓</span>
+                        打开设备
+                    </div>
+                    <div class="command-item" onclick="executeCommand('关闭设备')">
+                        <span class="command-icon">🔒</span>
+                        关闭设备
+                    </div>
                 </div>
-                
-                <!-- 设备卡片网格 -->
-                <div class="device-grid" id="deviceGrid">
-                    <!-- 设备卡片将通过JS动态生成 -->
+                <div class="command-category">
+                    <div class="category-title">模式切换</div>
+                    <div class="command-item" onclick="executeCommand('切换高速模式')">
+                        <span class="command-icon">⚡</span>
+                        高速模式
+                    </div>
+                    <div class="command-item" onclick="executeCommand('切换低速模式')">
+                        <span class="command-icon">🐢</span>
+                        低速模式
+                    </div>
+                    <div class="command-item" onclick="executeCommand('切换自动模式')">
+                        <span class="command-icon">🤖</span>
+                        自动模式
+                    </div>
+                </div>
+                <div class="command-category">
+                    <div class="category-title">设备统一管理</div>
+                    <div class="command-item" onclick="sendQuickMessage('查询所有设备状态')">
+                        <span class="command-icon">📊</span>
+                        查询全部设备
+                    </div>
+                    <div class="command-item" onclick="sendQuickMessage('统计各类设备数量')">
+                        <span class="command-icon">🗂️</span>
+                        设备类型统计
+                    </div>
+                    <div class="command-item" onclick="sendQuickMessage('查询仓库照明灯详情')">
+                        <span class="command-icon">🔍</span>
+                        单台设备查询
+                    </div>
+                    <div class="command-item" onclick="sendQuickMessage('有哪些设备离线')">
+                        <span class="command-icon">📡</span>
+                        离线设备排查
+                    </div>
+                    <div class="command-item" onclick="executeCommand('查询传感器数据')">
+                        <span class="command-icon">🌡️</span>
+                        传感器数据
+                    </div>
+                </div>
+                <div class="command-category">
+                    <div class="category-title">图像识别</div>
+                    <div class="command-item" onclick="sendImageMessage()">
+                        <span class="command-icon">📷</span>
+                        开启摄像头拍摄识别
+                    </div>
+                </div>
+                <div class="command-category">
+                    <div class="category-title">联动控制</div>
+                    <div class="command-item" onclick="showLinkageModal()">
+                        <span class="command-icon">🔗</span>
+                        多设备联动
+                    </div>
                 </div>
             </div>
+        </aside>
+        
+        <main class="main-content">
             
             <!-- 智能体控制页面 -->
-            <div id="controlPage" class="page-view">
+            <div id="controlPage" class="page-view active">
                 <div class="page-header">
                     <h1 class="page-title">智能体交互控制</h1>
-                    <p class="page-subtitle">语音/文字指令实时控制设备</p>
+                    <p class="page-subtitle">文字/语音统一管理与查询网关下所有设备，支持输入图像进行识别与双重验证</p>
                 </div>
                 
-                <div class="control-layout">
-                    <!-- 左侧指令库 -->
-                    <div class="command-panel">
-                        <div class="panel-header">📚 指令库</div>
-                        <div class="command-list">
-                            <div class="command-category">
-                                <div class="category-title">启停控制</div>
-                                <div class="command-item" onclick="executeCommand('启动设备')">
-                                    <span class="command-icon">▶️</span>
-                                    启动设备
-                                </div>
-                                <div class="command-item" onclick="executeCommand('停止设备')">
-                                    <span class="command-icon">⏹️</span>
-                                    停止设备
-                                </div>
-                            </div>
-                            <div class="command-category">
-                                <div class="category-title">开关控制</div>
-                                <div class="command-item" onclick="executeCommand('打开设备')">
-                                    <span class="command-icon">🔓</span>
-                                    打开设备
-                                </div>
-                                <div class="command-item" onclick="executeCommand('关闭设备')">
-                                    <span class="command-icon">🔒</span>
-                                    关闭设备
-                                </div>
-                            </div>
-                            <div class="command-category">
-                                <div class="category-title">模式切换</div>
-                                <div class="command-item" onclick="executeCommand('切换高速模式')">
-                                    <span class="command-icon">⚡</span>
-                                    高速模式
-                                </div>
-                                <div class="command-item" onclick="executeCommand('切换低速模式')">
-                                    <span class="command-icon">🐢</span>
-                                    低速模式
-                                </div>
-                                <div class="command-item" onclick="executeCommand('切换自动模式')">
-                                    <span class="command-icon">🤖</span>
-                                    自动模式
-                                </div>
-                            </div>
-                            <div class="command-category">
-                                <div class="category-title">状态查询</div>
-                                <div class="command-item" onclick="executeCommand('查询设备状态')">
-                                    <span class="command-icon">📊</span>
-                                    查询状态
-                                </div>
-                                <div class="command-item" onclick="executeCommand('查询传感器数据')">
-                                    <span class="command-icon">🌡️</span>
-                                    传感器数据
-                                </div>
-                            </div>
-                            <div class="command-category">
-                                <div class="category-title">联动控制</div>
-                                <div class="command-item" onclick="showLinkageModal()">
-                                    <span class="command-icon">🔗</span>
-                                    多设备联动
-                                </div>
-                            </div>
+                <!-- 对话区域 -->
+                <div class="chat-area">
+                    <div class="chat-header">
+                        <div class="chat-title">
+                            <span>💬</span>
+                            <span>网关设备智能体</span>
                         </div>
-                    </div>
-                    
-                    <!-- 中间对话区域 -->
-                    <div class="chat-area">
-                        <div class="chat-header">
-                            <div class="chat-title">
-                                <span>💬</span>
-                                <span id="currentDeviceName">环形线电机</span>
-                            </div>
+                        <div style="display: flex; align-items: center; gap: var(--space-2);">
+                            <span style="font-size: var(--font-size-xs); color: var(--text-muted);">当前控制对象</span>
                             <select class="filter-select" id="controlDeviceSelect" onchange="selectControlDevice()">
                                 <!-- 设备选项将通过JS动态生成 -->
                             </select>
+                            <button class="chat-toggle-btn" onclick="openStatusDrawer()">📊 设备状态</button>
                         </div>
+                    </div>
                         <div class="chat-messages" id="chatMessages">
                             <div class="message system">
-                                <div>智能体已连接，请输入指令控制设备。</div>
+                                <div>智能体已连接网关 <strong>gw-001</strong>，已纳管 <strong>7</strong> 台设备。<br>你可以直接输入文字查询或控制所有设备，例如「查询所有设备状态」「统计各类设备数量」「打开车间照明灯」；也可以点击下方 📷 开启摄像头拍摄现场设备进行识别。<br>设备实时状态与传感器数据默认收起，点击右上角「📊 设备状态」或输入「查询设备状态」即可查看。</div>
                                 <div class="message-time">系统初始化</div>
                             </div>
                         </div>
                         <div class="chat-input-area">
-                            <button class="voice-btn" id="voiceBtn" onclick="startVoiceInput()">
+                            <button class="voice-btn" id="voiceBtn" onclick="startVoiceInput()" title="语音输入">
                                 🎤
                             </button>
-                            <input type="text" class="chat-input" id="chatInput" placeholder="输入指令或点击麦克风语音输入..." onkeypress="handleInputKeyPress(event)">
-                            <button class="send-btn" onclick="sendMessage()">发送</button>
-                        </div>
-                    </div>
-                    
-                    <!-- 右侧状态面板 -->
-                    <div class="status-panel">
-                        <div class="panel-header">📊 设备状态</div>
-                        <div class="status-content" id="statusContent">
-                            <div class="status-item">
-                                <span class="status-label">运行状态</span>
-                                <span class="status-value stopped" id="statusRunning">停止</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-label">开关状态</span>
-                                <span class="status-value" id="statusSwitch">关闭</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-label">工作模式</span>
-                                <span class="status-value" id="statusMode">手动</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-label">通信状态</span>
-                                <span class="status-value running" id="statusComm">在线</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-label">IP地址</span>
-                                <span class="status-value" id="statusIP">192.168.1.201</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-label">最后更新</span>
-                                <span class="status-value" id="statusTime">--</span>
-                            </div>
-                        </div>
-                        
-                        <!-- 传感器数据 -->
-                        <div class="panel-header" style="margin-top: var(--space-3);">🌡️ 传感器数据</div>
-                        <div class="status-content" id="sensorData">
-                            <div class="status-item">
-                                <span class="status-label">温度</span>
-                                <span class="status-value" id="sensorTemp">25.3°C</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-label">湿度</span>
-                                <span class="status-value" id="sensorHumidity">60%</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-label">光照</span>
-                                <span class="status-value" id="sensorLight">850lux</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 图像验证页面 -->
-            <div id="visionPage" class="page-view">
-                <div class="page-header">
-                    <h1 class="page-title">图像识别与状态验证</h1>
-                    <p class="page-subtitle">视觉与数据双重校验，确保设备状态准确</p>
-                </div>
-                
-                <div class="vision-layout">
-                    <!-- 左侧视频流 -->
-                    <div class="vision-canvas">
-                        <div class="panel-header">
-                            📹 实时画面
-                            <select class="filter-select" style="margin-left: auto;" id="sceneSelect" onchange="changeVisionScene()">
-                                <option value="motor">电机区域</option>
-                                <option value="sensor">传感器区域</option>
-                                <option value="light">照明区域</option>
-                            </select>
-                            <!-- <button class="device-btn secondary" style="margin-left: var(--space-2); padding: 4px 12px; font-size: var(--font-size-xs);" onclick="toggleDebugMode()">
-                                🎯 调试模式
-                            </button> -->
-                        </div>
-                        <div class="vision-image" id="visionImage" onclick="handleImageClick(event)">
-                            <img id="visionImg" src="images/vision-motor.jpg" alt="工业电机设备">
-                            <div class="vision-overlay" id="visionOverlay">
-                                <!-- 检测框将通过JS动态添加 -->
-                            </div>
-                            <!-- 调试信息显示 -->
-                            <div id="debugInfo" style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #00d4aa; display: none; z-index: 10;">
-                                点击获取坐标 | 拖拽绘制检测框
-                            </div>
-                            <!-- 坐标提示 -->
-                            <div id="coordTooltip" style="position: absolute; background: rgba(0,168,255,0.9); padding: 4px 8px; border-radius: 4px; font-size: 11px; color: white; display: none; z-index: 10; pointer-events: none;"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- 右侧识别结果 -->
-                    <div class="vision-results">
-                        <div class="result-header">🎯 识别结果</div>
-                        <div id="visionResultsList">
-                            <div class="result-item">
-                                <div class="result-name">环形线电机</div>
-                                <div class="result-meta">
-                                    <span class="result-status">● 运行</span>
-                                    <span class="result-confidence">置信度: 96%</span>
-                                </div>
-                            </div>
-                            <div class="result-item">
-                                <div class="result-name">散热风扇</div>
-                                <div class="result-meta">
-                                    <span class="result-status">● 运行</span>
-                                    <span class="result-confidence">置信度: 92%</span>
-                                </div>
-                            </div>
-                            <div class="result-item">
-                                <div class="result-name">温湿度传感器</div>
-                                <div class="result-meta">
-                                    <span class="result-status">● 正常</span>
-                                    <span class="result-confidence">置信度: 98%</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 验证结果 -->
-                        <div class="validation-result success" id="validationResult">
-                            ✅ 视觉与数据一致，状态正常
-                        </div>
-                        
-                        <div style="padding: var(--space-3);">
-                            <button class="device-btn" onclick="refreshVision()" style="width: 100%;">
-                                🔄 刷新识别
+                            <button class="voice-btn" id="imageBtn" onclick="sendImageMessage()" title="开启摄像头拍摄识别" style="background: var(--primary-blue);">
+                                🖼️
                             </button>
+                            <input type="text" class="chat-input" id="chatInput" placeholder="输入指令，如：查询所有设备状态 / 统计各类设备数量..." onkeypress="handleInputKeyPress(event)">
+                            <button class="send-btn" onclick="sendMessage()">发送</button>
                         </div>
                     </div>
                 </div>
@@ -938,6 +1378,66 @@
             
         </main>
     </div>
+    
+    <!-- 右侧抽屉：设备状态 / 传感器数据（点击按钮或按指令触发后出现） -->
+    <div class="drawer-mask" id="statusDrawerMask" onclick="closeStatusDrawer()"></div>
+    <aside class="status-drawer" id="statusDrawer">
+        <div class="drawer-head">
+            <div class="drawer-title">📊 设备状态与传感器数据</div>
+            <button class="drawer-close" onclick="closeStatusDrawer()" title="关闭">✕</button>
+        </div>
+        <div class="drawer-body">
+            <div class="drawer-section">当前设备</div>
+            <div class="drawer-device">
+                <span class="dev-name" id="drawerDeviceName">--</span>
+                <span class="dev-meta" id="drawerDeviceMeta">--</span>
+            </div>
+            
+            <div class="drawer-section">设备状态</div>
+            <div class="status-grid" id="statusContent">
+                <div class="status-item">
+                    <span class="status-label">运行状态</span>
+                    <span class="status-value stopped" id="statusRunning">停止</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">开关状态</span>
+                    <span class="status-value" id="statusSwitch">关闭</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">工作模式</span>
+                    <span class="status-value" id="statusMode">手动</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">通信状态</span>
+                    <span class="status-value running" id="statusComm">在线</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">IP 地址</span>
+                    <span class="status-value" id="statusIP">192.168.1.201</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">最后更新</span>
+                    <span class="status-value" id="statusTime">--</span>
+                </div>
+            </div>
+            
+            <div class="drawer-section">传感器数据</div>
+            <div class="status-grid three" id="sensorData">
+                <div class="status-item">
+                    <span class="status-label">温度</span>
+                    <span class="status-value" id="sensorTemp">25.3°C</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">湿度</span>
+                    <span class="status-value" id="sensorHumidity">60%</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">光照</span>
+                    <span class="status-value" id="sensorLight">850lux</span>
+                </div>
+            </div>
+        </div>
+    </aside>
     
     <!-- 联动控制弹窗 -->
     <div class="modal-overlay" id="linkageModal" style="display: none;">
@@ -963,15 +1463,61 @@
         </div>
     </div>
     
+    <!-- 摄像头取景框弹窗：点击 🖼️ 后开启 -->
+    <div class="modal-overlay" id="cameraModal" style="display: none;">
+        <div class="modal-content camera-modal">
+            <div class="modal-title">📷 开启摄像头 · 拍摄现场设备</div>
+            <div class="camera-viewport">
+                <video id="cameraVideo" src="images/camera-preview.mp4" muted loop playsinline autoplay></video>
+                <div class="camera-corner tl"></div>
+                <div class="camera-corner tr"></div>
+                <div class="camera-corner bl"></div>
+                <div class="camera-corner br"></div>
+                <div class="camera-hint">
+                    <span class="rec-dot"></span> REC 摄像头已开启，对准现场设备后拍摄
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="device-btn secondary" onclick="closeCameraModal()">取消</button>
+                <button class="device-btn capture-btn" onclick="capturePhoto()">📸 拍摄</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // ========== Mock 数据 ==========
+        // 设备类型定义：覆盖需求要求的灯光类、电机类、风扇类、传感器类
+        const deviceTypes = {
+            gateway: { label: '网关类', icon: '📡' },
+            motor: { label: '电机类', icon: '⚙️' },
+            fan: { label: '风扇类', icon: '🌀' },
+            light: { label: '灯光类', icon: '💡' },
+            sensor: { label: '传感器类', icon: '🌡️' }
+        };
+        
         const mockDevices = [
-            { id: 'gw-001', name: 'AI硬件智能体-ECU-1251', type: 'gateway', model: '研华工业通讯网关', ip: '192.168.1.101', status: 'running', commStatus: 'online' },
-            { id: 'motor-001', name: '环形线电机', type: 'motor', model: '西门子伺服电机', ip: '192.168.1.201', status: 'stopped', commStatus: 'online', switch: 'off', mode: 'manual' },
-            { id: 'motor-002', name: '推料电机', type: 'motor', model: 'ABB交流电机', ip: '192.168.1.202', status: 'running', commStatus: 'online', switch: 'on', mode: 'auto' },
-            { id: 'fan-001', name: '散热风扇', type: 'fan', model: '工业散热风扇', ip: '192.168.1.203', status: 'running', commStatus: 'online', switch: 'on', mode: 'high' },
-            { id: 'light-001', name: '车间照明灯', type: 'light', model: 'LED工业照明', ip: '192.168.1.204', status: 'off', commStatus: 'online', switch: 'off' },
-            { id: 'sensor-001', name: '温湿度传感器', type: 'sensor', model: 'DHT11温湿度传感器', ip: '192.168.1.205', status: 'running', commStatus: 'online', temp: 25.3, humidity: 60, light: 850 }
+            { id: 'gw-001', name: 'AI硬件智能体-ECU-1251', type: 'gateway', model: '研华工业通讯网关', ip: '192.168.1.101',
+              status: 'running', commStatus: 'online', protocol: 'Modbus TCP / MQTT', firmware: 'V2.4.1',
+              wiring: '接线正常', indicator: '指示灯常亮', lastSeen: '2026-09-18 10:42:15', uptime: '3天 06:12' },
+            { id: 'motor-001', name: '环形线电机', type: 'motor', model: '西门子伺服电机', ip: '192.168.1.201',
+              status: 'stopped', commStatus: 'online', switch: 'off', mode: 'manual', protocol: 'Modbus RTU', firmware: 'V1.8.0',
+              wiring: '接线正常', indicator: '指示灯常亮', lastSeen: '2026-09-18 10:42:14', uptime: '3天 06:10' },
+            { id: 'motor-002', name: '推料电机', type: 'motor', model: 'ABB交流电机', ip: '192.168.1.202',
+              status: 'running', commStatus: 'online', switch: 'on', mode: 'auto', protocol: 'Modbus RTU', firmware: 'V1.8.0',
+              wiring: '接线正常', indicator: '指示灯常亮', lastSeen: '2026-09-18 10:42:15', uptime: '3天 06:11' },
+            { id: 'fan-001', name: '散热风扇', type: 'fan', model: '工业散热风扇', ip: '192.168.1.203',
+              status: 'running', commStatus: 'online', switch: 'on', mode: 'high', protocol: 'Modbus RTU', firmware: 'V1.5.2',
+              wiring: '接线正常', indicator: '指示灯常亮', lastSeen: '2026-09-18 10:42:13', uptime: '3天 06:08' },
+            { id: 'light-001', name: '车间照明灯', type: 'light', model: 'LED工业照明', ip: '192.168.1.204',
+              status: 'off', commStatus: 'online', switch: 'off', protocol: 'Modbus RTU', firmware: 'V1.2.0',
+              wiring: '接线正常', indicator: '指示灯熄灭', lastSeen: '2026-09-18 10:42:12', uptime: '3天 06:05' },
+            { id: 'light-002', name: '仓库照明灯', type: 'light', model: 'LED工业照明', ip: '192.168.1.206',
+              status: 'warning', commStatus: 'offline', switch: 'off', protocol: 'Modbus RTU', firmware: 'V1.2.0',
+              wiring: '接线松动', indicator: '指示灯熄灭', lastSeen: '2026-09-18 09:15:47', uptime: '—' },
+            { id: 'sensor-001', name: '温湿度传感器', type: 'sensor', model: 'DHT11温湿度传感器', ip: '192.168.1.205',
+              status: 'running', commStatus: 'online', protocol: 'Modbus RTU', firmware: 'V1.0.6',
+              wiring: '接线正常', indicator: '指示灯常亮', lastSeen: '2026-09-18 10:42:15', uptime: '3天 06:14',
+              temp: 25.3, humidity: 60, light: 850 }
         ];
         
         const nodeConfig = [
@@ -984,51 +1530,201 @@
         
         // ========== 全局状态 ==========
         let currentDevice = mockDevices[1]; // 默认选择环形线电机
-        let chatHistory = [];
         let isRecording = false;
         
-        // ========== 设备总览 ==========
-        function renderDeviceGrid() {
-            const grid = document.getElementById('deviceGrid');
-            const filterType = document.getElementById('deviceTypeFilter').value;
-            const searchText = document.getElementById('deviceSearch').value.toLowerCase();
+        // ========== 设备统一管理（结果直接呈现在对话框中） ==========
+        // 概览统计：设备总数 / 在线 / 离线 / 运行中 + 设备类型分布
+        function getDeviceOverviewStats() {
+            const total = mockDevices.length;
+            const onlineCount = mockDevices.filter(d => d.commStatus === 'online').length;
+            const runningCount = mockDevices.filter(d => d.status === 'running').length;
+            const coveredTypes = Object.keys(deviceTypes).filter(t => mockDevices.some(d => d.type === t));
+            return { total, onlineCount, offlineCount: total - onlineCount, runningCount, coveredTypes };
+        }
+        
+        function statusBadge(device) {
+            const cls = device.status === 'running' ? 'ok'
+                : device.status === 'warning' ? 'err'
+                : device.status === 'off' ? 'mute' : 'warn';
+            return `<span class="msg-badge ${cls}">${getStatusText(device.status)}</span>`;
+        }
+        
+        function commBadge(device) {
+            const online = device.commStatus === 'online';
+            return `<span class="msg-badge ${online ? 'ok' : 'err'}">${online ? '通信正常' : '通信中断'}</span>`;
+        }
+        
+        function onlineBadge(device) {
+            const online = device.commStatus === 'online';
+            return `<span class="msg-badge ${online ? 'ok' : 'err'}">${online ? '在线' : '离线'}</span>`;
+        }
+        
+        // 全部设备统一管理卡片：自然语言总结 + 分类统计 + 设备明细表
+        function buildDeviceOverviewCard(devices, title) {
+            const list = devices && devices.length ? devices : mockDevices;
+            const s = getDeviceOverviewStats();
+            const summary = `已接入网关 <strong>gw-001</strong> 的设备共 <strong>${s.total}</strong> 台，覆盖 <strong>${s.coveredTypes.length}</strong> 类设备（${s.coveredTypes.map(t => deviceTypes[t].label).join('、')}）。`
+                + `当前在线 ${s.onlineCount} 台，运行中 ${s.runningCount} 台`
+                + (s.offlineCount ? `，其中 <span class="hl-err">${s.offlineCount} 台通信中断/离线</span>，建议优先排查。` : '，全部通信正常。');
             
-            const filteredDevices = mockDevices.filter(device => {
-                if (filterType !== 'all' && device.type !== filterType) return false;
-                if (searchText && !device.name.toLowerCase().includes(searchText) && !device.ip.includes(searchText)) return false;
-                return true;
-            });
+            const typeChips = s.coveredTypes.map(t => {
+                const count = mockDevices.filter(d => d.type === t).length;
+                return `<span class="msg-badge mute">${deviceTypes[t].icon} ${deviceTypes[t].label} ${count}</span>`;
+            }).join('');
             
-            grid.innerHTML = filteredDevices.map(device => `
-                <div class="device-card" onclick="openDeviceControl('${device.id}')">
-                    <div class="device-header">
-                        <div class="device-icon ${device.type}">${getDeviceIcon(device.type)}</div>
-                        <div class="device-info">
-                            <div class="device-name">${device.name}</div>
-                            <div class="device-model">${device.model}</div>
-                        </div>
+            const rows = list.map(d => `
+                <tr>
+                    <td>${getDeviceIcon(d.type)} ${d.name}</td>
+                    <td>${getDeviceTypeLabel(d.type)}</td>
+                    <td>${d.model}</td>
+                    <td>${statusBadge(d)}</td>
+                    <td>${commBadge(d)}</td>
+                    <td>${onlineBadge(d)}</td>
+                </tr>`).join('');
+            
+            return `
+                <div class="msg-head"><span>${title || '📊 网关设备统一管理与状态查询'}</span><span class="msg-tag">共 ${list.length} 台</span></div>
+                <div class="msg-summary">${summary}</div>
+                <div class="msg-stats">
+                    <span class="msg-stat"><b>${s.total}</b>接入设备总数</span>
+                    <span class="msg-stat"><b class="ok">${s.onlineCount}</b>在线设备</span>
+                    <span class="msg-stat"><b class="err">${s.offlineCount}</b>离线设备</span>
+                    <span class="msg-stat"><b>${s.runningCount}</b>运行中设备</span>
+                    ${typeChips}
+                </div>
+                <table class="msg-table">
+                    <thead>
+                        <tr><th>设备名称</th><th>设备类型</th><th>设备型号</th><th>运行状态</th><th>通信状态</th><th>在线情况</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+        
+        // 设备类型统计卡片
+        function buildDeviceTypeStatCard() {
+            const s = getDeviceOverviewStats();
+            const rows = s.coveredTypes.map(t => {
+                const list = mockDevices.filter(d => d.type === t);
+                const online = list.filter(d => d.commStatus === 'online').length;
+                return `
+                <tr>
+                    <td>${deviceTypes[t].icon} ${deviceTypes[t].label}</td>
+                    <td>${list.length} 台</td>
+                    <td>${online} 台</td>
+                    <td>${list.map(d => d.name).join('、')}</td>
+                </tr>`;
+            }).join('');
+            
+            return `
+                <div class="msg-head"><span>🗂️ 设备类型统计</span><span class="msg-tag">共 ${s.coveredTypes.length} 类</span></div>
+                <div class="msg-summary">网关下共接入 <strong>${s.total}</strong> 台设备，按类型划分为 <strong>${s.coveredTypes.length}</strong> 类，已覆盖灯光类、电机类、风扇类、传感器类等设备类型。</div>
+                <table class="msg-table">
+                    <thead>
+                        <tr><th>设备类型</th><th>接入数量</th><th>在线数量</th><th>设备清单</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+        
+        // 离线 / 通信中断设备排查卡片
+        function buildOfflineCard() {
+            const offline = mockDevices.filter(d => d.commStatus !== 'online');
+            if (!offline.length) {
+                return `<div class="msg-head"><span>📡 离线设备排查</span></div>
+                        <div class="msg-summary">当前网关下所有设备通信均正常，无离线设备。</div>`;
+            }
+            
+            const rows = offline.map(d => `
+                <tr>
+                    <td>${getDeviceIcon(d.type)} ${d.name}</td>
+                    <td>${getDeviceTypeLabel(d.type)}</td>
+                    <td>${d.ip}</td>
+                    <td><span class="msg-badge err">通信中断</span></td>
+                    <td><span class="msg-badge err">离线</span></td>
+                    <td>${d.lastSeen}</td>
+                </tr>`).join('');
+            
+            return `
+                <div class="msg-head"><span>📡 离线设备排查</span><span class="msg-tag">${offline.length} 台异常</span></div>
+                <div class="msg-summary">检测到 <span class="hl-err"><strong>${offline.length}</strong> 台设备通信中断</span>，最近一次通信时间见下表，建议检查供电与接线状态。</div>
+                <table class="msg-table">
+                    <thead>
+                        <tr><th>设备名称</th><th>设备类型</th><th>IP 地址</th><th>通信状态</th><th>在线情况</th><th>最后通信时间</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+        
+        // 单台设备详情卡片：基础信息 / 运行状态 / 通信状态与在线情况
+        function buildDeviceDetailCard(device) {
+            const online = device.commStatus === 'online';
+            const onlineCls = online ? 'ok' : 'err';
+            const row = (label, value, cls) =>
+                `<div class="info-item"><span class="info-label">${label}</span><span class="info-value ${cls || ''}">${value}</span></div>`;
+            
+            const sensorSection = device.type === 'sensor' ? `
+                <div class="info-section">
+                    <div class="info-section-title">采集数据</div>
+                    <div class="info-grid">
+                        ${row('温度', Number(device.temp).toFixed(1) + ' °C')}
+                        ${row('湿度', device.humidity + ' %')}
+                        ${row('光照度', Math.round(device.light) + ' lux')}
                     </div>
-                    <div class="device-status">
-                        <span class="status-dot ${device.status}"></span>
-                        <span class="status-text">${getStatusText(device.status)} | ${device.commStatus === 'online' ? '通信正常' : '通信异常'}</span>
-                    </div>
-                    <div class="device-actions">
-                        <button class="device-btn" onclick="event.stopPropagation(); openDeviceControl('${device.id}')">开启智能体</button>
-                        <button class="device-btn secondary" onclick="event.stopPropagation(); openDeviceDetail('${device.id}')">详情</button>
+                </div>` : '';
+            
+            return `
+                <div class="msg-head"><span>📋 ${device.name}</span><span class="msg-tag">${device.id}</span></div>
+                <div class="msg-summary">${getDeviceIcon(device.type)} 该设备属于 <strong>${getDeviceTypeLabel(device.type)}</strong>，当前运行状态 <strong>${getStatusText(device.status)}</strong>，通信${online ? '正常' : '中断'}，设备${online ? '在线' : '离线'}。</div>
+                <div class="info-section">
+                    <div class="info-section-title">基础信息</div>
+                    <div class="info-grid">
+                        ${row('设备 ID', device.id)}
+                        ${row('设备名称', device.name)}
+                        ${row('设备类型', getDeviceTypeLabel(device.type))}
+                        ${row('设备型号', device.model)}
+                        ${row('IP 地址', device.ip)}
+                        ${row('固件版本', device.firmware)}
+                        ${row('接入网关', 'gw-001 · 研华工业通讯网关')}
+                        ${row('通信协议', device.protocol)}
                     </div>
                 </div>
-            `).join('');
+                <div class="info-section">
+                    <div class="info-section-title">运行状态</div>
+                    <div class="info-grid">
+                        ${row('运行状态', getStatusText(device.status), device.status === 'running' ? 'ok' : device.status === 'warning' ? 'err' : '')}
+                        ${row('开关状态', device.switch === 'on' ? '开启' : device.switch === 'off' ? '关闭' : '—')}
+                        ${row('工作模式', getModeText(device.mode))}
+                        ${row('接线状态', device.wiring, device.wiring === '接线正常' ? 'ok' : 'err')}
+                    </div>
+                </div>
+                <div class="info-section">
+                    <div class="info-section-title">通信状态与在线情况</div>
+                    <div class="info-grid">
+                        ${row('通信状态', online ? '通信正常' : '通信中断', onlineCls)}
+                        ${row('在线情况', online ? '在线' : '离线', onlineCls)}
+                        ${row('指示灯状态', device.indicator, device.indicator === '指示灯常亮' ? 'ok' : 'warn')}
+                        ${row('最后通信时间', device.lastSeen)}
+                        ${row('在线时长', device.uptime)}
+                    </div>
+                </div>
+                ${sensorSection}
+            `;
         }
         
         function getDeviceIcon(type) {
-            const icons = {
-                gateway: '📡',
-                motor: '⚙️',
-                fan: '🌀',
-                light: '💡',
-                sensor: '🌡️'
-            };
-            return icons[type] || '📦';
+            return (deviceTypes[type] || {}).icon || '📦';
+        }
+        
+        function getDeviceTypeLabel(type) {
+            return (deviceTypes[type] || {}).label || '未知类型';
+        }
+        
+        function getModeText(mode) {
+            const texts = { manual: '手动', auto: '自动', high: '高速', low: '低速' };
+            return texts[mode] || '—';
         }
         
         function getStatusText(status) {
@@ -1041,30 +1737,11 @@
             return texts[status] || '未知';
         }
         
-        function filterDevices() {
-            renderDeviceGrid();
-        }
-        
         function openDeviceControl(deviceId) {
             currentDevice = mockDevices.find(d => d.id === deviceId);
-            switchPage('control');
             document.getElementById('controlDeviceSelect').value = deviceId;
             updateStatusPanel();
             addChatMessage('system', `已切换到设备: ${currentDevice.name}`);
-        }
-        
-        function openDeviceDetail(deviceId) {
-            // 可以扩展为详情页面
-            alert(`设备详情: ${deviceId}`);
-        }
-        
-        // ========== 页面切换 ==========
-        function switchPage(page) {
-            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            
-            document.getElementById(page + 'Page').classList.add('active');
-            event.target.classList.add('active');
         }
         
         // ========== 智能体控制 ==========
@@ -1084,32 +1761,50 @@
         }
         
         function updateStatusPanel() {
-            document.getElementById('currentDeviceName').textContent = currentDevice.name;
             document.getElementById('statusRunning').textContent = getStatusText(currentDevice.status);
             document.getElementById('statusRunning').className = `status-value ${currentDevice.status}`;
             document.getElementById('statusSwitch').textContent = currentDevice.switch === 'on' ? '开启' : '关闭';
-            document.getElementById('statusMode').textContent = currentDevice.mode || '手动';
+            document.getElementById('statusMode').textContent = getModeText(currentDevice.mode);
             document.getElementById('statusComm').textContent = currentDevice.commStatus === 'online' ? '在线' : '离线';
             document.getElementById('statusComm').className = `status-value ${currentDevice.commStatus === 'online' ? 'running' : 'stopped'}`;
             document.getElementById('statusIP').textContent = currentDevice.ip;
             document.getElementById('statusTime').textContent = new Date().toLocaleTimeString();
             
+            // 抽屉内的当前设备信息
+            document.getElementById('drawerDeviceName').textContent = currentDevice.name;
+            document.getElementById('drawerDeviceMeta').textContent = `${currentDevice.id} · ${currentDevice.commStatus === 'online' ? '在线' : '离线'}`;
+            
             // 传感器数据
             if (currentDevice.temp) {
-                document.getElementById('sensorTemp').textContent = currentDevice.temp + '°C';
+                document.getElementById('sensorTemp').textContent = Number(currentDevice.temp).toFixed(1) + '°C';
                 document.getElementById('sensorHumidity').textContent = currentDevice.humidity + '%';
-                document.getElementById('sensorLight').textContent = currentDevice.light + 'lux';
+                document.getElementById('sensorLight').textContent = Math.round(currentDevice.light) + 'lux';
             }
         }
         
+        // ========== 设备状态抽屉（默认收起，点击按钮或按指令后滑出） ==========
+        function openStatusDrawer() {
+            updateStatusPanel();
+            document.getElementById('statusDrawer').classList.add('open');
+            document.getElementById('statusDrawerMask').classList.add('open');
+        }
+        
+        function closeStatusDrawer() {
+            document.getElementById('statusDrawer').classList.remove('open');
+            document.getElementById('statusDrawerMask').classList.remove('open');
+        }
+        
+        // type: user / success / error / system / rich(富文本卡片) / img(图片)
         function addChatMessage(type, text) {
             const messagesDiv = document.getElementById('chatMessages');
             const time = new Date().toLocaleTimeString();
-            const messageClass = type === 'user' ? 'user' : (type === 'success' ? 'success' : (type === 'error' ? 'error' : 'system'));
+            const classMap = { user: 'user', success: 'success', error: 'error', rich: 'rich', img: 'user img' };
+            const messageClass = classMap[type] || 'system';
+            const body = type === 'rich' ? text : `<div>${text}</div>`;
             
             messagesDiv.innerHTML += `
                 <div class="message ${messageClass}">
-                    <div>${text}</div>
+                    ${body}
                     <div class="message-time">${time}</div>
                 </div>
             `;
@@ -1117,18 +1812,63 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
+        // 指令库快捷提问：模拟用户输入并走同一套意图解析
+        function sendQuickMessage(text) {
+            document.getElementById('chatInput').value = text;
+            sendMessage();
+        }
+        
         function sendMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             if (!text) return;
             
-            addChatMessage('user', text);
             input.value = '';
+            addChatMessage('user', text);
             
-            // 解析并执行指令
+            // 模拟文字指令的处理过程：发送后稍作停顿（约1.6秒）再返回，便于讲解与观看
             setTimeout(() => {
-                executeCommand(text);
-            }, 500);
+                handleUserMessage(text);
+            }, 1600);
+        }
+        
+        // 用户在对话框中点击 🖼️：开启摄像头取景框 → 拍摄 → 识别
+        function sendImageMessage() {
+            openCameraModal();
+        }
+        
+        // ========== 摄像头取景框 ==========
+        function openCameraModal() {
+            document.getElementById('cameraModal').style.display = 'flex';
+            const video = document.getElementById('cameraVideo');
+            video.currentTime = 0;
+            video.play().catch(() => {});
+        }
+        
+        function closeCameraModal() {
+            document.getElementById('cameraModal').style.display = 'none';
+            const video = document.getElementById('cameraVideo');
+            video.pause();
+        }
+        
+        // 拍摄：截取当前视频帧 → 关闭取景框 → 在对话框中展示照片并触发识别
+        let lastVisionShot = 'images/camera-snapshot.jpg'; // 兜底：识别卡片使用的现场画面
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 1280;
+            canvas.height = video.videoHeight || 720;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const shot = canvas.toDataURL('image/jpeg', 0.92);
+            lastVisionShot = shot;
+            closeCameraModal();
+            
+            // 在对话框中展示拍摄到的设备照片
+            addChatMessage('img', `<img class="bubble-img" src="${shot}" alt="摄像头拍摄画面">`);
+            setTimeout(() => {
+                handleUserMessage('识别这张现场图像中的设备状态');
+            }, 400);
         }
         
         function handleInputKeyPress(event) {
@@ -1137,10 +1877,84 @@
             }
         }
         
+        // ========== 意图解析：区分「图像识别 / 设备管理查询 / 设备控制」 ==========
+        function handleUserMessage(text) {
+            // 1) 图像识别意图：对话框中输入图像或提出识别需求
+            if (/图像|图片|照片|摄像|视觉|识别|拍照|画面/.test(text)) {
+                runVisionRecognition(text);
+                return;
+            }
+            
+            // 2) 设备统一管理 / 状态查询意图
+            if (matchDeviceQuery(text)) return;
+            
+            // 3) 设备控制意图（沿用原有控制逻辑）
+            executeCommand(text);
+        }
+        
+        // 设备管理查询：返回 true 表示已在对话框中给出结果
+        function matchDeviceQuery(text) {
+            const isTypeStat = /统计|分布|分类|几类|多少类/.test(text);
+            const isOffline = /离线|掉线|中断|异常|故障设备/.test(text);
+            const isQuery = /查询|查看|列出|列出|所有|全部|有哪些|哪些|状态|情况|信息|总览|几台|多少|在线|通信|详情/.test(text);
+            
+            if (!isQuery && !isTypeStat && !isOffline) return false;
+            
+            // 命中具体设备名称 → 单台设备详情
+            const named = mockDevices.find(d => text.includes(d.name));
+            if (named) {
+                addChatMessage('rich', buildDeviceDetailCard(named));
+                speakText(`已查询到 ${named.name}，当前状态${getStatusText(named.status)}，${named.commStatus === 'online' ? '在线' : '离线'}`);
+                return true;
+            }
+            
+            // 类型统计
+            if (isTypeStat) {
+                addChatMessage('rich', buildDeviceTypeStatCard());
+                speakText(`网关下共接入${mockDevices.length}台设备，共${getDeviceOverviewStats().coveredTypes.length}类`);
+                return true;
+            }
+            
+            // 离线设备排查
+            if (isOffline) {
+                const card = buildOfflineCard();
+                addChatMessage('rich', card);
+                const offline = mockDevices.filter(d => d.commStatus !== 'online');
+                speakText(offline.length ? `检测到${offline.length}台设备通信中断：${offline.map(d => d.name).join('、')}` : '所有设备通信正常');
+                return true;
+            }
+            
+            // 指定类型：查询某一类设备
+            const typeHit = Object.keys(deviceTypes).find(t => {
+                const word = deviceTypes[t].label.replace('类', '');
+                return text.includes(word) || text.includes(deviceTypes[t].label);
+            });
+            if (typeHit && /类|设备/.test(text)) {
+                const list = mockDevices.filter(d => d.type === typeHit);
+                addChatMessage('rich', buildDeviceOverviewCard(list, `${deviceTypes[typeHit].icon} ${deviceTypes[typeHit].label}设备状态查询`));
+                speakText(`${deviceTypes[typeHit].label}共${list.length}台设备`);
+                return true;
+            }
+            
+            // 默认：全部设备统一管理
+            addChatMessage('rich', buildDeviceOverviewCard());
+            const s = getDeviceOverviewStats();
+            speakText(`网关下共接入${s.total}台设备，在线${s.onlineCount}台，运行中${s.runningCount}台`);
+            return true;
+        }
+        
         function executeCommand(command) {
             // 模拟指令解析和执行
             let result = '';
             let success = true;
+            
+            // 统一管理：指令中点名了某台设备时，自动把控制对象切到该设备
+            const target = mockDevices.find(d => command.includes(d.name));
+            if (target && target !== currentDevice) {
+                currentDevice = target;
+                document.getElementById('controlDeviceSelect').value = target.id;
+                updateStatusPanel();
+            }
             
             // 启停控制
             if (command.includes('启动') || command.includes('开始')) {
@@ -1178,16 +1992,19 @@
                 result = `${currentDevice.name}已切换为自动模式`;
                 success = true;
             }
-            // 状态查询
-            else if (command.includes('查询') || command.includes('状态')) {
-                result = `${currentDevice.name}当前状态: ${getStatusText(currentDevice.status)}, 开关: ${currentDevice.switch === 'on' ? '开启' : '关闭'}, 模式: ${currentDevice.mode || '手动'}`;
-            }
+            // 传感器数据查询（同时滑出状态抽屉）
             else if (command.includes('传感器') || command.includes('数据')) {
                 if (currentDevice.temp) {
-                    result = `传感器数据: 温度 ${currentDevice.temp}°C, 湿度 ${currentDevice.humidity}%, 光照 ${currentDevice.light}lux`;
+                    result = `传感器数据: 温度 ${Number(currentDevice.temp).toFixed(1)}°C, 湿度 ${currentDevice.humidity}%, 光照 ${Math.round(currentDevice.light)}lux`;
                 } else {
                     result = '当前设备无传感器数据';
                 }
+                openStatusDrawer();
+            }
+            // 状态查询（同时滑出状态抽屉）
+            else if (command.includes('查询') || command.includes('状态')) {
+                result = `${currentDevice.name}当前状态: ${getStatusText(currentDevice.status)}, 开关: ${currentDevice.switch === 'on' ? '开启' : '关闭'}, 模式: ${currentDevice.mode || '手动'}`;
+                openStatusDrawer();
             }
             else {
                 result = `指令 "${command}" 已接收，正在执行...`;
@@ -1206,13 +2023,28 @@
             }, 300);
         }
         
-        // ========== 语音输入模拟 ==========
+        // ========== 语音输入模拟（三案例顺序轮转） ==========
+        // 每次点击语音按钮，演示一个指令，按顺序轮转（循环）：
+        //   1. 单台设备查询（查询环形线电机状态）
+        //   2. 单台设备控制（启动环形线电机）
+        //   3. 对接入网关的设备进行统一管理与状态查询（查询所有设备状态）
+        const voiceDemoCases = [
+            '查询环形线电机状态',
+            '启动环形线电机',
+            '查询所有设备状态'
+        ];
+        let voiceDemoIndex = 0; // 当前演示指令下标（点击一次轮转一次）
+
         function startVoiceInput() {
             const voiceBtn = document.getElementById('voiceBtn');
             
             if (isRecording) {
                 return;
             }
+            
+            // 本次点击演示第 voiceDemoIndex 个指令，下次点击进入下一个
+            const recognizedText = voiceDemoCases[voiceDemoIndex % voiceDemoCases.length];
+            voiceDemoIndex++;
             
             isRecording = true;
             voiceBtn.classList.add('recording');
@@ -1223,26 +2055,17 @@
             
             setTimeout(() => {
                 // 模拟语音识别结果
-                const mockVoiceCommands = [
-                    '启动环形线电机',
-                    '打开车间照明灯',
-                    '切换散热风扇为高速模式',
-                    '查询设备状态',
-                    '停止推料电机'
-                ];
-                const recognizedText = mockVoiceCommands[Math.floor(Math.random() * mockVoiceCommands.length)];
-                
                 addChatMessage('user', `🎤 语音识别: "${recognizedText}"`);
                 
                 voiceBtn.classList.remove('recording');
                 voiceBtn.innerHTML = '🎤';
                 isRecording = false;
                 
-                // 自动执行指令
+                // 语音输入停止后自动执行指令（与文字输入走同一套意图解析）
                 setTimeout(() => {
-                    executeCommand(recognizedText);
-                }, 500);
-            }, 1500);
+                    handleUserMessage(recognizedText);
+                }, 1600);
+            }, 3000);
         }
         
         // ========== 语音播报 ==========
@@ -1308,7 +2131,8 @@
             setTimeout(() => {
                 addChatMessage('success', `联动执行成功! ${deviceIds.length} 个设备已${command}`);
                 updateStatusPanel();
-                renderDeviceGrid();
+                // 联动后同步刷新对话框中的设备状态卡片
+                addChatMessage('rich', buildDeviceOverviewCard(mockDevices.filter(d => deviceIds.includes(d.id)), '🔗 联动执行后的设备状态'));
                 speakText(`联动执行成功，${deviceIds.length} 个设备已${command}`);
             }, 500);
             
@@ -1331,276 +2155,96 @@
             }, 2000);
         }
         
-        // ========== 图像验证 ==========
-        // 场景图片配置
-        const sceneImages = {
-            motor: {
-                url: 'images/vision-motor.jpg',
-                detections: [
-                    { top: 20, left: 150, width: 200, height: 100, label: '电机-001 [运行]', color: 'success' },
-                    { top: 150, left: 350, width: 150, height: 120, label: '电机-002 [运行]', color: 'success' },
-                    { top: 280, left: 200, width: 100, height: 80, label: '控制柜 [正常]', color: 'primary-blue' }
-                ]
-            },
-            sensor: {
-                url: 'images/vision-sensor.jpg',
-                detections: [
-                    { top: 54, left: 117, width: 189, height: 200, label: '传感器-001 [正常]', color: 'primary-blue' },
-                     { top: 35, left: 572, width: 225, height: 328, label: '传感器-002 [正常]', color: 'primary-blue' },
-                    { top: 237, left: 384, width: 215, height: 213, label: '传感器-003 [告警]', color: 'warning' }
-                   
-                ]
-            },
-            light: {
-                url: 'images/vision-light.jpg',
-                detections: [
-                    { top: 80, left: 100, width: 120, height: 100, label: '照明灯-001 [关闭]', color: 'warning' },
-                    { top: 120, left: 280, width: 110, height: 90, label: '照明灯-002 [开启]', color: 'success' },
-                    { top: 200, left: 450, width: 100, height: 80, label: '照明灯-003 [开启]', color: 'success' }
-                ]
+        // ========== 图像识别与双重验证（结果呈现在对话框中） ==========
+        // 视觉识别结果：设备类型 / 安装环境 / 接线状态 / 指示灯状态 / 运行状态
+        const visionDevices = [
+            {
+                id: 'GW-01', name: '工业物联网网关 GW-01', type: '工业物联网网关',
+                vision: {
+                    env: '学校实验室开放式铝型材教学架',
+                    wiring: '电源线与以太网线已连接，两根天线已安装',
+                    indicator: '绿色电源及网络状态灯亮起',
+                    run: '设备已供电，网络连接正常，处于运行状态'
+                },
+                data: { run: '运行', online: '在线', power: '供电正常', network: '网络连接正常' },
+                conf: 97, warn: false
             }
-        };
+        ];
         
-        function changeVisionScene() {
-            const scene = document.getElementById('sceneSelect').value;
-            const img = document.getElementById('visionImg');
-            const overlay = document.getElementById('visionOverlay');
+        // 识别结果卡片：拍摄的现场画面 + 识别明细 + 双重验证结论
+        function buildVisionCard() {
+            const dev = visionDevices[0];
+            const confidence = dev.conf + Math.floor(Math.random() * 3) - 1;
+            const items = [
+                ['设备类型', dev.type],
+                ['安装环境', dev.vision.env],
+                ['接线状态', dev.vision.wiring],
+                ['指示灯状态', dev.vision.indicator],
+                ['运行状态', dev.vision.run]
+            ].map(([k, v]) => `
+                <div class="validate-row">
+                    <span class="col-head">${k}</span>
+                    <span>${v}</span>
+                </div>`).join('');
             
-            // 更换图片
-            img.src = sceneImages[scene].url;
-            
-            // 清空检测框
-            overlay.innerHTML = '';
-            
-            // 添加检测框动画
-            const detections = sceneImages[scene].detections;
-            detections.forEach((det, index) => {
-                setTimeout(() => {
-                    const box = document.createElement('div');
-                    box.className = 'detection-box';
-                    box.style.cssText = `top: ${det.top}px; left: ${det.left}px; width: ${det.width}px; height: ${det.height}px; opacity: 0; transition: opacity 0.3s ease;`;
-                    
-                    if (det.color !== 'success') {
-                        box.style.borderColor = `var(--${det.color})`;
-                    }
-                    
-                    const label = document.createElement('div');
-                    label.className = 'detection-label';
-                    label.textContent = det.label;
-                    if (det.color !== 'success') {
-                        label.style.background = `var(--${det.color})`;
-                    }
-                    
-                    box.appendChild(label);
-                    overlay.appendChild(box);
-                    
-                    // 动画显示
-                    setTimeout(() => {
-                        box.style.opacity = '1';
-                    }, 50);
-                }, index * 300);
-            });
-            
-            // 更新识别结果
-            setTimeout(() => {
-                refreshVision(scene);
-            }, detections.length * 300 + 200);
-        }
-        
-        function refreshVision(scene) {
-            scene = scene || document.getElementById('sceneSelect').value;
-            const resultsList = document.getElementById('visionResultsList');
-            const validationResult = document.getElementById('validationResult');
-            
-            // 根据场景生成识别结果
-            const detections = sceneImages[scene].detections;
-            const resultsHTML = detections.map((det, index) => {
-                const confidence = Math.floor(Math.random() * 10 + 90);
-                const status = det.label.includes('运行') || det.label.includes('开启') || det.label.includes('正常') ? '正常' : '异常';
-                const statusColor = status === '正常' ? 'success' : 'warning';
-                
-                return `
-                    <div class="result-item">
-                        <div class="result-name">${det.label.split(' [')[0]}</div>
-                        <div class="result-meta">
-                            <span class="result-status" style="color: var(--${statusColor});">● ${det.label.match(/\[(.*?)\]/)?.[1] || '未知'}</span>
-                            <span class="result-confidence">置信度: ${confidence}%</span>
-                        </div>
+            const resultItems = `
+                <div class="result-item">
+                    <div class="result-name">${dev.name}</div>
+                    <div class="result-meta">
+                        <span class="result-status" style="color: var(--success);">● 识别成功</span>
+                        <span class="result-confidence">置信度: ${confidence}%</span>
                     </div>
-                `;
-            }).join('');
+                    ${items}
+                </div>`;
             
-            resultsList.innerHTML = resultsHTML;
+            const consistent = dev.vision.run.includes('运行') && dev.data.run === '运行';
+            const validateItems = `
+                <div class="validate-card">
+                    <div class="validate-head">
+                        <span>${dev.name}</span>
+                        <span class="validate-verdict ok">✅ 双重验证一致</span>
+                    </div>
+                    <div class="validate-row">
+                        <span class="col-head">视觉识别</span>
+                        <span>${dev.vision.run} · ${dev.vision.indicator} · ${dev.vision.wiring}</span>
+                    </div>
+                    <div class="validate-row">
+                        <span class="col-head">数据状态</span>
+                        <span>${dev.data.run} · ${dev.data.power} / ${dev.data.network} · ${dev.data.online}</span>
+                    </div>
+                </div>`;
             
-            // 验证结果
-            const hasWarning = detections.some(d => d.color === 'warning');
-            if (!hasWarning) {
-                validationResult.className = 'validation-result success';
-                validationResult.innerHTML = '✅ 视觉与数据一致，状态正常';
-            } else {
-                validationResult.className = 'validation-result error';
-                validationResult.innerHTML = '⚠️ 检测到异常设备，请检查设备状态';
-            }
+            const verdict = `<div class="validation-result success">✅ 视觉与数据一致，网关设备状态正常</div>`;
+            
+            return `
+                <div class="msg-head"><span>📹 摄像通道 CH-01 图像识别</span><span class="msg-tag">海康威视 DS-2CD3T46WD · 1920×1080 · 25fps</span></div>
+                <div class="msg-summary">已接入摄像设备对现场画面进行识别，识别到 <strong>${dev.name}</strong>，识别内容包括设备类型、安装环境、接线状态、指示灯状态与运行状态，并与网关上报的数据状态做交叉比对，实现数据状态与视觉状态双重验证。</div>
+                <div class="msg-frame">
+                    <img src="${lastVisionShot}" alt="摄像头拍摄的现场画面">
+                </div>
+                <div class="result-header">🎯 识别结果（设备类型 / 安装环境 / 接线状态 / 指示灯状态 / 运行状态）</div>
+                ${resultItems}
+                <div class="result-header">🔍 数据状态与视觉状态双重验证</div>
+                ${validateItems}
+                ${verdict}
+            `;
         }
         
-        // ========== 调试模式功能 ==========
-        let debugMode = false;
-        let isDragging = false;
-        let dragStart = { x: 0, y: 0 };
-        let tempBox = null;
-        
-        function toggleDebugMode() {
-            debugMode = !debugMode;
-            const debugInfo = document.getElementById('debugInfo');
-            const visionImage = document.getElementById('visionImage');
+        // 对话框中输入图像后的识别流程
+        function runVisionRecognition() {
+            addChatMessage('system', '🔄 正在识别图像中的设备类型与运行状态...');
             
-            if (debugMode) {
-                debugInfo.style.display = 'block';
-                visionImage.style.cursor = 'crosshair';
-                alert('调试模式已开启！\n\n操作说明：\n1. 点击图片 → 显示坐标位置\n2. 拖拽绘制 → 创建检测框\n3. 松开鼠标 → 显示检测框坐标代码');
-            } else {
-                debugInfo.style.display = 'none';
-                visionImage.style.cursor = 'default';
-                // 移除临时框
-                if (tempBox) {
-                    tempBox.remove();
-                    tempBox = null;
-                }
-            }
-        }
-        
-        function handleImageClick(event) {
-            if (!debugMode) return;
-            
-            const visionImage = document.getElementById('visionImage');
-            const rect = visionImage.getBoundingClientRect();
-            const x = Math.round(event.clientX - rect.left);
-            const y = Math.round(event.clientY - rect.top);
-            
-            // 显示坐标提示
-            const tooltip = document.getElementById('coordTooltip');
-            tooltip.textContent = `坐标: (${x}, ${y})`;
-            tooltip.style.display = 'block';
-            tooltip.style.left = (x + 10) + 'px';
-            tooltip.style.top = (y - 25) + 'px';
-            
-            // 3秒后隐藏
             setTimeout(() => {
-                tooltip.style.display = 'none';
-            }, 3000);
-            
-            // 在控制台输出坐标
-            console.log(`点击坐标: { top: ${y}, left: ${x} }`);
+                addChatMessage('rich', buildVisionCard());
+                speakText(`图像识别完成，识别到一台${visionDevices[0].type}，设备已供电，网络连接正常，处于运行状态`);
+            }, 1200);
         }
         
-        // 添加拖拽绘制检测框功能
-        document.addEventListener('mousedown', function(e) {
-            if (!debugMode) return;
-            const visionImage = document.getElementById('visionImage');
-            if (!visionImage.contains(e.target)) return;
-            
-            isDragging = true;
-            const rect = visionImage.getBoundingClientRect();
-            dragStart.x = Math.round(e.clientX - rect.left);
-            dragStart.y = Math.round(e.clientY - rect.top);
-            
-            // 创建临时检测框
-            tempBox = document.createElement('div');
-            tempBox.className = 'detection-box';
-            tempBox.style.cssText = `top: ${dragStart.y}px; left: ${dragStart.x}px; width: 0px; height: 0px; border-color: #ff4757; opacity: 1;`;
-            tempBox.innerHTML = '<div class="detection-label" style="background: #ff4757;">绘制中...</div>';
-            document.getElementById('visionOverlay').appendChild(tempBox);
-        });
-        
-        document.addEventListener('mousemove', function(e) {
-            if (!debugMode || !isDragging || !tempBox) return;
-            
-            const visionImage = document.getElementById('visionImage');
-            const rect = visionImage.getBoundingClientRect();
-            const currentX = Math.round(e.clientX - rect.left);
-            const currentY = Math.round(e.clientY - rect.top);
-            
-            const width = Math.abs(currentX - dragStart.x);
-            const height = Math.abs(currentY - dragStart.y);
-            const left = Math.min(currentX, dragStart.x);
-            const top = Math.min(currentY, dragStart.y);
-            
-            tempBox.style.left = left + 'px';
-            tempBox.style.top = top + 'px';
-            tempBox.style.width = width + 'px';
-            tempBox.style.height = height + 'px';
-            tempBox.querySelector('.detection-label').textContent = `${width}x${height}`;
-        });
-        
-        document.addEventListener('mouseup', function(e) {
-            if (!debugMode || !isDragging || !tempBox) return;
-            isDragging = false;
-            
-            const width = parseInt(tempBox.style.width);
-            const height = parseInt(tempBox.style.height);
-            
-            if (width > 20 && height > 20) {
-                const code = `{ top: ${parseInt(tempBox.style.top)}, left: ${parseInt(tempBox.style.left)}, width: ${width}, height: ${height}, label: '设备名称 [状态]', color: 'success' }`;
-                
-                // 更新标签显示代码
-                tempBox.querySelector('.detection-label').textContent = '已生成代码';
-                tempBox.querySelector('.detection-label').style.background = '#00d4aa';
-                tempBox.style.borderColor = '#00d4aa';
-                
-                // 输出到控制台并弹窗提示
-                console.log('检测框代码:', code);
-                alert('检测框坐标代码已生成！\n\n复制以下代码到 sceneImages 配置中：\n\n' + code);
-                
-                // 3秒后移除临时框
-                setTimeout(() => {
-                    if (tempBox) {
-                        tempBox.remove();
-                        tempBox = null;
-                    }
-                }, 3000);
-            } else {
-                tempBox.remove();
-                tempBox = null;
-            }
-        });
-        
-        // 页面初始化时添加检测框动画
+        // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
-            renderDeviceGrid();
             renderControlDeviceSelect();
             updateStatusPanel();
             startSensorDataSimulation();
-            
-            // 初始化图像验证检测框
-            setTimeout(() => {
-                const overlay = document.getElementById('visionOverlay');
-                const detections = sceneImages.motor.detections;
-                detections.forEach((det, index) => {
-                    setTimeout(() => {
-                        const box = document.createElement('div');
-                        box.className = 'detection-box';
-                        box.style.cssText = `top: ${det.top}px; left: ${det.left}px; width: ${det.width}px; height: ${det.height}px; opacity: 0; transition: opacity 0.3s ease;`;
-                        
-                        if (det.color !== 'success') {
-                            box.style.borderColor = `var(--${det.color})`;
-                        }
-                        
-                        const label = document.createElement('div');
-                        label.className = 'detection-label';
-                        label.textContent = det.label;
-                        if (det.color !== 'success') {
-                            label.style.background = `var(--${det.color})`;
-                        }
-                        
-                        box.appendChild(label);
-                        overlay.appendChild(box);
-                        
-                        setTimeout(() => {
-                            box.style.opacity = '1';
-                        }, 50);
-                    }, index * 300);
-                });
-            }, 500);
         });
     </script>
     <script src="js/platform-shell.js"></script>

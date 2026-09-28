@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>行业云平台 - 人工智能算法训练平台</title>
+    <title>行业云平台 - 星朴XP-AI001人工智能算法训练平台</title>
     <link rel="stylesheet" href="css/common.css">
     <style>
         /* 行业云平台专属样式 - 深色风格 */
@@ -340,6 +340,13 @@
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
             transform: translateY(-1px);
         }
+
+        .btn-primary:disabled {
+            cursor: not-allowed;
+            opacity: 0.48;
+            box-shadow: none;
+            transform: none;
+        }
         
         .btn-secondary {
             padding: 8px 16px;
@@ -463,6 +470,84 @@
             height: 8px;
             border-radius: 50%;
             background: currentColor;
+        }
+        
+        /* 云平台接入与实时遥测 */
+        .cloud-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+        
+        .cloud-meta-row b {
+            color: var(--text-title);
+            font-weight: 600;
+        }
+        
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        
+        .telemetry-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        
+        .telemetry-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        
+        .telemetry-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        
+        .telemetry-unit {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        
+        .actuator-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .actuator-result {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .telemetry-log {
+            margin-top: 12px;
+            max-height: 110px;
+            overflow-y: auto;
+            background: var(--bg-input);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.9;
+        }
+        
+        .telemetry-log .log-time {
+            color: var(--text-muted);
+            margin-right: 8px;
         }
         
         /* 隐藏模块 */
@@ -599,14 +684,7 @@
             <div class="nav-brand-icon">📚</div>
             <span class="nav-brand-text">人工智能算法训练平台</span>
         </div>
-        <nav class="nav-menu">
-            <a href="dashboard.html" class="nav-link">首页</a>
-            <a href="course-hall.html" class="nav-link">课程大厅</a>
-            <a href="experiment-hall.html" class="nav-link active">实验大厅</a>
-            <a href="exam-hall.html" class="nav-link">考试大厅</a>
-            <a href="task-management.html" class="nav-link">实验任务</a>
-            <a href="ai-assistant.html" class="nav-link">AI技能助手</a>
-        </nav>
+        <nav class="nav-menu" data-platform-navigation="local" aria-label="行业云导航"></nav>
         <div style="display: flex; align-items: center; gap: 16px;">
             <span style="font-size: 13px; color: rgba(255,255,255,0.8);">魏同学 | STUDENT</span>
             <div style="font-size: 20px;">👤</div>
@@ -924,6 +1002,53 @@
                         </div>
                         <div class="stat-card-icon green">📈</div>
                     </div>
+                </div>
+                
+                <!-- 云平台接入 + 实时遥测（与公开开源物联网云平台信息交互） -->
+                <div class="content-card">
+                    <div class="content-card-title">
+                        云平台接入 · 行业云平台
+                        <span class="platform-status" id="cloudConnectionBadge" style="float: right;">
+                            <span class="dot"></span>
+                            <span id="cloudConnectionText">设备离线</span>
+                        </span>
+                    </div>
+                    
+                    <div class="cloud-meta-row">
+                        <span>接入地址：<b>mqtt://industry-cloud.local:1883</b></span>
+                        <span>接入设备：<b id="cloudDeviceCount">0 台</b></span>
+                        <span>上报频率：<b>2 秒 / 次</b></span>
+                        <span>传输协议：<b>MQTT</b></span>
+                        <span>最后同步：<b id="cloudLastSync">--:--:--</b></span>
+                        <span>遥测序号：<b id="cloudSequence">0</b></span>
+                    </div>
+                    
+                    <div class="telemetry-grid">
+                        <div class="telemetry-card">
+                            <div class="telemetry-label">🌡️ 温湿度传感器 · 温度</div>
+                            <div class="telemetry-value" id="telTemp">-- <span class="telemetry-unit">℃</span></div>
+                        </div>
+                        <div class="telemetry-card">
+                            <div class="telemetry-label">💧 温湿度传感器 · 湿度</div>
+                            <div class="telemetry-value" id="telHumi">-- <span class="telemetry-unit">%RH</span></div>
+                        </div>
+                        <div class="telemetry-card">
+                            <div class="telemetry-label">💡 光照传感器</div>
+                            <div class="telemetry-value" id="telLight">-- <span class="telemetry-unit">Lux</span></div>
+                        </div>
+                        <div class="telemetry-card">
+                            <div class="telemetry-label">🚪 门磁探测器</div>
+                            <div class="telemetry-value" id="telDoor">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="actuator-row">
+                        <button class="btn-primary" id="actuatorBtn" onclick="toggleActuator()" disabled>请先启动智慧温室仿真</button>
+                        <button class="btn-secondary" onclick="window.open('engineering-simulation.html', 'engineering-simulation-demo')">打开工程虚拟仿真</button>
+                        <span class="actuator-result" id="actuatorResult">等待设备上线…</span>
+                    </div>
+                    
+                    <div class="telemetry-log" id="telemetryLog"></div>
                 </div>
                 
                 <!-- 主内容 -->
@@ -1380,6 +1505,7 @@
         </div>
     </div>
     
+    <script src="js/demo-cloud-bridge.js"></script>
     <script>
         // 模块切换
         function switchModule(moduleName) {
@@ -1416,8 +1542,103 @@
             window.location.href = 'experiment-hall.html';
         }
         
+        /* ===== 行业云与工程虚拟仿真双向联动 ===== */
+        const industryCloudBridge = DemoCloudBridge.getDemoCloudBridge();
+
+        function nowTime() {
+            const d = new Date();
+            const p = n => String(n).padStart(2, '0');
+            return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+        }
+
+        function formatBridgeTime(value) {
+            if (!value) return '--:--:--';
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleTimeString('zh-CN', { hour12: false });
+        }
+
+        function pushTelemetryLog(text, time) {
+            const box = document.getElementById('telemetryLog');
+            if (!box) return;
+            const row = document.createElement('div');
+            row.className = 'log-row';
+            const stamp = document.createElement('span');
+            stamp.className = 'log-time';
+            stamp.textContent = `[${formatBridgeTime(time) || nowTime()}]`;
+            row.appendChild(stamp);
+            row.appendChild(document.createTextNode(` ${text}`));
+            box.insertBefore(row, box.firstChild);
+            while (box.children.length > 30) {
+                box.removeChild(box.lastChild);
+            }
+        }
+
+        function setTelemetryValue(id, value, unit) {
+            const target = document.getElementById(id);
+            target.textContent = value === null || value === undefined ? '--' : String(value);
+            if (unit) {
+                const suffix = document.createElement('span');
+                suffix.className = 'telemetry-unit';
+                suffix.textContent = unit;
+                target.appendChild(document.createTextNode(' '));
+                target.appendChild(suffix);
+            }
+        }
+
+        function renderIndustryCloudState(state) {
+            const connected = state.simulation.running && state.simulation.connected;
+            const badge = document.getElementById('cloudConnectionBadge');
+            const connectionText = document.getElementById('cloudConnectionText');
+            badge.classList.toggle('connected', connected);
+            connectionText.textContent = connected ? 'MQTT 已连接' : '设备离线';
+            document.getElementById('cloudDeviceCount').textContent = connected ? '4 台' : '0 台';
+            document.getElementById('cloudLastSync').textContent = formatBridgeTime(state.telemetry.updatedAt);
+            document.getElementById('cloudSequence').textContent = String(state.telemetry.sequence);
+
+            setTelemetryValue('telTemp', state.telemetry.temperature, '℃');
+            setTelemetryValue('telHumi', state.telemetry.humidity, '%RH');
+            setTelemetryValue('telLight', state.telemetry.light, 'Lux');
+            setTelemetryValue('telDoor', state.telemetry.door, '');
+
+            const button = document.getElementById('actuatorBtn');
+            const result = document.getElementById('actuatorResult');
+            button.disabled = !connected || state.command.status === 'pending';
+            if (!connected) {
+                button.textContent = '请先启动仿真实验';
+                result.textContent = '仿真设备离线，遥测与控制均已暂停';
+                result.style.color = '';
+            } else if (state.command.status === 'pending') {
+                button.textContent = '指令发送中…';
+                result.textContent = '指令已发送，等待仿真设备回执';
+                result.style.color = '#f59e0b';
+            } else {
+                button.textContent = `下发控制：通风风扇 ${state.actuator.fanOn ? '关闭' : '开启'}`;
+                if (state.command.status === 'acknowledged') {
+                    result.textContent = `${state.command.message}（${formatBridgeTime(state.command.ackAt)}）`;
+                    result.style.color = 'var(--platform-cyan, #00d4aa)';
+                } else if (state.command.status === 'failed') {
+                    result.textContent = state.command.message;
+                    result.style.color = '#ef4444';
+                } else {
+                    result.textContent = '设备在线，可下发通风风扇控制指令';
+                    result.style.color = '';
+                }
+            }
+
+            const logBox = document.getElementById('telemetryLog');
+            logBox.innerHTML = '';
+            state.logs.slice().reverse().forEach(log => pushTelemetryLog(log.message, log.time));
+        }
+
+        function toggleActuator() {
+            const state = industryCloudBridge.getState();
+            if (!state.simulation.connected || state.command.status === 'pending') return;
+            industryCloudBridge.sendFanCommand(!state.actuator.fanOn);
+        }
+
         // 初始化：默认显示数据仿真模块
         switchModule('simulation');
+        industryCloudBridge.subscribe(renderIndustryCloudState);
     </script>
     <script src="js/platform-shell.js"></script>
 </body>

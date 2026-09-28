@@ -3,194 +3,1001 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课程大厅 - 人工智能算法训练平台</title>
+    <title>课程大厅 - 星朴XP-AI001人工智能算法训练平台</title>
 
     <!-- 引入样式文件 -->
     <link rel="stylesheet" href="css/common.css">
     <style>
-        /* 课程大厅特定样式 - 仅保留页面特有的样式 */
-        
-        /* 课程卡片网格 */
-        .course-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: var(--space-4);
-        }
+        /* ========================================
+           课程大厅页面样式
+           参考 P2 CourseHall.tsx 布局结构
+           保留 navy/cyan 深色主题
+        ======================================== */
 
-        /* 课程卡片 */
-        .course-card {
-            background: var(--bg-card);
+        /* ---- 安全访问横幅 ---- */
+        .acl-banner {
+            background: rgba(0, 168, 255, 0.08);
+            border: 1px solid rgba(0, 168, 255, 0.2);
             border-radius: var(--radius-lg);
-            padding: var(--space-3);
-            box-shadow: var(--shadow-card);
-            border: 1px solid var(--border-light);
-            transition: all var(--duration-slow) ease;
-            cursor: pointer;
-        }
-
-        .course-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: transparent;
-        }
-
-        .course-header {
-            margin-bottom: var(--space-2);
-        }
-
-        .course-title {
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-semibold);
-            color: var(--text-title);
-            margin-bottom: var(--space-1);
-            line-height: var(--line-height-tight);
-        }
-
-        .course-meta {
-            font-size: var(--font-size-sm);
+            padding: var(--space-2) var(--space-3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--font-size-xs);
             color: var(--text-secondary);
+        }
+
+        .acl-banner-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .acl-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: var(--radius-full);
+            background: var(--primary-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .acl-label {
+            color: var(--primary-blue);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .acl-token {
+            font-family: monospace;
+            font-size: 9px;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+
+        .acl-token strong {
+            color: var(--primary-green);
+        }
+
+        /* ---- Hero 区 ---- */
+        .course-hero {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-4);
+            box-shadow: var(--shadow-card);
+            flex-wrap: wrap;
+        }
+
+        .hero-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .hero-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0, 168, 255, 0.2);
+        }
+
+        .hero-text h1 {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+        }
+
+        .hero-text p {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .hero-search {
             display: flex;
             gap: var(--space-2);
-            flex-wrap: wrap;
+            min-width: 300px;
         }
 
-        .course-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .course-body {
-            margin-bottom: var(--space-2);
-        }
-
-        .course-info {
-            display: flex;
-            gap: var(--space-3);
-            margin-bottom: var(--space-2);
-        }
-
-        .course-info-item {
-            font-size: var(--font-size-sm);
+        .hero-search-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            padding: 8px var(--space-3);
             color: var(--text-body);
-        }
-
-        .course-info-label {
-            color: var(--text-secondary);
-            margin-right: 4px;
-        }
-
-        /* 课程类型标签 */
-        .course-tags {
-            display: flex;
-            gap: var(--space-1);
-            flex-wrap: wrap;
-            margin-bottom: var(--space-2);
-        }
-
-        .course-tag {
-            padding: 4px var(--space-2);
-            border-radius: var(--radius-full);
-            font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-medium);
-        }
-
-        .course-tag.required {
-            background: rgba(24, 144, 255, 0.1);
-            color: var(--primary-blue);
-        }
-
-        .course-tag.elective {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
-        }
-
-        .course-tag.lab {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-        }
-
-        .course-tag.practice {
-            background: rgba(139, 92, 246, 0.1);
-            color: #8b5cf6;
-        }
-
-        /* 进度条 */
-        .progress-section {
-            margin-top: var(--space-2);
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--space-1);
-        }
-
-        .progress-label {
-            font-size: var(--font-size-xs);
-            color: var(--text-secondary);
-        }
-
-        .progress-value {
-            font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-medium);
-            color: var(--primary-blue);
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: var(--bg-body);
-            border-radius: var(--radius-full);
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-blue), var(--primary-blue-hover));
-            border-radius: var(--radius-full);
-            transition: width var(--duration-slow) ease;
-        }
-
-        /* 课程卡片底部 */
-        .course-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: var(--space-2);
-            border-top: 1px solid var(--border-light);
-            margin-top: var(--space-2);
-        }
-
-        .course-teacher {
             font-size: var(--font-size-sm);
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: var(--space-1);
+            font-family: var(--font-family);
         }
 
-        .course-action {
-            padding: 6px var(--space-3);
+        .hero-search-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .hero-search-btn {
+            padding: 8px var(--space-3);
             background: var(--primary-blue);
             color: white;
             border: none;
             border-radius: var(--radius-base);
-            font-size: var(--font-size-xs);
+            font-size: var(--font-size-sm);
             font-weight: var(--font-weight-medium);
             cursor: pointer;
             transition: all var(--duration-base) ease;
             font-family: var(--font-family);
         }
 
-        .course-action:hover {
+        .hero-search-btn:hover {
             background: var(--primary-blue-hover);
         }
 
-        /* 响应式设计 */
+        /* ---- 多行筛选器面板 ---- */
+        .filter-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-2);
+            padding: var(--space-2) 0;
+        }
+
+        .filter-row + .filter-row {
+            border-top: 1px solid var(--border-light);
+        }
+
+        .filter-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-bold);
+            width: 80px;
+            flex-shrink: 0;
+            text-align: right;
+            padding-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .filter-tag {
+            padding: 4px var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            background: transparent;
+            color: var(--text-body);
+            border: 1px solid transparent;
+            font-family: var(--font-family);
+        }
+
+        .filter-tag:hover {
+            background: var(--bg-input);
+            color: var(--text-title);
+        }
+
+        .filter-tag.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* ---- 当前筛选状态 ---- */
+        .filter-status {
+            background: rgba(0, 168, 255, 0.06);
+            border: 1px solid rgba(0, 168, 255, 0.15);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+            font-size: var(--font-size-xs);
+        }
+
+        .filter-status-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--text-secondary);
+        }
+
+        .filter-status-tag {
+            background: rgba(0, 168, 255, 0.1);
+            color: var(--primary-blue);
+            border: 1px solid rgba(0, 168, 255, 0.25);
+            padding: 2px var(--space-2);
+            border-radius: var(--radius-base);
+            font-size: 10px;
+            font-weight: var(--font-weight-bold);
+            letter-spacing: 1px;
+        }
+
+        .filter-status-val {
+            color: var(--text-title);
+            font-weight: var(--font-weight-bold);
+            background: var(--bg-input);
+            padding: 2px 6px;
+            border-radius: var(--radius-base);
+        }
+
+        .filter-status-count {
+            color: var(--primary-green);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .filter-reset-btn {
+            padding: 4px var(--space-2);
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .filter-reset-btn:hover {
+            color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        /* ---- AI 助手横幅 ---- */
+        .ai-banner {
+            background: linear-gradient(135deg, rgba(0, 168, 255, 0.08), rgba(0, 212, 170, 0.08));
+            border: 1px solid rgba(0, 168, 255, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3) var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .ai-banner-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .ai-banner-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0, 168, 255, 0.15);
+        }
+
+        .ai-banner-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .ai-banner-badge {
+            font-size: 9px;
+            background: rgba(0, 168, 255, 0.1);
+            color: var(--primary-blue);
+            border: 1px solid rgba(0, 168, 255, 0.2);
+            padding: 2px var(--space-1);
+            border-radius: var(--radius-base);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .ai-banner-desc {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .ai-banner-btn {
+            padding: var(--space-2) var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            flex-shrink: 0;
+        }
+
+        .ai-banner-btn:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        /* ---- 排序工具栏 ---- */
+        .sort-toolbar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2) var(--space-3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-card);
+        }
+
+        .sort-options {
+            display: flex;
+            gap: var(--space-4);
+        }
+
+        .sort-option {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color var(--duration-base) ease;
+            background: none;
+            border: none;
+            font-family: var(--font-family);
+        }
+
+        .sort-option:hover {
+            color: var(--primary-blue);
+        }
+
+        .sort-option.active {
+            color: var(--primary-blue);
+        }
+
+        .sort-result-count {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .sort-result-count strong {
+            color: var(--primary-green);
+            font-size: var(--font-size-sm);
+        }
+
+        /* ---- 课程卡片网格 ---- */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: var(--space-4);
+        }
+
+        .course-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-card);
+            transition: all var(--duration-slow) ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-blue);
+        }
+
+        /* 卡片顶部色带 */
+        .card-cover {
+            height: 56px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-cover.blue { background: linear-gradient(135deg, rgba(0, 168, 255, 0.08), rgba(0, 168, 255, 0.15)); }
+        .card-cover.green { background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(0, 212, 170, 0.15)); }
+        .card-cover.orange { background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.15)); }
+        .card-cover.purple { background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(139, 92, 246, 0.15)); }
+        .card-cover.cyan { background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(6, 182, 212, 0.15)); }
+
+        .card-cover-glow {
+            position: absolute;
+            width: 96px;
+            height: 96px;
+            background: rgba(0, 168, 255, 0.08);
+            border-radius: var(--radius-full);
+            filter: blur(20px);
+            bottom: -32px;
+            pointer-events: none;
+        }
+
+        .card-cover-stamp {
+            position: absolute;
+            top: 10px;
+            left: var(--space-3);
+            text-align: left;
+        }
+
+        .card-cover-stamp .stamp-title {
+            font-size: 11px;
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            display: block;
+            letter-spacing: -0.5px;
+        }
+
+        .card-cover-stamp .stamp-sub {
+            font-size: 8px;
+            color: var(--primary-blue);
+            font-family: monospace;
+            font-weight: var(--font-weight-bold);
+            letter-spacing: 1px;
+        }
+
+        .card-cover-id {
+            position: absolute;
+            bottom: 8px;
+            right: var(--space-2);
+            background: rgba(0, 168, 255, 0.1);
+            color: var(--primary-blue);
+            font-family: monospace;
+            font-size: 9px;
+            font-weight: var(--font-weight-bold);
+            padding: 2px 6px;
+            border-radius: var(--radius-base);
+            border: 1px solid rgba(0, 168, 255, 0.2);
+        }
+
+        /* 卡片主体 */
+        .card-body {
+            padding: var(--space-3);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: space-between;
+            gap: var(--space-2);
+        }
+
+        .card-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            line-height: var(--line-height-tight);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .course-card:hover .card-title {
+            color: var(--primary-blue);
+        }
+
+        .card-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: var(--space-2);
+        }
+
+        .card-meta-grid .meta-val {
+            color: var(--primary-blue);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .card-meta-grid .meta-val-num {
+            color: var(--text-title);
+            font-family: monospace;
+            font-weight: var(--font-weight-bold);
+        }
+
+        /* 状态标签 */
+        .card-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .status-badge {
+            padding: 2px var(--space-1);
+            border-radius: var(--radius-base);
+            font-size: 9px;
+            font-weight: var(--font-weight-bold);
+            border: 1px solid var(--border-light);
+        }
+
+        .status-badge.joined {
+            background: rgba(0, 212, 170, 0.08);
+            color: var(--primary-green);
+            border-color: rgba(0, 212, 170, 0.25);
+        }
+
+        .status-badge.not-joined {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+        }
+
+        /* 标签小徽标 */
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .card-tag {
+            padding: 2px var(--space-1);
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border-radius: var(--radius-base);
+            font-size: 9px;
+            font-weight: var(--font-weight-bold);
+            border: 1px solid var(--border-light);
+            transition: all var(--duration-base) ease;
+        }
+
+        .course-card:hover .card-tag {
+            border-color: rgba(0, 168, 255, 0.25);
+            color: var(--primary-blue);
+        }
+
+        .card-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            border-top: 1px dashed var(--border-light);
+            padding-top: var(--space-2);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 卡片底部 */
+        .card-footer {
+            padding-top: var(--space-2);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-env {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .card-env-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .card-env-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius-full);
+            background: var(--bg-input);
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .card-badge {
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: var(--font-weight-bold);
+            font-family: monospace;
+            border: 1px solid currentColor;
+        }
+
+        .card-badge.ai {
+            background: rgba(0, 168, 255, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .card-badge.tb {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        .card-btn-primary {
+            flex: 1;
+            padding: 6px var(--space-2);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .card-btn-primary:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        .card-btn-primary.joined {
+            background: rgba(0, 212, 170, 0.08);
+            color: var(--primary-green);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+        }
+
+        .card-btn-primary.joined:hover {
+            background: rgba(0, 212, 170, 0.15);
+        }
+
+        .card-btn-secondary {
+            padding: 6px var(--space-2);
+            background: transparent;
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+
+        .card-btn-secondary:hover {
+            color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        /* ---- 空状态 ---- */
+        .empty-state {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8) var(--space-4);
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: var(--space-3);
+        }
+
+        .empty-state-text {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--space-3);
+        }
+
+        .empty-state-btn {
+            padding: var(--space-2) var(--space-4);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            font-family: var(--font-family);
+        }
+
+        .empty-state-btn:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        /* ---- 课程详情模态框 ---- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+            z-index: 1000;
+        }
+
+        .modal-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            background: var(--primary-blue);
+            color: white;
+            padding: var(--space-3) var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: var(--font-size-xl);
+            cursor: pointer;
+            line-height: 1;
+            opacity: 0.8;
+            font-family: var(--font-family);
+        }
+
+        .modal-close:hover {
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: var(--space-4);
+        }
+
+        .modal-course-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+
+        .modal-course-sub {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            font-family: monospace;
+            margin-bottom: var(--space-3);
+        }
+
+        .modal-desc-box {
+            padding: var(--space-3);
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-3);
+        }
+
+        .modal-desc-label {
+            color: var(--primary-blue);
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-sm);
+            display: block;
+            margin-bottom: var(--space-1);
+        }
+
+        .modal-desc-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            line-height: var(--line-height-relaxed);
+        }
+
+        .modal-video-preview {
+            aspect-ratio: 16/9;
+            background: var(--bg-panel);
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-video-text {
+            text-align: center;
+        }
+
+        .modal-video-icon {
+            font-size: 32px;
+            margin-bottom: var(--space-1);
+        }
+
+        .modal-video-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            font-family: monospace;
+            margin-bottom: var(--space-1);
+        }
+
+        .modal-video-btn {
+            padding: 4px var(--space-2);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            font-family: var(--font-family);
+        }
+
+        .modal-video-btn:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        .modal-ai-box {
+            padding: var(--space-3);
+            background: rgba(0, 168, 255, 0.06);
+            border: 1px solid rgba(0, 168, 255, 0.15);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-3);
+        }
+
+        .modal-ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--primary-blue);
+            margin-bottom: var(--space-2);
+        }
+
+        .modal-ai-title {
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-sm);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .modal-ai-badge {
+            font-size: 9px;
+            background: var(--primary-blue);
+            color: white;
+            padding: 2px var(--space-1);
+            border-radius: var(--radius-base);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .modal-ai-desc {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: var(--space-2);
+        }
+
+        .modal-ai-btn {
+            width: 100%;
+            padding: var(--space-2);
+            background: rgba(0, 168, 255, 0.08);
+            border: 1px solid rgba(0, 168, 255, 0.25);
+            color: var(--primary-blue);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .modal-ai-btn:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .modal-footer {
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-2);
+        }
+
+        .modal-btn-close {
+            padding: 6px var(--space-3);
+            background: transparent;
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            font-family: var(--font-family);
+        }
+
+        .modal-btn-close:hover {
+            background: var(--bg-input);
+        }
+
+        .modal-btn-launch {
+            padding: 6px var(--space-3);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            font-family: var(--font-family);
+        }
+
+        .modal-btn-launch:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        /* ---- 响应式 ---- */
         @media (max-width: 768px) {
             .course-grid {
                 grid-template-columns: 1fr;
+            }
+            .course-hero {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .hero-search {
+                width: 100%;
+            }
+            .filter-row {
+                flex-direction: column;
+            }
+            .filter-label {
+                text-align: left;
+                width: auto;
             }
         }
     </style>
@@ -220,457 +1027,476 @@
             <div class="sidebar-menu" data-platform-navigation="global" aria-label="功能导航"></div>
         </aside>
 
-            <!-- 主内容区 -->
-            <main class="main-content">
-                <!-- 页面标题 -->
-                <div class="page-header">
-                    <h1 class="page-title">📚 课程大厅</h1>
-                    <p class="page-subtitle">探索丰富的课程资源，开启您的学习之旅</p>
+        <!-- 主内容区 -->
+        <main class="main-content">
+
+            <!-- 安全访问横幅 -->
+            <div class="acl-banner">
+                <div class="acl-banner-left">
+                    <div class="acl-dot"></div>
+                    <span class="acl-label">智慧教育综合实训平台 安全访问体系：</span>
+                    <span>当前已登录「学生端」专属课程大厅</span>
                 </div>
-
-                <!-- 搜索栏 -->
-                <div class="search-bar">
-                    <div class="search-input-group">
-                        <select class="search-select" id="majorFilter">
-                            <option value="">全部专业</option>
-                            <option value="cs">计算机科学与技术</option>
-                            <option value="se">软件工程</option>
-                            <option value="ai">人工智能</option>
-                            <option value="ds">数据科学</option>
-                            <option value="is">信息安全</option>
-                        </select>
-                        <select class="search-select" id="typeFilter">
-                            <option value="">全部类型</option>
-                            <option value="required">必修课</option>
-                            <option value="elective">选修课</option>
-                            <option value="lab">实验课</option>
-                            <option value="practice">实训课</option>
-                        </select>
-                        <input type="text" class="search-input" id="searchInput" placeholder="搜索课程名称、教师...">
-                    </div>
-                    <button class="search-btn" onclick="searchCourses()">
-                        🔍 搜索
-                    </button>
+                <div class="acl-token">
+                    ACL Token Matching: <strong>SECURE_GRANTED</strong>
                 </div>
+            </div>
 
-                <!-- 标签筛选区 -->
-                <div class="filter-tags">
-                    <button class="filter-tag active" data-filter="all" onclick="filterByTag('all', this)">全部</button>
-                    <button class="filter-tag" data-filter="required" onclick="filterByTag('required', this)">必修课</button>
-                    <button class="filter-tag" data-filter="elective" onclick="filterByTag('elective', this)">选修课</button>
-                    <button class="filter-tag" data-filter="lab" onclick="filterByTag('lab', this)">实验课</button>
-                    <button class="filter-tag" data-filter="practice" onclick="filterByTag('practice', this)">实训课</button>
-                    <button class="filter-tag" data-filter="hot" onclick="filterByTag('hot', this)">热门课程</button>
-                    <button class="filter-tag" data-filter="new" onclick="filterByTag('new', this)">最新上线</button>
-                </div>
-
-                <!-- 课程卡片网格 -->
-                <div class="course-grid" id="courseGrid">
-                    <!-- 课程卡片 1 -->
-                    <div class="course-card" data-type="required" data-major="cs" data-course-id="course-1" tabindex="0" role="link">
-                        <div class="course-header">
-                            <h3 class="course-title">操作系统原理与实践</h3>
-                            <div class="course-meta">
-                                <span class="course-meta-item">👨‍🏫 李明教授</span>
-                                <span class="course-meta-item">🕐 2024春季</span>
-                            </div>
-                        </div>
-                        <div class="course-body">
-                            <div class="course-info">
-                                <div class="course-info-item">
-                                    <span class="course-info-label">学分:</span>4.0
-                                </div>
-                                <div class="course-info-item">
-                                    <span class="course-info-label">课时:</span>64学时
-                                </div>
-                            </div>
-                            <div class="course-tags">
-                                <span class="course-tag required">必修课</span>
-                                <span class="course-tag lab">实验课</span>
-                            </div>
-                            <div class="progress-section">
-                                <div class="progress-header">
-                                    <span class="progress-label">学习进度</span>
-                                    <span class="progress-value">75%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 75%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-teacher">
-                                <span>👨‍🏫</span> 李明教授
-                            </div>
-                            <a href="course-detail.html?course=course-1" class="course-action">继续学习</a>
-                        </div>
-                    </div>
-
-                    <!-- 课程卡片 2 -->
-                    <div class="course-card" data-type="required" data-major="cs" data-course-id="course-2" tabindex="0" role="link">
-                        <div class="course-header">
-                            <h3 class="course-title">计算机网络技术</h3>
-                            <div class="course-meta">
-                                <span class="course-meta-item">👨‍🏫 王强教授</span>
-                                <span class="course-meta-item">🕐 2024春季</span>
-                            </div>
-                        </div>
-                        <div class="course-body">
-                            <div class="course-info">
-                                <div class="course-info-item">
-                                    <span class="course-info-label">学分:</span>3.5
-                                </div>
-                                <div class="course-info-item">
-                                    <span class="course-info-label">课时:</span>56学时
-                                </div>
-                            </div>
-                            <div class="course-tags">
-                                <span class="course-tag required">必修课</span>
-                            </div>
-                            <div class="progress-section">
-                                <div class="progress-header">
-                                    <span class="progress-label">学习进度</span>
-                                    <span class="progress-value">45%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 45%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-teacher">
-                                <span>👨‍🏫</span> 王强教授
-                            </div>
-                            <a href="course-detail.html?course=course-2" class="course-action">继续学习</a>
-                        </div>
-                    </div>
-
-                    <!-- 课程卡片 3 -->
-                    <div class="course-card" data-type="elective" data-major="ai" data-course-id="course-3" tabindex="0" role="link">
-                        <div class="course-header">
-                            <h3 class="course-title">人工智能导论</h3>
-                            <div class="course-meta">
-                                <span class="course-meta-item">👩‍🏫 张华副教授</span>
-                                <span class="course-meta-item">🕐 2024春季</span>
-                            </div>
-                        </div>
-                        <div class="course-body">
-                            <div class="course-info">
-                                <div class="course-info-item">
-                                    <span class="course-info-label">学分:</span>3.0
-                                </div>
-                                <div class="course-info-item">
-                                    <span class="course-info-label">课时:</span>48学时
-                                </div>
-                            </div>
-                            <div class="course-tags">
-                                <span class="course-tag elective">选修课</span>
-                                <span class="course-tag lab">实验课</span>
-                            </div>
-                            <div class="progress-section">
-                                <div class="progress-header">
-                                    <span class="progress-label">学习进度</span>
-                                    <span class="progress-value">20%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 20%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-teacher">
-                                <span>👩‍🏫</span> 张华副教授
-                            </div>
-                            <a href="course-detail.html?course=course-3" class="course-action">继续学习</a>
-                        </div>
-                    </div>
-
-                    <!-- 课程卡片 4 -->
-                    <div class="course-card" data-type="practice" data-major="se" data-course-id="course-4" tabindex="0" role="link">
-                        <div class="course-header">
-                            <h3 class="course-title">软件工程实训</h3>
-                            <div class="course-meta">
-                                <span class="course-meta-item">👨‍🏫 刘伟讲师</span>
-                                <span class="course-meta-item">🕐 2024春季</span>
-                            </div>
-                        </div>
-                        <div class="course-body">
-                            <div class="course-info">
-                                <div class="course-info-item">
-                                    <span class="course-info-label">学分:</span>2.0
-                                </div>
-                                <div class="course-info-item">
-                                    <span class="course-info-label">课时:</span>32学时
-                                </div>
-                            </div>
-                            <div class="course-tags">
-                                <span class="course-tag practice">实训课</span>
-                            </div>
-                            <div class="progress-section">
-                                <div class="progress-header">
-                                    <span class="progress-label">学习进度</span>
-                                    <span class="progress-value">0%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-teacher">
-                                <span>👨‍🏫</span> 刘伟讲师
-                            </div>
-                            <a href="course-detail.html?course=course-4" class="course-action">开始学习</a>
-                        </div>
-                    </div>
-
-                    <!-- 课程卡片 5 -->
-                    <div class="course-card" data-type="elective" data-major="ds" data-course-id="course-5" tabindex="0" role="link">
-                        <div class="course-header">
-                            <h3 class="course-title">大数据分析与挖掘</h3>
-                            <div class="course-meta">
-                                <span class="course-meta-item">👨‍🏫 陈刚教授</span>
-                                <span class="course-meta-item">🕐 2024春季</span>
-                            </div>
-                        </div>
-                        <div class="course-body">
-                            <div class="course-info">
-                                <div class="course-info-item">
-                                    <span class="course-info-label">学分:</span>3.0
-                                </div>
-                                <div class="course-info-item">
-                                    <span class="course-info-label">课时:</span>48学时
-                                </div>
-                            </div>
-                            <div class="course-tags">
-                                <span class="course-tag elective">选修课</span>
-                                <span class="course-tag lab">实验课</span>
-                            </div>
-                            <div class="progress-section">
-                                <div class="progress-header">
-                                    <span class="progress-label">学习进度</span>
-                                    <span class="progress-value">60%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 60%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-teacher">
-                                <span>👨‍🏫</span> 陈刚教授
-                            </div>
-                            <a href="course-detail.html?course=course-5" class="course-action">继续学习</a>
-                        </div>
-                    </div>
-
-                    <!-- 课程卡片 6 -->
-                    <div class="course-card" data-type="required" data-major="is" data-course-id="course-6" tabindex="0" role="link">
-                        <div class="course-header">
-                            <h3 class="course-title">网络安全技术</h3>
-                            <div class="course-meta">
-                                <span class="course-meta-item">👩‍🏫 赵敏教授</span>
-                                <span class="course-meta-item">🕐 2024春季</span>
-                            </div>
-                        </div>
-                        <div class="course-body">
-                            <div class="course-info">
-                                <div class="course-info-item">
-                                    <span class="course-info-label">学分:</span>4.0
-                                </div>
-                                <div class="course-info-item">
-                                    <span class="course-info-label">课时:</span>64学时
-                                </div>
-                            </div>
-                            <div class="course-tags">
-                                <span class="course-tag required">必修课</span>
-                                <span class="course-tag practice">实训课</span>
-                            </div>
-                            <div class="progress-section">
-                                <div class="progress-header">
-                                    <span class="progress-label">学习进度</span>
-                                    <span class="progress-value">30%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 30%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-teacher">
-                                <span>👩‍🏫</span> 赵敏教授
-                            </div>
-                            <a href="course-detail.html?course=course-6" class="course-action">继续学习</a>
-                        </div>
-                    </div>
-
-                    <!-- 课程卡片 7 -->
-                    <div class="course-card" data-type="elective" data-major="ai" data-course-id="course-7" tabindex="0" role="link">
-                        <div class="course-header">
-                            <h3 class="course-title">机器学习算法与实践</h3>
-                            <div class="course-meta">
-                                <span class="course-meta-item">👨‍🏫 孙磊教授</span>
-                                <span class="course-meta-item">🕐 2024春季</span>
-                            </div>
-                        </div>
-                        <div class="course-body">
-                            <div class="course-info">
-                                <div class="course-info-item">
-                                    <span class="course-info-label">学分:</span>3.5
-                                </div>
-                                <div class="course-info-item">
-                                    <span class="course-info-label">课时:</span>56学时
-                                </div>
-                            </div>
-                            <div class="course-tags">
-                                <span class="course-tag elective">选修课</span>
-                                <span class="course-tag lab">实验课</span>
-                            </div>
-                            <div class="progress-section">
-                                <div class="progress-header">
-                                    <span class="progress-label">学习进度</span>
-                                    <span class="progress-value">85%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 85%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-teacher">
-                                <span>👨‍🏫</span> 孙磊教授
-                            </div>
-                            <a href="course-detail.html?course=course-7" class="course-action">继续学习</a>
-                        </div>
-                    </div>
-
-                    <!-- 课程卡片 8 -->
-                    <div class="course-card" data-type="lab" data-major="cs" data-course-id="course-8" tabindex="0" role="link">
-                        <div class="course-header">
-                            <h3 class="course-title">数据库系统实验</h3>
-                            <div class="course-meta">
-                                <span class="course-meta-item">👨‍🏫 周杰讲师</span>
-                                <span class="course-meta-item">🕐 2024春季</span>
-                            </div>
-                        </div>
-                        <div class="course-body">
-                            <div class="course-info">
-                                <div class="course-info-item">
-                                    <span class="course-info-label">学分:</span>2.0
-                                </div>
-                                <div class="course-info-item">
-                                    <span class="course-info-label">课时:</span>32学时
-                                </div>
-                            </div>
-                            <div class="course-tags">
-                                <span class="course-tag lab">实验课</span>
-                            </div>
-                            <div class="progress-section">
-                                <div class="progress-header">
-                                    <span class="progress-label">学习进度</span>
-                                    <span class="progress-value">50%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 50%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-teacher">
-                                <span>👨‍🏫</span> 周杰讲师
-                            </div>
-                            <a href="course-detail.html?course=course-8" class="course-action">继续学习</a>
-                        </div>
+            <!-- Hero 区 -->
+            <div class="course-hero">
+                <div class="hero-left">
+                    <div class="hero-icon">🎓</div>
+                    <div class="hero-text">
+                        <h1>课程大厅</h1>
+                        <p>新大陆 AIoT & 智能制造高新精品实训核心课程</p>
                     </div>
                 </div>
-            </main>
-        </div>
+                <div class="hero-search">
+                    <input type="text" class="hero-search-input" id="searchInput" placeholder="请输入课程名称进行搜索" value="">
+                    <button class="hero-search-btn" onclick="searchCourses()">🔍 搜索</button>
+                </div>
+            </div>
+
+            <!-- 多行筛选器 -->
+            <div class="filter-panel">
+                <!-- 专业 -->
+                <div class="filter-row">
+                    <span class="filter-label">专业：</span>
+                    <div class="filter-tags" data-filter-group="specialty">
+                        <button class="filter-tag active" data-value="全部">全部</button>
+                        <button class="filter-tag" data-value="物联网">物联网</button>
+                        <button class="filter-tag" data-value="人工智能">人工智能</button>
+                        <button class="filter-tag" data-value="工业互联网">工业互联网</button>
+                        <button class="filter-tag" data-value="大数据">大数据</button>
+                        <button class="filter-tag" data-value="区块链">区块链</button>
+                    </div>
+                </div>
+                <!-- 课程类型 -->
+                <div class="filter-row">
+                    <span class="filter-label">课程类型：</span>
+                    <div class="filter-tags" data-filter-group="type">
+                        <button class="filter-tag active" data-value="全部">全部</button>
+                        <button class="filter-tag" data-value="岗位技能认证">岗位技能认证</button>
+                        <button class="filter-tag" data-value="基础通识">基础通识</button>
+                        <button class="filter-tag" data-value="专业基础课">专业基础课</button>
+                        <button class="filter-tag" data-value="专业核心课">专业核心课</button>
+                        <button class="filter-tag" data-value="行业应用课">行业应用课</button>
+                        <button class="filter-tag" data-value="技能课程">技能课程</button>
+                    </div>
+                </div>
+                <!-- 标签 -->
+                <div class="filter-row">
+                    <span class="filter-label">标签：</span>
+                    <div class="filter-tags" data-filter-group="tag">
+                        <button class="filter-tag active" data-value="全部">全部</button>
+                        <button class="filter-tag" data-value="热门课程">热门课程</button>
+                        <button class="filter-tag" data-value="最新课程">最新课程</button>
+                        <button class="filter-tag" data-value="使用最多">使用最多</button>
+                        <button class="filter-tag" data-value="AI课程">AI课程</button>
+                        <button class="filter-tag" data-value="实训课程">实训课程</button>
+                        <button class="filter-tag" data-value="推荐课程">推荐课程</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 当前筛选状态 -->
+            <div class="filter-status">
+                <div class="filter-status-left">
+                    <span class="filter-status-tag">当前筛选</span>
+                    <span>专业 = <span class="filter-status-val" id="statusSpecialty">全部</span></span>
+                    <span>|</span>
+                    <span>课程类型 = <span class="filter-status-val" id="statusType">全部</span></span>
+                    <span>|</span>
+                    <span>标签 = <span class="filter-status-val" id="statusTag">全部</span></span>
+                    <span>|</span>
+                    <span>课程名称 = <span class="filter-status-val" id="statusSearch">所有课程</span></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <span style="font-size: 11px; color: var(--primary-green); font-weight: var(--font-weight-bold);">
+                        已按专业、课程类型、标签及课程名称完成筛选，共检索到 <span class="filter-status-count" id="resultCount" style="font-size: var(--font-size-sm); text-decoration: underline;">0</span> 门课程。
+                    </span>
+                    <button class="filter-reset-btn" onclick="resetFilters()">重置筛选</button>
+                </div>
+            </div>
+
+            <!-- AI 助手横幅 -->
+            <div class="ai-banner">
+                <div class="ai-banner-left">
+                    <div class="ai-banner-icon">🧠</div>
+                    <div>
+                        <div class="ai-banner-title">
+                            AI技能助手 / 课程学习智能辅导
+                            <span class="ai-banner-badge">已关联课程知识库</span>
+                        </div>
+                        <div class="ai-banner-desc">基于课程知识库与垂类大模型，辅助解决学习难点。支持自然语言处理检索与图文耦合答疑。</div>
+                    </div>
+                </div>
+                <button class="ai-banner-btn">
+                    🧠 进入"AI技能助手" →
+                </button>
+            </div>
+
+            <!-- 排序工具栏 -->
+            <div class="sort-toolbar">
+                <div class="sort-options">
+                    <button class="sort-option active" data-sort="默认排序">默认排序</button>
+                    <button class="sort-option" data-sort="最新">最新</button>
+                    <button class="sort-option" data-sort="使用最多">使用最多</button>
+                </div>
+                <div class="sort-result-count">
+                    检索结果: <strong id="sortCount">0</strong> 门工程实训就绪
+                </div>
+            </div>
+
+            <!-- 课程卡片网格 -->
+            <div class="course-grid" id="courseGrid"></div>
+
+        </main>
+    </div>
 
     <!-- 引入JavaScript文件 -->
     <script src="js/app.js"></script>
     <script>
-        function openCourseDetail(courseId) {
-            const target = `course-detail.html?course=${encodeURIComponent(courseId)}`;
-            window.location.href = target;
-        }
-
-        document.querySelectorAll('.course-card').forEach((card) => {
-            card.addEventListener('click', (event) => {
-                if (event.target.closest('a, button, input, select')) return;
-                openCourseDetail(card.dataset.courseId);
-            });
-            card.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openCourseDetail(card.dataset.courseId);
-                }
-            });
-        });
-        // 标签筛选功能
-        function filterByTag(tag, element) {
-            // 更新标签状态
-            document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
-            element.classList.add('active');
-
-            // 筛选课程卡片
-            const cards = document.querySelectorAll('.course-card');
-            cards.forEach(card => {
-                if (tag === 'all') {
-                    card.style.display = 'block';
-                } else if (tag === 'hot' || tag === 'new') {
-                    // 热门和最新课程暂时显示所有
-                    card.style.display = 'block';
-                } else {
-                    const cardType = card.getAttribute('data-type');
-                    card.style.display = cardType === tag ? 'block' : 'none';
-                }
-            });
-        }
-
-        // 搜索功能
-        function searchCourses() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const majorFilter = document.getElementById('majorFilter').value;
-            const typeFilter = document.getElementById('typeFilter').value;
-
-            const cards = document.querySelectorAll('.course-card');
-            cards.forEach(card => {
-                const title = card.querySelector('.course-title').textContent.toLowerCase();
-                const teacher = card.querySelector('.course-teacher').textContent.toLowerCase();
-                const cardMajor = card.getAttribute('data-major');
-                const cardType = card.getAttribute('data-type');
-
-                let show = true;
-
-                // 文本搜索
-                if (searchText && !title.includes(searchText) && !teacher.includes(searchText)) {
-                    show = false;
-                }
-
-                // 专业筛选
-                if (majorFilter && cardMajor !== majorFilter) {
-                    show = false;
-                }
-
-                // 类型筛选
-                if (typeFilter && cardType !== typeFilter) {
-                    show = false;
-                }
-
-                card.style.display = show ? 'block' : 'none';
-            });
-        }
-
-        // 回车键搜索
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchCourses();
+        // ============ 课程数据 ============
+        var COURSES = [
+            {
+                id: "course-1", title: "物联网设备开发实战课程指南及系统架构",
+                specialty: "物联网", type: "岗位技能认证",
+                studentsCount: 2240, chaptersCount: 12,
+                tags: ["物联网", "岗位技能认证", "热门课程", "实训课程"],
+                desc: "围绕新大陆先进物联网实训平台，系统剖析传感器驱动编写、边缘网关通信协议等核心内容。",
+                envIcons: ["cloud", "docker"], badge: "AI", color: "blue"
+            },
+            {
+                id: "course-2", title: "智能家居核心协议栈体系构建与故障诊断",
+                specialty: "物联网", type: "专业基础课",
+                studentsCount: 1845, chaptersCount: 10,
+                tags: ["物联网", "专业基础课", "最新课程", "推荐课程"],
+                desc: "讲解ZigBee 3.0标准、蓝牙Mesh组网机制以及Wi-Fi高效能传输的集成实训课，结合沙箱实验室环境直接控制仿真传感器。",
+                envIcons: ["linux", "cloud"], badge: "TB", color: "cyan"
+            },
+            {
+                id: "course-3", title: "工业互联网传感器融合算法级应用实践",
+                specialty: "工业互联网", type: "专业核心课",
+                studentsCount: 1560, chaptersCount: 8,
+                tags: ["工业互联网", "专业核心课", "使用最多", "热门课程"],
+                desc: "专为工业4.0定制，深度教学传感器卡尔曼滤波去噪、数据边缘采集以及高速网关上云架构。",
+                envIcons: ["docker"], badge: "AI", color: "orange"
+            },
+            {
+                id: "course-4", title: "大数据仓库ETL高并发流水线底层调优",
+                specialty: "大数据", type: "专业基础课",
+                studentsCount: 3120, chaptersCount: 9,
+                tags: ["大数据", "专业基础课", "使用最多", "推荐课程"],
+                desc: "从实时数据接入层入手，讲解Flume和Kafka联动策略，深入实战Hive与Hadoop集群治理。",
+                envIcons: ["linux", "docker"], badge: "AI", color: "purple"
+            },
+            {
+                id: "course-5", title: "区块链联盟链通道机制 with 智能合约硬核开发",
+                specialty: "区块链", type: "岗位技能认证",
+                studentsCount: 1210, chaptersCount: 7,
+                tags: ["区块链", "岗位技能认证", "最新课程", "实训课程"],
+                desc: "基于Hyperledger Fabric底层，系统讲解多通道数据隔离机制、Go与Solidity合约安全开发。",
+                envIcons: ["linux"], badge: "TB", color: "blue"
+            },
+            {
+                id: "course-6", title: "人工智能深度学习多模态目标检测大作业",
+                specialty: "人工智能", type: "专业核心课",
+                studentsCount: 4235, chaptersCount: 11,
+                tags: ["人工智能", "专业核心课", "热门课程", "AI课程"],
+                desc: "新大陆人工智能系列王牌课程。包含YOLOv8的多机集群训练、PyTorch推理优化和Jetson嵌入式端部署。",
+                envIcons: ["docker", "cloud"], badge: "AI", color: "green"
+            },
+            {
+                id: "course-7", title: "物联网无线传感器网络LoRa高性能组网技术",
+                specialty: "物联网", type: "行业应用课",
+                studentsCount: 960, chaptersCount: 6,
+                tags: ["物联网", "行业应用课", "使用最多", "推荐课程"],
+                desc: "教授LoRaWAN协议架构，从频段设置到CAD信道活动检测等全链路实训，解决多网关交叠区域冲突管理。",
+                envIcons: ["linux"], badge: "TB", color: "cyan"
+            },
+            {
+                id: "course-8", title: "人工智能TensorFlow图像语义检测分割",
+                specialty: "人工智能", type: "专业核心课",
+                studentsCount: 2010, chaptersCount: 8,
+                tags: ["人工智能", "专业核心课", "热门课程", "AI课程"],
+                desc: "探讨U-Net及DeepLabv3+在遥感测绘、机器人视觉导航中的进阶应用。学生可在GPU云端环境瞬间克隆主流框架。",
+                envIcons: ["cloud"], badge: "AI", color: "orange"
+            },
+            {
+                id: "course-9", title: "工业大数据预测与Spark流计算引擎集成",
+                specialty: "工业互联网", type: "基础通识",
+                studentsCount: 1350, chaptersCount: 7,
+                tags: ["工业互联网", "基础通识", "最新课程", "推荐课程"],
+                desc: "针对工业级制造设备预测性维护（PHM）设计，联合实践Kafka、Spark Streaming及机器学习预测算法。",
+                envIcons: ["docker", "linux"], badge: "AI", color: "green"
+            },
+            {
+                id: "course-10", title: "大数据集群监控管理（Zookeeper & Ambari）",
+                specialty: "大数据", type: "专业核心课",
+                studentsCount: 1620, chaptersCount: 9,
+                tags: ["大数据", "专业核心课", "推荐课程", "实训课程"],
+                desc: "大数据专业的核心基础必修课，讲解高可用集群选举流程，Ambari可视化管理，配有新大陆独家多节点并发自动化配置仿真系统。",
+                envIcons: ["linux"], badge: "TB", color: "purple"
+            },
+            {
+                id: "course-11", title: "区块链Fabric跨链智能路由网商对接工程",
+                specialty: "区块链", type: "岗位技能认证",
+                studentsCount: 840, chaptersCount: 6,
+                tags: ["区块链", "岗位技能认证", "实训课程", "使用最多"],
+                desc: "解决智能制造与商业供应链间跨系统互联痛点，系统性剖析Hash锁及公链跨链中继机制。",
+                envIcons: ["docker"], badge: "AI", color: "blue"
+            },
+            {
+                id: "course-12", title: "生成式人工智能AI大模型Prompt工程实操",
+                specialty: "人工智能", type: "技能课程",
+                studentsCount: 3890, chaptersCount: 10,
+                tags: ["人工智能", "技能课程", "热门课程", "AI课程", "推荐课程"],
+                desc: "新一代AI精品实训。讲解主流开源大模型架构，动手实操Lora轻量化微调技术。沙盒环境搭载标准RAG系统。",
+                envIcons: ["cloud", "docker"], badge: "AI", color: "green"
             }
+        ];
+
+        // ============ 筛选状态 ============
+        var filters = {
+            specialty: "全部",
+            type: "全部",
+            tag: "全部",
+            search: "",
+            sort: "默认排序"
+        };
+
+        // 已加入课程列表
+        var addedCourses = JSON.parse(localStorage.getItem("student_added_courses") || '["course-2"]');
+
+        // ============ 渲染课程卡片 ============
+        function renderCourses() {
+            var grid = document.getElementById('courseGrid');
+
+            // 筛选
+            var filtered = COURSES.filter(function(c) {
+                var matchSpecialty = filters.specialty === "全部" || c.specialty === filters.specialty;
+                var matchType = filters.type === "全部" || c.type === filters.type;
+                var matchSearch = filters.search === "" ||
+                    c.title.toLowerCase().indexOf(filters.search.toLowerCase()) >= 0 ||
+                    c.specialty.toLowerCase().indexOf(filters.search.toLowerCase()) >= 0 ||
+                    c.tags.some(function(t) { return t.toLowerCase().indexOf(filters.search.toLowerCase()) >= 0; });
+                var matchTag = filters.tag === "全部" || c.tags.indexOf(filters.tag) >= 0;
+                return matchSpecialty && matchType && matchSearch && matchTag;
+            });
+
+            // 排序
+            if (filters.sort === "最新") {
+                filtered = filtered.slice().reverse();
+            } else if (filters.sort === "使用最多") {
+                filtered = filtered.sort(function(a, b) { return b.studentsCount - a.studentsCount; });
+            }
+
+            // 更新计数
+            document.getElementById('resultCount').textContent = filtered.length;
+            document.getElementById('sortCount').textContent = filtered.length;
+
+            // 空状态
+            if (filtered.length === 0) {
+                grid.innerHTML =
+                    '<div class="empty-state" style="grid-column: 1 / -1;">' +
+                        '<div class="empty-state-icon">📚</div>' +
+                        '<div class="empty-state-text">暂无符合当前筛选条件的课程</div>' +
+                        '<button class="empty-state-btn" onclick="resetFilters()">重置全部筛选</button>' +
+                    '</div>';
+                return;
+            }
+
+            // 渲染卡片
+            grid.innerHTML = filtered.map(function(c) {
+                var isJoined = addedCourses.indexOf(c.id) >= 0;
+                var envIconsHtml = c.envIcons.map(function(icon) {
+                    var emoji = icon === "cloud" ? "☁️" : icon === "docker" ? "🐳" : "🖥️";
+                    return '<div class="card-env-icon" title="' + icon + '">' + emoji + '</div>';
+                }).join('');
+
+                var tagsHtml = c.tags.map(function(t) {
+                    return '<span class="card-tag">' + t + '</span>';
+                }).join('');
+
+                var idNum = c.id.replace("course-", "00");
+
+                return '<div class="course-card" data-course-id="' + c.id + '" onclick="openCourseDetail(\'' + c.id + '\')" tabindex="0" role="link">' +
+                    '<div class="card-cover ' + c.color + '">' +
+                        '<div class="card-cover-glow"></div>' +
+                        '<div class="card-cover-stamp">' +
+                            '<span class="stamp-title">NEWLAND ACADEMY</span>' +
+                            '<span class="stamp-sub">LAB_INFRA_READY</span>' +
+                        '</div>' +
+                        '<span class="card-cover-id">NLE-ID: ' + idNum + '</span>' +
+                    '</div>' +
+                    '<div class="card-body">' +
+                        '<div>' +
+                            '<h3 class="card-title" title="' + c.title + '">' + c.title + '</h3>' +
+                            '<div class="card-meta-grid">' +
+                                '<div>专业：<span class="meta-val">' + c.specialty + '</span></div>' +
+                                '<div style="text-align:right;">在学人数：<span class="meta-val-num">' + c.studentsCount + '人</span></div>' +
+                                '<div>课程类型：<span class="meta-val">' + c.type + '</span></div>' +
+                                '<div style="text-align:right;">章节数量：<span class="meta-val-num">' + c.chaptersCount + '章</span></div>' +
+                            '</div>' +
+                            '<div class="card-status">' +
+                                '<span class="status-badge ' + (isJoined ? 'joined' : 'not-joined') + '">' + (isJoined ? '已加入' : '未加入') + '</span>' +
+                            '</div>' +
+                            '<div class="card-tags">' + tagsHtml + '</div>' +
+                            '<p class="card-desc">课程概述：' + c.desc + '</p>' +
+                        '</div>' +
+                        '<div>' +
+                            '<div class="card-footer">' +
+                                '<div class="card-env">' +
+                                    '<span class="card-env-label">实验环境:</span>' +
+                                    envIconsHtml +
+                                '</div>' +
+                                '<div class="card-badge ' + c.badge.toLowerCase() + '">' + c.badge + '</div>' +
+                            '</div>' +
+                            '<div class="card-actions" style="margin-top: var(--space-2);">' +
+                                '<button class="card-btn-primary ' + (isJoined ? 'joined' : '') + '" onclick="event.stopPropagation(); handleAddLearning(\'' + c.id + '\')">' +
+                                    (isJoined ? '✓ 继续学习' : '添加学习') +
+                                '</button>' +
+                                '<button class="card-btn-secondary" onclick="event.stopPropagation(); openCourseDetail(\'' + c.id + '\')" title="查看详情">ℹ</button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        // ============ 添加学习 ============
+        function handleAddLearning(courseId) {
+            if (addedCourses.indexOf(courseId) >= 0) {
+                window.location.href = 'course-detail.html?course=' + courseId;
+                return;
+            }
+            addedCourses.push(courseId);
+            localStorage.setItem("student_added_courses", JSON.stringify(addedCourses));
+            renderCourses();
+        }
+
+        // ============ 课程详情模态框 ============
+        function openCourseDetail(courseId) {
+            var c = COURSES.find(function(x) { return x.id === courseId; });
+            if (!c) return;
+
+            var envIconsHtml = c.envIcons.map(function(icon) {
+                var emoji = icon === "cloud" ? "☁️" : icon === "docker" ? "🐳" : "🖥️";
+                return '<div class="card-env-icon">' + emoji + '</div>';
+            }).join('');
+
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'courseModal';
+            overlay.innerHTML =
+                '<div class="modal-container">' +
+                    '<div class="modal-header">' +
+                        '<div class="modal-header-title">🔖 课堂讲义 · 云沙箱虚拟机</div>' +
+                        '<button class="modal-close" onclick="closeModal()">×</button>' +
+                    '</div>' +
+                    '<div class="modal-body">' +
+                        '<div>' +
+                            '<div class="modal-course-title">' + c.title + '</div>' +
+                            '<div class="modal-course-sub">' + c.specialty + ' · 讲师组新大陆课程大纲</div>' +
+                        '</div>' +
+                        '<div class="modal-desc-box">' +
+                            '<span class="modal-desc-label">【课案概述与实践指导】</span>' +
+                            '<div class="modal-desc-text">' + c.desc + ' 在实验部分，请各位同学直接点击顶部 <strong>【实验大厅】</strong> 菜单，申请或一键启动对应的虚拟机沙盘镜像。</div>' +
+                        '</div>' +
+                        '<div class="modal-video-preview">' +
+                            '<div class="modal-video-text">' +
+                                '<div class="modal-video-icon">📹</div>' +
+                                '<div class="modal-video-label">新大陆物理多媒体网络广播串流</div>' +
+                                '<button class="modal-video-btn">即刻播放微课视频.mp4</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="modal-ai-box">' +
+                            '<div class="modal-ai-header">' +
+                                '<span class="modal-ai-title">🧠 【课程AI智能导师：解决学习难点】</span>' +
+                                '<span class="modal-ai-badge">知识库增强启用</span>' +
+                            '</div>' +
+                            '<div class="modal-ai-desc">本课程已关联相应的通信协议、实验指导书本地知识库。欢迎点击下方进入"AI技能助手"，使用大模型进行图文并茂的对话答疑。</div>' +
+                            '<button class="modal-ai-btn">🧠 AI技能助手：辅助解决学习难点及疑问 →</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="modal-footer">' +
+                        '<button class="modal-btn-close" onclick="closeModal()">关闭返回</button>' +
+                        '<button class="modal-btn-launch" onclick="closeModal(); window.location.href=\'experiment-hall.html\';">一键启动对应仿真实验 →</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeModal();
+            });
+        }
+
+        function closeModal() {
+            var modal = document.getElementById('courseModal');
+            if (modal) modal.remove();
+        }
+
+        // ============ 筛选交互 ============
+        document.querySelectorAll('.filter-tags').forEach(function(group) {
+            var filterGroup = group.dataset.filterGroup;
+            group.querySelectorAll('.filter-tag').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    group.querySelectorAll('.filter-tag').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    filters[filterGroup] = this.dataset.value;
+                    updateStatus();
+                    renderCourses();
+                });
+            });
         });
 
-        // 下拉框变化时自动搜索
-        document.getElementById('majorFilter').addEventListener('change', searchCourses);
-        document.getElementById('typeFilter').addEventListener('change', searchCourses);
+        // 排序交互
+        document.querySelectorAll('.sort-option').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.sort-option').forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                filters.sort = this.dataset.sort;
+                renderCourses();
+            });
+        });
+
+        // 搜索
+        function searchCourses() {
+            filters.search = document.getElementById('searchInput').value;
+            updateStatus();
+            renderCourses();
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchCourses();
+        });
+
+        // 更新筛选状态显示
+        function updateStatus() {
+            document.getElementById('statusSpecialty').textContent = filters.specialty;
+            document.getElementById('statusType').textContent = filters.type;
+            document.getElementById('statusTag').textContent = filters.tag;
+            document.getElementById('statusSearch').textContent = filters.search || "所有课程";
+        }
+
+        // 重置筛选
+        function resetFilters() {
+            filters = { specialty: "全部", type: "全部", tag: "全部", search: "", sort: "默认排序" };
+            document.getElementById('searchInput').value = "";
+            document.querySelectorAll('.filter-tags').forEach(function(group) {
+                group.querySelectorAll('.filter-tag').forEach(function(b) {
+                    b.classList.toggle('active', b.dataset.value === "全部");
+                });
+            });
+            document.querySelectorAll('.sort-option').forEach(function(b) {
+                b.classList.toggle('active', b.dataset.sort === "默认排序");
+            });
+            updateStatus();
+            renderCourses();
+        }
+
+        // 初始渲染
+        renderCourses();
     </script>
     <script src="js/platform-shell.js"></script>
 </body>

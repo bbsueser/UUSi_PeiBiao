@@ -3,363 +3,821 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>考试大厅 - 人工智能算法训练平台</title>
-    
-    <!-- 引入样式文件 -->
+    <title>考试大厅 - 星朴XP-AI001人工智能算法训练平台</title>
     <link rel="stylesheet" href="css/common.css">
     <style>
-        /* 考试大厅特定样式 */
-        .page-header-section {
-            margin-bottom: var(--space-4);
-        }
-
-        .page-main-title {
-            font-size: var(--font-size-2xl);
-            font-weight: var(--font-weight-semibold);
-            color: var(--text-title);
-            margin-bottom: var(--space-2);
-        }
-
-        .page-main-subtitle {
-            font-size: var(--font-size-base);
-            color: var(--text-secondary);
-        }
-
-        /* 考试类型卡片 */
-        .exam-types-section {
-            margin-bottom: var(--space-4);
-        }
-
-        .exam-type-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-3);
-        }
-
-        .exam-type-card {
-            background: var(--bg-card);
+        /* ========== ACL 安全访问横幅 ========== */
+        .acl-banner {
+            background: rgba(0, 212, 170, 0.06);
+            border: 1px solid rgba(0, 212, 170, 0.2);
             border-radius: var(--radius-lg);
-            padding: var(--space-3);
-            box-shadow: var(--shadow-card);
+            padding: var(--space-2) var(--space-3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--font-size-xs);
+            color: var(--text-body);
+            font-weight: var(--font-weight-medium);
+            margin-bottom: var(--space-4);
+        }
+        .acl-banner-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        .acl-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: var(--radius-full);
+            background: var(--primary-green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .acl-label {
+            color: var(--primary-green);
+            font-weight: var(--font-weight-bold);
+        }
+        .acl-mono {
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .acl-mono .secure {
+            color: var(--primary-green);
+            font-weight: var(--font-weight-bold);
+        }
+
+        /* ========== Hero Header 卡片 ========== */
+        .hero-card {
+            background: var(--bg-card);
             border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+        .hero-left {
             display: flex;
             align-items: center;
             gap: var(--space-3);
-            cursor: pointer;
-            transition: all var(--duration-base) ease;
         }
-
-        .exam-type-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: transparent;
-        }
-
-        .exam-type-icon {
+        .hero-icon {
             width: 48px;
             height: 48px;
-            border-radius: var(--radius-base);
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
+            flex-shrink: 0;
         }
-
-        .exam-type-card.regular .exam-type-icon {
-            background: rgba(24, 144, 255, 0.1);
-        }
-
-        .exam-type-card.certification .exam-type-icon {
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .exam-type-card.competition .exam-type-icon {
-            background: rgba(245, 158, 11, 0.1);
-        }
-
-        .exam-type-info h3 {
-            font-size: var(--font-size-base);
-            font-weight: var(--font-weight-semibold);
+        .hero-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
             color: var(--text-title);
             margin-bottom: 4px;
         }
-
-        .exam-type-info p {
-            font-size: var(--font-size-xs);
+        .hero-subtitle {
+            font-size: var(--font-size-sm);
             color: var(--text-secondary);
         }
-
-        .exam-type-count {
-            text-align: right;
+        .hero-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
         }
-
-        .count-number {
-            font-size: var(--font-size-xl);
+        .compliance-badge {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            color: var(--primary-green);
+            background: rgba(0, 212, 170, 0.08);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            padding: 6px 12px;
+            border-radius: var(--radius-base);
             font-weight: var(--font-weight-bold);
-            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .compliance-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: var(--radius-full);
+            background: var(--primary-green);
+            animation: pulse 2s infinite;
         }
 
-        .count-label {
-            font-size: var(--font-size-xs);
-            color: var(--text-secondary);
-        }
-
-        /* 搜索栏 */
-        .search-section {
+        /* ========== 指令提示行 ========== */
+        .directive-tip {
+            background: rgba(0, 212, 170, 0.04);
+            border: 1px solid rgba(0, 212, 170, 0.15);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
             margin-bottom: var(--space-4);
         }
-
-        .search-bar-container {
-            background: var(--bg-card);
-            padding: var(--space-3);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
+        .directive-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            background: rgba(0, 212, 170, 0.1);
             display: flex;
-            gap: var(--space-2);
             align-items: center;
-            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
         }
+        .directive-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            font-weight: var(--font-weight-medium);
+            line-height: 1.6;
+        }
+        .directive-text strong { font-weight: var(--font-weight-bold); }
+        .directive-text .hl-green { color: var(--primary-green); }
+        .directive-text .hl-blue { color: var(--primary-blue); }
+        .directive-text .hl-purple { color: #a78bfa; }
 
-        .search-filters {
-            flex: 1;
+        /* ========== 类型 Tab 选择器 ========== */
+        .type-tab-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 6px;
             display: flex;
-            gap: var(--space-2);
+            gap: 4px;
+            margin-bottom: var(--space-4);
             flex-wrap: wrap;
         }
-
-        .search-btn {
-            padding: var(--space-1) var(--space-3);
-            background: var(--primary-blue);
-            color: white;
-            border: none;
+        .type-tab {
+            padding: 8px 16px;
             border-radius: var(--radius-base);
             font-size: var(--font-size-sm);
-            font-weight: var(--font-weight-medium);
+            font-weight: var(--font-weight-bold);
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-family);
+        }
+        .type-tab:hover { background: var(--bg-input); color: var(--text-body); }
+        .type-tab.active {
+            background: var(--primary-blue);
+            color: #fff;
+            border-color: var(--primary-blue);
+        }
+        .type-tab .badge {
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: var(--radius-full);
+            font-weight: var(--font-weight-bold);
+            background: rgba(255, 255, 255, 0.15);
+            color: inherit;
+        }
+        .type-tab:not(.active) .badge {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+        }
+
+        /* ========== 主网格布局 ========== */
+        .exam-main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-4);
+            align-items: start;
+        }
+
+        /* ========== 左列：考试列表 ========== */
+        .list-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+            flex-wrap: wrap;
+        }
+        .list-header-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .list-header-title .icon { color: var(--primary-green); }
+        .status-filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+        .status-btn {
+            padding: 4px 12px;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
             cursor: pointer;
             transition: all var(--duration-base) ease;
             font-family: var(--font-family);
-            display: flex;
-            align-items: center;
-            gap: var(--space-1);
+        }
+        .status-btn:hover { background: var(--bg-input); color: var(--text-body); }
+        .status-btn.active {
+            background: rgba(0, 212, 170, 0.08);
+            color: var(--primary-green);
+            border-color: rgba(0, 212, 170, 0.2);
         }
 
-        .search-btn:hover {
-            background: var(--primary-blue-hover);
-            transform: translateY(-1px);
-        }
-
-        /* 标签筛选 */
-        .filter-tags-section {
-            margin-bottom: var(--space-4);
-        }
-
-        /* 考试列表 */
-        .exam-list-section {
-            margin-bottom: var(--space-4);
-        }
-
+        /* ========== 考试卡片 ========== */
         .exam-list-container {
             display: flex;
             flex-direction: column;
             gap: var(--space-3);
         }
-
-        .exam-list-item {
+        .exam-card {
             background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            padding: var(--space-3);
-            box-shadow: var(--shadow-card);
             border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            transition: all var(--duration-base) ease;
+        }
+        .exam-card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: var(--shadow-lg);
+        }
+        .exam-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+        .exam-card-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .pill {
+            font-size: 10px;
+            font-weight: var(--font-weight-bold);
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            border: 1px solid transparent;
+        }
+        .pill.regular { background: rgba(0, 212, 170, 0.08); border-color: rgba(0, 212, 170, 0.2); color: var(--primary-green); }
+        .pill.cert { background: rgba(0, 168, 255, 0.08); border-color: rgba(0, 168, 255, 0.2); color: var(--primary-blue); }
+        .pill.contest { background: rgba(167, 139, 250, 0.08); border-color: rgba(167, 139, 250, 0.2); color: #a78bfa; }
+        .pill.ongoing { background: var(--primary-green); color: #fff; }
+        .pill.upcoming { background: rgba(245, 158, 11, 0.8); color: #fff; }
+        .pill.ended { background: rgba(107, 114, 128, 0.3); color: var(--text-secondary); }
+        .task-id {
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-light);
+            padding: 4px 8px;
+            border-radius: var(--radius-base);
+            flex-shrink: 0;
+        }
+        .exam-card-title {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            margin-bottom: var(--space-2);
+            transition: color var(--duration-base) ease;
+        }
+        .exam-card:hover .exam-card-title { color: var(--primary-blue); }
+        .exam-card-desc {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: var(--space-2);
+        }
+        .exam-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-2);
+            border-top: 1px dashed var(--border-light);
+            border-bottom: 1px dashed var(--border-light);
+            padding: var(--space-2) 0;
+            margin-bottom: var(--space-2);
+        }
+        .exam-meta-item {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: var(--font-weight-medium);
+        }
+        .exam-meta-item .meta-icon { font-size: 14px; }
+        .exam-meta-item.score { color: var(--primary-green); }
+        .exam-meta-item.pass { color: rgba(245, 158, 11, 0.9); }
+        .exam-card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all var(--duration-base) ease;
         }
-
-        .exam-list-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-            border-color: transparent;
-        }
-
-        .exam-list-left {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-        }
-
-        .exam-type-badge {
-            padding: 4px var(--space-2);
-            border-radius: var(--radius-full);
+        .anti-cheat-badge {
             font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-medium);
-        }
-
-        .exam-type-badge.regular {
-            background: rgba(24, 144, 255, 0.1);
-            color: var(--primary-blue);
-        }
-
-        .exam-type-badge.certification {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
-        }
-
-        .exam-type-badge.competition {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-        }
-
-        .exam-list-info h3 {
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-semibold);
-            color: var(--text-title);
-            margin-bottom: var(--space-1);
-        }
-
-        .exam-details {
-            display: flex;
-            gap: var(--space-2);
-            flex-wrap: wrap;
-        }
-
-        .exam-detail-item {
-            font-size: var(--font-size-sm);
             color: var(--text-secondary);
             display: flex;
             align-items: center;
             gap: 4px;
         }
-
-        .detail-icon {
-            font-size: 14px;
-        }
-
-        .exam-list-right {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-        }
-
-        .exam-status {
-            padding: 4px var(--space-2);
-            border-radius: var(--radius-full);
+        .anti-cheat-badge .icon { color: var(--primary-green); }
+        .action-btn {
+            padding: 6px 16px;
+            border-radius: var(--radius-base);
             font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-medium);
+            font-weight: var(--font-weight-bold);
+            border: none;
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            color: #fff;
         }
-
-        .exam-status.status-ongoing {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
+        .action-btn.ongoing { background: var(--primary-green); }
+        .action-btn.ongoing:hover { background: #00b890; transform: translateY(-1px); }
+        .action-btn.upcoming { background: rgba(245, 158, 11, 0.8); }
+        .action-btn.upcoming:hover { background: rgba(245, 158, 11, 1); transform: translateY(-1px); }
+        .action-btn.ended {
+            background: var(--bg-input);
+            color: var(--text-body);
+            border: 1px solid var(--border-light);
         }
+        .action-btn.ended:hover { background: var(--bg-panel); }
 
-        .exam-status.status-upcoming {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
+        /* ========== 空状态 ========== */
+        .empty-state {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6) var(--space-4);
+            text-align: center;
         }
-
-        .exam-status.status-ended {
-            background: rgba(107, 114, 128, 0.1);
-            color: var(--text-secondary);
-        }
-
-        .enter-exam-btn {
-            padding: var(--space-1) var(--space-3);
+        .empty-state .icon { font-size: 40px; color: var(--text-secondary); margin-bottom: var(--space-2); }
+        .empty-state p { font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-3); }
+        .empty-state .reset-btn {
+            padding: 6px 16px;
             background: var(--primary-blue);
-            color: white;
+            color: #fff;
             border: none;
             border-radius: var(--radius-base);
             font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            font-family: var(--font-family);
+        }
+
+        /* ========== 右列：信息面板 ========== */
+        .info-panel { display: flex; flex-direction: column; gap: var(--space-4); }
+        .info-module {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+        }
+        .info-module-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+        .info-module-title .icon { color: var(--primary-green); }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-2);
+        }
+        .stat-item {
+            border-radius: var(--radius-base);
+            padding: var(--space-2) var(--space-3);
+            text-align: center;
+        }
+        .stat-item.green { background: rgba(0, 212, 170, 0.06); border: 1px solid rgba(0, 212, 170, 0.15); }
+        .stat-item.blue { background: rgba(0, 168, 255, 0.06); border: 1px solid rgba(0, 168, 255, 0.15); }
+        .stat-item.purple { background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.15); }
+        .stat-item.amber { background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.15); }
+        .stat-item .label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .stat-item .value {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            font-family: 'Courier New', monospace;
+        }
+        .stat-item.green .value { color: var(--primary-green); }
+        .stat-item.blue .value { color: var(--primary-blue); }
+        .stat-item.purple .value { color: #a78bfa; }
+        .stat-item.amber .value { color: rgba(245, 158, 11, 0.9); }
+
+        .reminder-item {
+            padding: var(--space-3);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
             font-weight: var(--font-weight-medium);
+        }
+        .reminder-item.today { background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-secondary); }
+        .reminder-item.nearest { background: rgba(0, 212, 170, 0.04); border: 1px solid rgba(0, 212, 170, 0.15); }
+        .reminder-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            margin-bottom: 4px;
+        }
+        .reminder-meta .tag { color: var(--primary-green); }
+        .reminder-item.nearest .exam-name { color: var(--text-title); font-weight: var(--font-weight-bold); font-size: var(--font-size-sm); margin-bottom: 4px; }
+        .reminder-item.nearest .exam-time { display: flex; justify-content: space-between; font-family: 'Courier New', monospace; font-size: 9px; color: var(--text-secondary); }
+
+        .info-module.dark { background: var(--bg-panel); border-color: var(--border-light); }
+        .info-module.dark .info-module-title { color: var(--primary-green); }
+        .info-module.dark ul { list-style: disc; padding-left: var(--space-4); }
+        .info-module.dark li {
+            font-size: var(--font-size-xs);
+            color: var(--text-body);
+            font-weight: var(--font-weight-medium);
+            line-height: 1.8;
+            margin-bottom: var(--space-1);
+        }
+        .info-module.dark li strong { color: var(--text-title); font-weight: var(--font-weight-bold); }
+
+        /* ========== 考试作答视图 ========== */
+        .exam-cockpit {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        .cockpit-header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            padding: var(--space-3) var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+        .cockpit-header-left .mono-label {
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .cockpit-header-left .mono-label .tag {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1px 6px;
+            border-radius: var(--radius-base);
+            margin-right: 6px;
+        }
+        .cockpit-header-left h3 { font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: #fff; }
+        .cockpit-back-btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            border-radius: var(--radius-base);
             cursor: pointer;
             transition: all var(--duration-base) ease;
             font-family: var(--font-family);
         }
+        .cockpit-back-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-        .enter-exam-btn:hover {
-            background: var(--primary-blue-hover);
-            transform: translateY(-1px);
-        }
-
-        .enter-exam-btn:disabled {
-            background: var(--text-secondary);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .enter-exam-btn.secondary {
-            background: var(--text-title);
-        }
-
-        .enter-exam-btn.secondary:hover {
-            background: #374151;
-        }
-
-        /* 用户信息 */
-        .user-info {
+        .anti-cheat-bar {
             display: flex;
-            align-items: center;
-            gap: var(--space-2);
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-panel);
         }
+        .anti-cheat-bar .cell {
+            flex: 1;
+            padding: var(--space-2) var(--space-3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--border-light);
+            text-align: center;
+        }
+        .anti-cheat-bar .cell:last-child { border-right: none; }
+        .anti-cheat-bar .cell .label { font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; }
+        .anti-cheat-bar .cell .value {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            font-family: 'Courier New', monospace;
+        }
+        .anti-cheat-bar .cell .value.green { color: var(--primary-green); }
+        .anti-cheat-bar .cell .value.amber { color: rgba(245, 158, 11, 0.9); }
+        .anti-cheat-bar .cell .value.red { color: #ef4444; }
 
-        .user-avatar {
-            width: 36px;
-            height: 36px;
+        .cockpit-body { padding: var(--space-5); flex: 1; overflow-y: auto; }
+
+        .pre-exam-card { max-width: 560px; margin: 0 auto; }
+        .pre-exam-title { text-align: center; margin-bottom: var(--space-4); }
+        .pre-exam-title h2 { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); color: var(--text-title); margin-bottom: var(--space-1); }
+        .pre-exam-title p { font-size: var(--font-size-sm); color: var(--text-secondary); }
+        .exam-info-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+        }
+        .exam-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+            padding: 4px 0;
+        }
+        .exam-info-row .val { color: var(--text-title); font-weight: var(--font-weight-bold); }
+        .exam-info-row .val.green { color: var(--primary-green); }
+        .exam-info-row .val.red { color: #ef4444; }
+        .exam-info-divider { border-top: 1px dashed var(--border-light); margin: var(--space-1) 0; }
+        .anti-cheat-warn {
+            background: rgba(245, 158, 11, 0.06);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+        .anti-cheat-warn .icon { color: rgba(245, 158, 11, 0.9); font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+        .anti-cheat-warn p { font-size: var(--font-size-xs); color: var(--text-body); font-weight: var(--font-weight-medium); line-height: 1.6; }
+        .anti-cheat-warn strong { color: rgba(245, 158, 11, 0.9); font-weight: var(--font-weight-bold); }
+        .start-exam-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-green);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+        }
+        .start-exam-btn:hover { background: #00b890; transform: translateY(-1px); }
+        .start-exam-btn:disabled { background: var(--bg-input); color: var(--text-secondary); cursor: not-allowed; transform: none; }
+
+        .quiz-area { max-width: 800px; margin: 0 auto; }
+        .quiz-progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: var(--font-weight-bold);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+        .quiz-progress-bar .progress { color: var(--primary-green); }
+        .quiz-progress-bar .score { color: #ef4444; }
+        .quiz-progress-bar .timer { color: var(--text-secondary); }
+        .question-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3) var(--space-4);
+            margin-bottom: var(--space-3);
+        }
+        .question-text { font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: var(--text-title); line-height: 1.7; }
+        .option-list { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+        .option-item {
+            width: 100%;
+            text-align: left;
+            padding: 14px;
+            border-radius: var(--radius-base);
+            border: 1px solid var(--border-light);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-2);
+            background: var(--bg-card);
+            font-family: var(--font-family);
+        }
+        .option-item:hover { background: var(--bg-input); }
+        .option-item.selected {
+            background: rgba(0, 212, 170, 0.06);
+            border-color: rgba(0, 212, 170, 0.5);
+            color: var(--primary-green);
+        }
+        .option-letter {
+            width: 20px;
+            height: 20px;
             border-radius: var(--radius-full);
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+            border: 1px solid var(--border-light);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: var(--font-weight-semibold);
-            font-size: var(--font-size-sm);
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: var(--font-weight-bold);
+            flex-shrink: 0;
         }
-
-        .user-details {
-            text-align: right;
+        .option-item.selected .option-letter { border-color: var(--primary-green); background: var(--primary-green); color: #fff; }
+        .quiz-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-light);
         }
+        .quiz-nav-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: all var(--duration-base) ease;
+            font-family: var(--font-family);
+            border: none;
+        }
+        .quiz-nav-btn.prev { background: var(--bg-input); color: var(--text-body); border: 1px solid var(--border-light); }
+        .quiz-nav-btn.prev:hover { background: var(--bg-panel); }
+        .quiz-nav-btn.prev:disabled { opacity: 0.4; cursor: not-allowed; }
+        .quiz-nav-btn.next { background: var(--primary-green); color: #fff; display: flex; align-items: center; gap: 6px; }
+        .quiz-nav-btn.next:hover { background: #00b890; }
+        .quiz-dots { display: flex; gap: 4px; }
+        .quiz-dots .dot { width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--border-light); }
+        .quiz-dots .dot.active { background: var(--primary-green); }
 
-        .user-name {
+        .result-area { max-width: 600px; margin: 0 auto; text-align: center; padding: var(--space-4) 0; }
+        .score-circle {
+            width: 96px;
+            height: 96px;
+            border-radius: var(--radius-full);
+            border: 4px dashed var(--primary-green);
+            margin: 0 auto var(--space-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .score-circle .inner {
+            position: absolute;
+            inset: 8px;
+            border-radius: var(--radius-full);
+            background: rgba(0, 212, 170, 0.06);
+            border: 1px solid rgba(0, 212, 170, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .score-circle .score-num { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--primary-green); font-family: 'Courier New', monospace; }
+        .score-circle .score-label { font-size: 9px; color: var(--text-secondary); font-weight: var(--font-weight-bold); letter-spacing: 2px; }
+        .result-title { font-size: var(--font-size-base); font-weight: var(--font-weight-bold); color: var(--text-title); margin-bottom: var(--space-1); }
+        .result-desc { font-size: var(--font-size-xs); color: var(--text-secondary); margin-bottom: var(--space-3); }
+        .diagnostic-report {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            text-align: left;
+            margin-bottom: var(--space-3);
+        }
+        .diagnostic-report .report-title {
             font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-green);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: var(--space-2);
+            margin-bottom: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .diagnostic-item { border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2); margin-bottom: var(--space-2); }
+        .diagnostic-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .diagnostic-item .q { font-size: var(--font-size-xs); color: var(--text-body); font-weight: var(--font-weight-medium); margin-bottom: 4px; line-height: 1.5; }
+        .diagnostic-item .ans { display: flex; gap: var(--space-3); font-family: 'Courier New', monospace; font-size: 10px; margin-bottom: 4px; }
+        .diagnostic-item .ans .correct { color: var(--primary-green); }
+        .diagnostic-item .ans .wrong { color: #ef4444; }
+        .diagnostic-item .ans .ref { color: var(--text-secondary); }
+        .diagnostic-item .exp { font-size: 10px; color: var(--text-secondary); font-style: italic; }
+        .result-actions { display: flex; justify-content: center; gap: var(--space-2); }
+        .result-actions .btn-retry {
+            padding: 8px 16px;
+            background: var(--bg-input);
+            color: var(--text-body);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            font-family: var(--font-family);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .result-actions .btn-retry:hover { background: var(--bg-panel); }
+        .result-actions .btn-back {
+            padding: 8px 20px;
+            background: var(--primary-green);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            font-family: var(--font-family);
+        }
+        .result-actions .btn-back:hover { background: #00b890; }
+
+        .cockpit-footer {
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-light);
+            padding: var(--space-2);
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-secondary);
             font-weight: var(--font-weight-medium);
         }
 
-        .user-meta {
+        /* ========== Toast ========== */
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            background: var(--primary-green);
+            color: #fff;
             font-size: var(--font-size-xs);
-            opacity: 0.8;
+            font-weight: var(--font-weight-bold);
+            padding: 12px 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-lg);
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { transform: translate(-50%, -100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* 响应式设计 */
+        @media (max-width: 1024px) { .exam-main-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) {
-            .exam-type-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .exam-list-item {
-                flex-direction: column;
-                gap: var(--space-2);
-                align-items: flex-start;
-            }
-
-            .exam-list-right {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .search-bar-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-filters {
-                flex-direction: column;
-            }
+            .exam-meta-grid { grid-template-columns: 1fr 1fr; }
+            .anti-cheat-bar { flex-wrap: wrap; }
+            .anti-cheat-bar .cell { flex: 1 1 33%; border-bottom: 1px solid var(--border-light); }
         }
     </style>
     <link rel="stylesheet" href="css/platform-theme.css">
 </head>
 <body data-platform-page="exam-hall" data-platform-shell="standard">
-    <!-- 顶部导航栏 -->
     <header class="top-nav">
         <div class="nav-brand">
             <div class="nav-brand-icon">E</div>
@@ -375,327 +833,391 @@
         </div>
     </header>
 
-    <!-- 应用布局 -->
     <div class="app-layout">
-        <!-- 左侧侧边栏 -->
         <aside class="sidebar">
             <div class="sidebar-menu" data-platform-navigation="global" aria-label="功能导航"></div>
         </aside>
 
-        <!-- 主内容区 -->
         <main class="main-content">
-            <!-- 页面标题 -->
-            <section class="page-header-section">
-                <h1 class="page-main-title">📝 考试大厅</h1>
-                <p class="page-main-subtitle">查看所有考试信息，选择适合的考试参与</p>
-            </section>
-
-            <!-- 考试类型卡片 -->
-            <section class="exam-types-section">
-                <div class="exam-type-cards">
-                    <div class="exam-type-card regular" data-type="regular">
-                        <div class="exam-type-icon">📋</div>
-                        <div class="exam-type-info">
-                            <h3>常规考试</h3>
-                            <p>课程期末考试、期中测试等</p>
-                        </div>
-                        <div class="exam-type-count">
-                            <span class="count-number">12</span>
-                            <span class="count-label">场考试</span>
-                        </div>
-                    </div>
-                    <div class="exam-type-card certification" data-type="certification">
-                        <div class="exam-type-icon">🏆</div>
-                        <div class="exam-type-info">
-                            <h3>认证测评</h3>
-                            <p>专业技能认证、资格认证等</p>
-                        </div>
-                        <div class="exam-type-count">
-                            <span class="count-number">5</span>
-                            <span class="count-label">场考试</span>
-                        </div>
-                    </div>
-                    <div class="exam-type-card competition" data-type="competition">
-                        <div class="exam-type-icon">🎯</div>
-                        <div class="exam-type-info">
-                            <h3>竞赛</h3>
-                            <p>学科竞赛、编程比赛等</p>
-                        </div>
-                        <div class="exam-type-count">
-                            <span class="count-number">3</span>
-                            <span class="count-label">场考试</span>
-                        </div>
-                    </div>
+            <div class="acl-banner">
+                <div class="acl-banner-left">
+                    <span class="acl-pulse"></span>
+                    <span class="acl-label">智慧教育综合实训平台 安全访问体系：</span>
+                    <span>当前已登录「学生端」统考与认证考试大厅</span>
                 </div>
-            </section>
+                <div class="acl-mono">ACL Token Matching: <span class="secure">SECURE_GRANTED</span></div>
+            </div>
 
-            <!-- 搜索栏 -->
-            <section class="search-section">
-                <div class="search-bar-container">
-                    <div class="search-filters">
-                        <select class="search-select" id="examTypeFilter">
-                            <option value="">全部类型</option>
-                            <option value="regular">常规考试</option>
-                            <option value="certification">认证测评</option>
-                            <option value="competition">竞赛</option>
-                        </select>
-                        <select class="search-select" id="examStatusFilter">
-                            <option value="">全部状态</option>
-                            <option value="ongoing">进行中</option>
-                            <option value="upcoming">未开始</option>
-                            <option value="ended">已结束</option>
-                        </select>
-                        <input type="text" class="search-input" id="keywordSearch" placeholder="搜索考试名称...">
-                    </div>
-                    <button class="search-btn" id="searchBtn">
-                        <span>🔍</span>
-                        搜索
-                    </button>
-                </div>
-            </section>
-
-            <!-- 标签筛选 -->
-            <section class="filter-tags-section">
-                <div class="filter-tags">
-                    <button class="filter-tag active" data-filter="all">全部考试</button>
-                    <button class="filter-tag" data-filter="my">我的考试</button>
-                    <button class="filter-tag" data-filter="completed">已完成</button>
-                    <button class="filter-tag" data-filter="pending">待参加</button>
-                </div>
-            </section>
-
-            <!-- 考试列表 -->
-            <section class="exam-list-section">
-                <div class="exam-list-container" id="examListContainer">
-                    <!-- 考试项 1 -->
-                    <div class="exam-list-item" data-type="regular" data-status="ongoing">
-                        <div class="exam-list-left">
-                            <div class="exam-type-badge regular">常规</div>
-                            <div class="exam-list-info">
-                                <h3 class="exam-name">计算机网络期末考试</h3>
-                                <div class="exam-details">
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">📅</span>
-                                        2026-06-10 14:00
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">⏱️</span>
-                                        120分钟
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">👥</span>
-                                        156人参与
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="exam-list-right">
-                            <span class="exam-status status-ongoing">进行中</span>
-                            <a href="exam-anti-cheat.html" class="enter-exam-btn">进入考场</a>
-                        </div>
-                    </div>
-
-                    <!-- 考试项 2 -->
-                    <div class="exam-list-item" data-type="certification" data-status="upcoming">
-                        <div class="exam-list-left">
-                            <div class="exam-type-badge certification">认证</div>
-                            <div class="exam-list-info">
-                                <h3 class="exam-name">Python高级编程认证测评</h3>
-                                <div class="exam-details">
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">📅</span>
-                                        2026-06-12 09:00
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">⏱️</span>
-                                        90分钟
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">👥</span>
-                                        89人报名
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="exam-list-right">
-                            <span class="exam-status status-upcoming">未开始</span>
-                            <button class="enter-exam-btn" disabled>查看详情</button>
-                        </div>
-                    </div>
-
-                    <!-- 考试项 3 -->
-                    <div class="exam-list-item" data-type="competition" data-status="ongoing">
-                        <div class="exam-list-left">
-                            <div class="exam-type-badge competition">竞赛</div>
-                            <div class="exam-list-info">
-                                <h3 class="exam-name">全国大学生算法设计竞赛</h3>
-                                <div class="exam-details">
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">📅</span>
-                                        2026-06-05 10:00
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">⏱️</span>
-                                        180分钟
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">👥</span>
-                                        234人参与
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="exam-list-right">
-                            <span class="exam-status status-ongoing">进行中</span>
-                            <a href="exam-anti-cheat.html" class="enter-exam-btn">进入考场</a>
-                        </div>
-                    </div>
-
-                    <!-- 考试项 4 -->
-                    <div class="exam-list-item" data-type="regular" data-status="ended">
-                        <div class="exam-list-left">
-                            <div class="exam-type-badge regular">常规</div>
-                            <div class="exam-list-info">
-                                <h3 class="exam-name">数据结构期中测试</h3>
-                                <div class="exam-details">
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">📅</span>
-                                        2026-05-28 14:00
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">⏱️</span>
-                                        60分钟
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">👥</span>
-                                        142人参与
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="exam-list-right">
-                            <span class="exam-status status-ended">已结束</span>
-                            <button class="enter-exam-btn secondary">查看成绩</button>
-                        </div>
-                    </div>
-
-                    <!-- 考试项 5 -->
-                    <div class="exam-list-item" data-type="certification" data-status="upcoming">
-                        <div class="exam-list-left">
-                            <div class="exam-type-badge certification">认证</div>
-                            <div class="exam-list-info">
-                                <h3 class="exam-name">软件工程师资格认证</h3>
-                                <div class="exam-details">
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">📅</span>
-                                        2026-06-15 14:30
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">⏱️</span>
-                                        150分钟
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">👥</span>
-                                        67人报名
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="exam-list-right">
-                            <span class="exam-status status-upcoming">未开始</span>
-                            <button class="enter-exam-btn" disabled>查看详情</button>
-                        </div>
-                    </div>
-
-                    <!-- 考试项 6 -->
-                    <div class="exam-list-item" data-type="competition" data-status="upcoming">
-                        <div class="exam-list-left">
-                            <div class="exam-type-badge competition">竞赛</div>
-                            <div class="exam-list-info">
-                                <h3 class="exam-name">人工智能创新应用大赛</h3>
-                                <div class="exam-details">
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">📅</span>
-                                        2026-06-20 09:00
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">⏱️</span>
-                                        240分钟
-                                    </span>
-                                    <span class="exam-detail-item">
-                                        <span class="detail-icon">👥</span>
-                                        45人报名
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="exam-list-right">
-                            <span class="exam-status status-upcoming">未开始</span>
-                            <button class="enter-exam-btn" disabled>查看详情</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <div id="examContent"></div>
         </main>
     </div>
 
-    <!-- 引入JavaScript文件 -->
     <script src="js/app.js"></script>
     <script>
-        // 标签筛选功能
-        document.querySelectorAll('.filter-tag').forEach(tag => {
-            tag.addEventListener('click', function() {
-                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                const filter = this.dataset.filter;
-                const items = document.querySelectorAll('.exam-list-item');
-                
-                items.forEach(item => {
-                    if (filter === 'all') {
-                        item.style.display = 'flex';
-                    } else if (filter === 'completed') {
-                        item.style.display = item.dataset.status === 'ended' ? 'flex' : 'none';
-                    } else if (filter === 'pending') {
-                        item.style.display = item.dataset.status === 'upcoming' ? 'flex' : 'none';
-                    } else {
-                        item.style.display = 'flex';
+        var EXAM_TASKS = [
+            { id:"exam-1", title:"物联网基础综合测试", type:"regular", typeName:"常规考试", status:"upcoming", statusName:"即将开始", time:"2026-06-10 09:00", duration:90, totalPoints:100, passingPoints:60, buttonText:"查看详情", desc:"本考试覆盖物联网传感器电路基础、基础网络拓扑架构以及无线传感网协议分析。" },
+            { id:"exam-2", title:"1+X 物联网智能化系统集成认证测评", type:"cert", typeName:"认证测评", status:"ongoing", statusName:"进行中", time:"2026-06-12 14:00", duration:120, totalPoints:100, passingPoints:60, buttonText:"进入测评", desc:"1+X职业技能等级认证专用考题，核心评测边缘网关数据通信及云端规则链分发配置能力。" },
+            { id:"exam-3", title:"工业互联网综合应用竞赛", type:"contest", typeName:"竞赛", status:"upcoming", statusName:"未开始", time:"2026-06-18 10:00", duration:150, totalPoints:100, mode:"排名模式: 开启", buttonText:"查看详情", desc:"全国智慧物联竞赛华北赛区，面向数字化配电站与数字孪生工厂建设的超高精多任务大比拼。" },
+            { id:"exam-4", title:"嵌入式开发基础考试", type:"regular", typeName:"常规考试", status:"ended", statusName:"已结束", time:"2026-05-28 15:00", duration:60, totalPoints:100, passingPoints:60, buttonText:"查看成绩", desc:"考察 Renode C/C++ 芯片内核寄存器电平配置、GPIO 引脚驱动和中断处理机制的基本功考试。" }
+        ];
+
+        var EXAM_QUESTIONS = [
+            { id:1, question:"在边缘计算网关部署中，若遇到终端设备通过Modbus/RTU采集超时错误，最优先应该排查的物理接口状态或配置是：", options:["A. 校验行业云平台中的设备凭证是否一致","B. 校验 RS485 总线的 A/B 线是否反接，以及波特率、停止位是否匹配","C. 校验 Jupyter Lab 所占用的计算资源负载","D. 重新设定 Linux 会话下的定时任务"], correct:1, explanation:"物理连接以及串口通信配置（波特率、数据位、停止位）是 Modbus 通信异常的首要排查点。" },
+            { id:2, question:"关于行业云物联网平台中规则节点的说法，下列哪项是正确的？", options:["A. 只能使用 C# 过滤数据，不支持脚本或 JSON 解析","B. 只能持久化遥测数据，不能与其他服务集成","C. 可通过拖拽和连线，对遥测属性执行阈值判断、数据转换和反向设备控制","D. 行业云平台没有规则节点，所有分析必须在终端中硬编码"], correct:2, explanation:"规则节点链可对遥测数据流执行过滤、转换，并按条件下发设备控制指令。" }
+        ];
+
+        var state = {
+            activeTypeTab:'all', activeStatusTab:'all',
+            selectedExamId:null, examStarted:false, isExamSubmitted:false,
+            currentQuestionIdx:0, answers:{}, examScore:0,
+            examTimer:120*60, switchCount:0, copyPasteAnomalies:0,
+            usedAttempts:0, studentExamStatus:"考试中", timerInterval:null
+        };
+        var MAX_SWITCH = 2;
+        var EXAM_DURATION_MINS = 120;
+
+        function showToast(msg) {
+            var existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            var toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = '<span>&#9989;</span><span>' + msg + '</span>';
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, 3000);
+        }
+
+        function formatTime(seconds) {
+            var h = Math.floor(seconds / 3600);
+            var m = Math.floor((seconds % 3600) / 60);
+            var s = seconds % 60;
+            return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        }
+
+        function getFilteredTasks() {
+            return EXAM_TASKS.filter(function(item) {
+                var matchType = state.activeTypeTab === 'all' || item.type === state.activeTypeTab;
+                var matchStatus = state.activeStatusTab === 'all' || item.status === state.activeStatusTab;
+                return matchType && matchStatus;
+            });
+        }
+
+        function renderListView() {
+            var container = document.getElementById('examContent');
+            var filtered = getFilteredTasks();
+            var typeTabs = [
+                {type:'all',label:'全部',badge:'4'},
+                {type:'regular',label:'常规考试',badge:'2'},
+                {type:'cert',label:'认证测评',badge:'1'},
+                {type:'contest',label:'竞赛',badge:'1'}
+            ];
+            var statusBtns = [
+                {status:'all',label:'全部'},
+                {status:'upcoming',label:'即将开始'},
+                {status:'ongoing',label:'进行中'},
+                {status:'ended',label:'已结束'}
+            ];
+            var html = '';
+
+            html += '<div class="hero-card"><div class="hero-left"><div class="hero-icon">&#128221;</div><div><div class="hero-title">考试大厅</div><div class="hero-subtitle">支持常规考试、认证测评、竞赛等多类型考试任务统一管理与参与。</div></div></div><div class="hero-right"><div class="compliance-badge"><span class="dot"></span>EXAM_STANDARDS: COMPLIANT</div></div></div>';
+
+            html += '<div class="directive-tip"><div class="directive-icon">&#127942;</div><p class="directive-text">考试大厅支持<strong class="hl-green">常规考试</strong>、<strong class="hl-blue">认证测评</strong>、<strong class="hl-purple">竞赛</strong>等多类型考试任务，学生可按考试类型与考试状态快速查看并进入考试。</p></div>';
+
+            html += '<div class="type-tab-bar">';
+            typeTabs.forEach(function(tab) {
+                var active = state.activeTypeTab === tab.type;
+                html += '<button class="type-tab' + (active?' active':'') + '" data-type-tab="' + tab.type + '"><span>' + tab.label + '</span><span class="badge">' + tab.badge + '</span></button>';
+            });
+            html += '</div>';
+
+            html += '<div class="exam-main-grid"><div>';
+
+            html += '<div class="list-header"><span class="list-header-title"><span class="icon">&#128203;</span>考试任务列表</span><div class="status-filter-group">';
+            statusBtns.forEach(function(item) {
+                var active = state.activeStatusTab === item.status;
+                html += '<button class="status-btn' + (active?' active':'') + '" data-status-tab="' + item.status + '">' + item.label + '</button>';
+            });
+            html += '</div></div>';
+
+            if (filtered.length === 0) {
+                html += '<div class="empty-state"><div class="icon">&#128268;</div><p>没有与当前筛选匹配的考试任务记录</p><button class="reset-btn" id="resetFilterBtn">查看全部</button></div>';
+            } else {
+                html += '<div class="exam-list-container">';
+                filtered.forEach(function(task) { html += renderExamCard(task); });
+                html += '</div>';
+            }
+
+            html += '</div><div class="info-panel">';
+
+            html += '<div class="info-module"><div class="info-module-title"><span class="icon">&#128200;</span>考试统计 (本学段)</div><div class="stat-grid"><div class="stat-item green"><span class="label">常规考试</span><span class="value">6 场</span></div><div class="stat-item blue"><span class="label">认证测评</span><span class="value">3 场</span></div><div class="stat-item purple"><span class="label">竞赛</span><span class="value">2 场</span></div><div class="stat-item amber"><span class="label">进行中</span><span class="value">1 场</span></div></div></div>';
+
+            html += '<div class="info-module"><div class="info-module-title"><span class="icon">&#128276;</span>临近考期日程提醒</div><div class="reminder-item today"><div class="reminder-meta"><span>TODAY SCHEDULE</span><span>暂无考试</span></div>今日暂无即将开始考试</div><div class="reminder-item nearest" style="margin-top:12px;"><div class="reminder-meta"><span class="tag">NEAREST EXAM</span><span class="pill upcoming" style="font-size:9px;padding:1px 6px;">即将开始</span></div><div class="exam-name">物联网基础综合测试</div><div class="exam-time"><span>开始时间</span><span>2026-06-10 09:00</span></div></div></div>';
+
+            html += '<div class="info-module dark"><div class="info-module-title"><span class="icon">&#127968;</span>考试规范与大厅章程</div><ul><li>支持<strong>常规考试、认证考试、竞赛</strong>统一入口。</li><li>可随时通过类型 Tab 与状态快速锁定关键考卷进入作答。</li><li>所有作答记录与分数自动上传至平台服务器建档。</li></ul></div>';
+
+            html += '</div></div>';
+
+            container.innerHTML = html;
+            bindListEvents();
+        }
+
+        function renderExamCard(task) {
+            var html = '';
+            html += '<div class="exam-card" data-exam-id="' + task.id + '">';
+            html += '<div class="exam-card-top"><div class="exam-card-badges"><span class="pill ' + task.type + '">' + task.typeName + '</span><span class="pill ' + task.status + '">' + task.statusName + '</span></div><span class="task-id">TASK-ID: ' + task.id.toUpperCase() + '</span></div>';
+            html += '<h3 class="exam-card-title">' + task.title + '</h3>';
+            html += '<p class="exam-card-desc">' + task.desc + '</p>';
+            html += '<div class="exam-meta-grid"><div class="exam-meta-item"><span class="meta-icon">&#128197;</span>' + task.time + '</div><div class="exam-meta-item"><span class="meta-icon">&#9201;</span>时长: ' + task.duration + '分钟</div><div class="exam-meta-item score"><span class="meta-icon">&#9989;</span>总分: ' + task.totalPoints + '分</div>';
+            var passInfo = task.mode ? task.mode : '及格分: ' + task.passingPoints + '分';
+            html += '<div class="exam-meta-item pass"><span class="meta-icon">&#127942;</span>' + passInfo + '</div></div>';
+            html += '<div class="exam-card-footer"><span class="anti-cheat-badge"><span class="icon">&#128737;</span>平台统考防作弊监测系统已开启动态防护</span>';
+            var btnClass = task.status === 'ongoing' ? 'ongoing' : task.status === 'upcoming' ? 'upcoming' : 'ended';
+            html += '<button class="action-btn ' + btnClass + '" data-enter-exam="' + task.id + '">' + task.buttonText + '</button></div></div>';
+            return html;
+        }
+
+        function bindListEvents() {
+            document.querySelectorAll('[data-type-tab]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    state.activeTypeTab = this.dataset.typeTab;
+                    showToast('已加载：' + this.textContent.trim());
+                    renderListView();
+                });
+            });
+            document.querySelectorAll('[data-status-tab]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    state.activeStatusTab = this.dataset.statusTab;
+                    showToast('考试状态：' + this.textContent.trim());
+                    renderListView();
+                });
+            });
+            var resetBtn = document.getElementById('resetFilterBtn');
+            if (resetBtn) resetBtn.addEventListener('click', function() {
+                state.activeTypeTab = 'all'; state.activeStatusTab = 'all';
+                renderListView();
+            });
+            document.querySelectorAll('[data-enter-exam]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var examId = this.dataset.enterExam;
+                    var task = EXAM_TASKS.find(function(t) { return t.id === examId; });
+                    if (task.status === 'ongoing') {
+                        handleStartExam(examId);
+                    } else if (task.status === 'upcoming') {
+                        if (examId === 'exam-3') showToast('正在载入《工业互联网竞赛大纲及全国章程解析》大纲要求...');
+                        else showToast('物联网综合测试尚未激活，系统开启时间为：2026-06-10 09:00');
+                    } else if (task.status === 'ended') {
+                        showToast('您的历史最终评分结果：嵌入式开发成绩为 85分 (总分：100分，及格分：60分)，已成功备份。');
                     }
                 });
             });
+        }
+
+        function handleStartExam(examId) {
+            state.selectedExamId = examId;
+            state.answers = {}; state.currentQuestionIdx = 0;
+            state.isExamSubmitted = false; state.examScore = 0;
+            state.examStarted = false; state.examTimer = EXAM_DURATION_MINS * 60;
+            state.switchCount = 0; state.copyPasteAnomalies = 0;
+            state.usedAttempts = 0; state.studentExamStatus = "考试中";
+            renderCockpitView();
+        }
+
+        function renderCockpitView() {
+            var container = document.getElementById('examContent');
+            var task = EXAM_TASKS.find(function(e) { return e.id === state.selectedExamId; });
+            var html = '';
+            html += '<div class="exam-cockpit">';
+
+            html += '<div class="cockpit-header"><div class="cockpit-header-left"><div class="mono-label"><span class="tag">EXAM_LIVE_COCKPIT</span>1+X NLE-EXAM ONLINE AGENT</div><h3>当前试卷：' + (task?task.title:'') + '</h3></div><button class="cockpit-back-btn" id="backToList">&larr; 退出考场 返回大厅</button></div>';
+
+            var statusColor = state.studentExamStatus === '考试中' ? 'green' : state.studentExamStatus === '预警' ? 'amber' : (state.studentExamStatus === '异常' || state.studentExamStatus === '已超时') ? 'red' : 'green';
+            var timerClass = state.examTimer < 600 ? 'red' : '';
+            var switchClass = state.switchCount >= MAX_SWITCH ? 'red' : '';
+            var anomalyClass = state.copyPasteAnomalies > 0 ? 'amber' : '';
+
+            html += '<div class="anti-cheat-bar"><div class="cell"><span class="label">考试状态</span><span class="value ' + statusColor + '">' + state.studentExamStatus + '</span></div><div class="cell"><span class="label">剩余时间</span><span class="value ' + timerClass + '">' + formatTime(state.examTimer) + '</span></div><div class="cell"><span class="label">切屏次数</span><span class="value ' + switchClass + '">' + state.switchCount + ' / ' + MAX_SWITCH + '</span></div><div class="cell"><span class="label">复制粘贴限制</span><span class="value green">已开启</span></div><div class="cell"><span class="label">异常行为</span><span class="value ' + anomalyClass + '">' + state.copyPasteAnomalies + ' 条</span></div><div class="cell"><span class="label">限考/已用</span><span class="value">1 / ' + state.usedAttempts + '</span></div></div>';
+
+            html += '<div class="cockpit-body">';
+            if (!state.examStarted) html += renderPreExam(task);
+            else if (!state.isExamSubmitted) html += renderQuiz();
+            else html += renderResult();
+            html += '</div>';
+
+            html += '<div class="cockpit-footer">智慧教育综合实训平台 统考安全终端 &copy; 2026 同步安全环境已激活</div></div>';
+
+            container.innerHTML = html;
+            bindCockpitEvents();
+        }
+
+        function renderPreExam(task) {
+            var html = '';
+            html += '<div class="pre-exam-card"><div class="pre-exam-title"><h2>考试作答</h2><p>请仔细阅读考试规则并确认环境准备完毕后进入考场。</p></div>';
+            html += '<div class="exam-info-card"><div class="exam-info-row"><span>考试名称：</span><span class="val">' + (task?task.title:'') + '</span></div><div class="exam-info-row"><span>考试场次：</span><span class="val">第一场</span></div><div class="exam-info-row"><span>考试时间：</span><span class="val">2026-06-10 09:00 - 11:00</span></div><div class="exam-info-row"><span>考试时长：</span><span class="val">120 分钟</span></div><div class="exam-info-row"><span>限考次数：</span><span class="val">1 次</span></div><div class="exam-info-divider"></div><div class="exam-info-row"><span>剩余次数：</span><span class="val">' + (1 - state.usedAttempts) + ' 次</span></div>';
+            var statusText = state.usedAttempts >= 1 ? '不可再次进入' : '可进入考试';
+            var statusClass = state.usedAttempts >= 1 ? 'red' : 'green';
+            html += '<div class="exam-info-row"><span>考试状态：</span><span class="val ' + statusClass + '">' + statusText + '</span></div></div>';
+            html += '<div class="anti-cheat-warn"><span class="icon">&#128737;</span><div><p>本场考试已开启防作弊规则：<strong>禁止屏幕切换、禁止复制粘贴、禁止右键菜单。</strong></p><p>违规操作将被实时记录至智能评测大盘。</p></div></div>';
+            html += '<button class="start-exam-btn" id="startExamBtn"' + (state.usedAttempts >= 1 ? ' disabled' : '') + '>我已知晓，开始考试</button></div>';
+            return html;
+        }
+
+        function renderQuiz() {
+            var q = EXAM_QUESTIONS[state.currentQuestionIdx];
+            var html = '';
+            html += '<div class="quiz-area">';
+            html += '<div class="quiz-progress-bar"><span class="progress">答题进度: ' + (state.currentQuestionIdx + 1) + ' / ' + EXAM_QUESTIONS.length + '</span><span class="timer">剩余: ' + formatTime(state.examTimer) + '</span><span class="score">当前分值: 100分</span></div>';
+            html += '<div class="question-card"><p class="question-text">' + q.id + '. ' + q.question + '</p></div>';
+            html += '<div class="option-list">';
+            q.options.forEach(function(opt, idx) {
+                var selected = state.answers[state.currentQuestionIdx] === idx;
+                html += '<button class="option-item' + (selected?' selected':'') + '" data-option="' + idx + '"><span class="option-letter">' + String.fromCharCode(65 + idx) + '</span><span>' + opt + '</span></button>';
+            });
+            html += '</div>';
+            html += '<div class="quiz-nav"><button class="quiz-nav-btn prev" id="prevBtn"' + (state.currentQuestionIdx === 0 ? ' disabled' : '') + '>&larr; 上一题</button><div class="quiz-dots">';
+            EXAM_QUESTIONS.forEach(function(_, i) { html += '<span class="dot' + (i === state.currentQuestionIdx ? ' active' : '') + '"></span>'; });
+            html += '</div>';
+            if (state.currentQuestionIdx < EXAM_QUESTIONS.length - 1) html += '<button class="quiz-nav-btn next" id="nextBtn">下一题 &rarr;</button>';
+            else html += '<button class="quiz-nav-btn next" id="submitBtn">提交作答</button>';
+            html += '</div></div>';
+            return html;
+        }
+
+        function renderResult() {
+            var html = '';
+            html += '<div class="result-area">';
+            html += '<div class="score-circle"><div class="inner"><span class="score-num">' + state.examScore + '</span><span class="score-label">PTS</span></div></div>';
+            html += '<h4 class="result-title">' + (state.examScore >= 60 ? '&#127942; 提交成功，及格通过！' : '&#9888; 评测未达及格线') + '</h4>';
+            html += '<p class="result-desc">本套统判分数已成功备案归档至平台云端教考系统数据库。</p>';
+            html += '<div class="diagnostic-report"><div class="report-title"><span>&#128204;</span>【诊断评价报告】</div>';
+            EXAM_QUESTIONS.forEach(function(q, idx) {
+                var isCorrect = state.answers[idx] === q.correct;
+                var userAns = state.answers[idx] !== undefined ? String.fromCharCode(65 + state.answers[idx]) : '未填';
+                html += '<div class="diagnostic-item"><p class="q">' + (idx + 1) + '. ' + q.question + '</p><div class="ans"><span class="' + (isCorrect ? 'correct' : 'wrong') + '">您的选择: 选项 ' + userAns + '</span><span class="ref">正确参考: 选项 ' + String.fromCharCode(65 + q.correct) + '</span></div><p class="exp">解析: ' + q.explanation + '</p></div>';
+            });
+            html += '</div>';
+            html += '<div class="result-actions"><button class="btn-retry" id="retryBtn">&#128260; 重新挑战本题</button><button class="btn-back" id="backFromResult">返回考试大厅 &rarr;</button></div>';
+            html += '</div>';
+            return html;
+        }
+
+        function bindCockpitEvents() {
+            var backBtn = document.getElementById('backToList');
+            if (backBtn) backBtn.addEventListener('click', function() {
+                if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+                state.selectedExamId = null;
+                showToast('已成功返回考试大厅');
+                renderListView();
+            });
+
+            var startBtn = document.getElementById('startExamBtn');
+            if (startBtn) startBtn.addEventListener('click', function() {
+                state.examStarted = true;
+                state.usedAttempts = 1;
+                var task = EXAM_TASKS.find(function(e) { return e.id === state.selectedExamId; });
+                showToast('《' + (task?task.title:'') + '》考位下载就绪，倒计时已启动。');
+                startTimer();
+                renderCockpitView();
+            });
+
+            document.querySelectorAll('[data-option]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var idx = parseInt(this.dataset.option);
+                    state.answers[state.currentQuestionIdx] = idx;
+                    renderCockpitView();
+                });
+            });
+
+            var prevBtn = document.getElementById('prevBtn');
+            if (prevBtn) prevBtn.addEventListener('click', function() {
+                if (state.currentQuestionIdx > 0) { state.currentQuestionIdx--; renderCockpitView(); }
+            });
+
+            var nextBtn = document.getElementById('nextBtn');
+            if (nextBtn) nextBtn.addEventListener('click', function() {
+                if (state.answers[state.currentQuestionIdx] === undefined) { showToast('请至少勾选一个选项。'); return; }
+                state.currentQuestionIdx++;
+                renderCockpitView();
+            });
+
+            var submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) submitBtn.addEventListener('click', function() {
+                if (state.answers[state.currentQuestionIdx] === undefined) { showToast('请确认完成最后一题的答案采集。'); return; }
+                calculateScore();
+            });
+
+            var retryBtn = document.getElementById('retryBtn');
+            if (retryBtn) retryBtn.addEventListener('click', function() {
+                state.answers = {}; state.currentQuestionIdx = 0;
+                state.isExamSubmitted = false; state.examScore = 0;
+                renderCockpitView();
+            });
+
+            var backFromResult = document.getElementById('backFromResult');
+            if (backFromResult) backFromResult.addEventListener('click', function() {
+                if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+                state.selectedExamId = null;
+                showToast('状态已保存，返回考试大厅');
+                renderListView();
+            });
+
+            // 防作弊：禁止复制粘贴右键
+            var cockpitBody = document.querySelector('.cockpit-body');
+            if (cockpitBody && state.examStarted && !state.isExamSubmitted) {
+                cockpitBody.addEventListener('copy', function(e) { e.preventDefault(); state.copyPasteAnomalies++; showToast('本场考试已禁止复制操作。'); renderCockpitView(); });
+                cockpitBody.addEventListener('paste', function(e) { e.preventDefault(); state.copyPasteAnomalies++; showToast('本场考试已禁止粘贴操作。'); renderCockpitView(); });
+                cockpitBody.addEventListener('contextmenu', function(e) { e.preventDefault(); state.copyPasteAnomalies++; showToast('本场考试已禁止右键菜单。'); renderCockpitView(); });
+            }
+        }
+
+        function startTimer() {
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(function() {
+                if (state.examTimer <= 1) {
+                    state.examTimer = 0;
+                    state.studentExamStatus = "已超时";
+                    state.isExamSubmitted = true;
+                    calculateScore();
+                    clearInterval(state.timerInterval);
+                    state.timerInterval = null;
+                    return;
+                }
+                state.examTimer--;
+                // 仅更新计时器显示，不重新渲染整个视图
+                var timerCell = document.querySelector('.anti-cheat-bar .cell:nth-child(2) .value');
+                if (timerCell) {
+                    timerCell.textContent = formatTime(state.examTimer);
+                    if (state.examTimer < 600) timerCell.classList.add('red');
+                }
+            }, 1000);
+        }
+
+        // 切屏检测
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden' && state.examStarted && !state.isExamSubmitted) {
+                state.switchCount++;
+                if (state.switchCount > MAX_SWITCH) {
+                    state.studentExamStatus = "异常";
+                    showToast('切屏次数已超过限制，考试状态已标记为异常。');
+                } else {
+                    showToast('检测到屏幕切换行为，当前切屏次数：' + state.switchCount + ' / ' + MAX_SWITCH + '。');
+                }
+                renderCockpitView();
+            }
         });
 
-        // 搜索功能
-        document.getElementById('searchBtn').addEventListener('click', function() {
-            const keyword = document.getElementById('keywordSearch').value.toLowerCase();
-            const typeFilter = document.getElementById('examTypeFilter').value;
-            const statusFilter = document.getElementById('examStatusFilter').value;
-            
-            const items = document.querySelectorAll('.exam-list-item');
-            
-            items.forEach(item => {
-                const name = item.querySelector('.exam-name').textContent.toLowerCase();
-                const type = item.dataset.type;
-                const status = item.dataset.status;
-                
-                let show = true;
-                
-                if (keyword && !name.includes(keyword)) show = false;
-                if (typeFilter && type !== typeFilter) show = false;
-                if (statusFilter && status !== statusFilter) show = false;
-                
-                item.style.display = show ? 'flex' : 'none';
+        function calculateScore() {
+            var score = 0;
+            EXAM_QUESTIONS.forEach(function(q, idx) {
+                if (state.answers[idx] === q.correct) score += 50;
             });
-        });
+            state.examScore = score;
+            state.isExamSubmitted = true;
+            if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+            showToast('作答完成！考试得分: ' + score + '分');
+            renderCockpitView();
+        }
 
-        // 考试类型卡片点击
-        document.querySelectorAll('.exam-type-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const type = this.dataset.type;
-                document.getElementById('examTypeFilter').value = type;
-                document.getElementById('searchBtn').click();
-            });
-        });
+        // 初始化
+        renderListView();
     </script>
     <script src="js/platform-shell.js"></script>
 </body>

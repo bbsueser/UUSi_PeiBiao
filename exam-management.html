@@ -3,10 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>考试管理 - 人工智能算法训练平台</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/variables.css">
+    <title>考试管理 - 星朴XP-AI001人工智能算法训练平台</title>
+    <link rel="stylesheet" href="css/common.css">
     <style>
+        /* 兼容深色主题所需的补充变量 */
+        :root {
+            --bg-header: var(--bg-panel);
+            --shadow-sm: var(--shadow-card);
+            --z-sticky: 100;
+            --z-modal: 1000;
+            --font-size-3xl: 28px;
+        }
+
         /* 页面基础布局 */
         .exam-management-page {
             min-height: 100vh;
@@ -1190,7 +1198,7 @@
     </style>
     <link rel="stylesheet" href="css/platform-theme.css">
 </head>
-<body data-platform-page="exam-management" data-platform-shell="standard">
+<body data-platform-page="exam-management" data-platform-shell="standard" data-platform-role="teacher">
     <div class="exam-management-page">
         <!-- 顶部导航栏 -->
         <nav class="top-nav">

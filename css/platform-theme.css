@@ -39,6 +39,24 @@
     stroke-linejoin: round;
 }
 
+.platform-inline-icon {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.platform-inline-icon svg {
+    width: 1.15em;
+    height: 1.15em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .platform-brand-mark svg {
     fill: currentColor;
     stroke: none;
@@ -244,4 +262,39 @@ body[data-platform-page="industry-cloud"] .industry-sidebar {
     .platform-notice {
         transition: none;
     }
+}
+
+/* ========== 星朴XP-AI001 品牌标识（完整 logo 图） ========== */
+.platform-brand-lockup {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.platform-brand-logo {
+    display: block;
+    height: 40px;
+    width: auto;
+    flex: 0 0 auto;
+}
+
+/* 工作台顶栏（44px）使用更紧凑的品牌尺寸 */
+.platform-workspace-bar .platform-brand-lockup {
+    gap: 0;
+}
+
+.platform-workspace-bar .platform-brand-logo {
+    height: 30px;
+}
+
+/* 以图片替换的方形品牌图标位（透明底，保留原有尺寸容器） */
+.platform-brand-mark--image {
+    background: transparent;
+}
+
+.platform-brand-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }

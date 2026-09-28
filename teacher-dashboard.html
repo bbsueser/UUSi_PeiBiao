@@ -3,11 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教师工作台 - 人工智能算法训练平台</title>
+    <title>教师工作台 - 星朴XP-AI001人工智能算法训练平台</title>
     <link rel="stylesheet" href="css/common.css">
     <style>
         /* 教师工作台专用样式 */
-        
+
+        /* 页面头部信息块 */
+        .teacher-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .teacher-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .teacher-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--primary-green);
+            font-size: var(--font-size-xs);
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: 4px;
+        }
+
+        .teacher-header-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary-green);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .teacher-header h1 {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+        }
+
+        .teacher-header p {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .teacher-header-actions {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .btn-action-primary {
+            background: var(--primary-blue);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-base);
+            padding: 8px 16px;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all var(--duration-base) ease;
+        }
+
+        .btn-action-primary:hover {
+            background: var(--primary-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-secondary {
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--primary-green);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: var(--radius-base);
+            padding: 8px 16px;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all var(--duration-base) ease;
+        }
+
+        .btn-action-secondary:hover {
+            background: rgba(0, 212, 170, 0.2);
+        }
+
+        .teacher-header-right {
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            padding: var(--space-3);
+            min-width: 220px;
+        }
+
+        .teacher-header-right .label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .teacher-header-right .time {
+            font-size: var(--font-size-sm);
+            color: var(--text-body);
+            margin-bottom: 6px;
+        }
+
+        .teacher-header-right .status {
+            font-size: var(--font-size-xs);
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: var(--font-weight-semibold);
+        }
+
         /* 统计卡片区域 */
         .stats-grid {
             display: grid;
@@ -15,313 +150,585 @@
             gap: var(--space-3);
             margin-bottom: var(--space-4);
         }
-        
+
         .stat-card {
             background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            padding: var(--space-3);
-            box-shadow: var(--shadow-card);
             border: 1px solid var(--border-light);
-            transition: all var(--duration-base) ease;
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .stat-icon {
-            width: 56px;
-            height: 56px;
             border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            flex-shrink: 0;
+            justify-content: space-between;
+            transition: all var(--duration-base) ease;
         }
-        
-        .stat-icon.students {
-            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+
+        .stat-card:hover {
+            border-color: rgba(0, 168, 255, 0.3);
+            transform: translateY(-2px);
         }
-        
-        .stat-icon.time {
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+
+        .stat-card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
-        
-        .stat-icon.classes {
-            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+
+        .stat-card-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-medium);
         }
-        
-        .stat-icon.courses {
-            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+
+        .stat-card-value {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
         }
-        
-        .stat-content h3 {
+
+        .stat-card-value .num {
             font-size: var(--font-size-2xl);
             font-weight: var(--font-weight-bold);
             color: var(--text-title);
-            margin-bottom: 4px;
+            line-height: 1;
         }
-        
-        .stat-content p {
+
+        .stat-card-value .unit {
             font-size: var(--font-size-sm);
             color: var(--text-secondary);
         }
-        
-        /* AI快捷入口区域 */
-        .ai-shortcuts {
+
+        .stat-card-desc {
+            font-size: 10px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue {
+            background: rgba(0, 168, 255, 0.1);
+            border: 1px solid rgba(0, 168, 255, 0.15);
+        }
+
+        .stat-icon.green {
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.15);
+        }
+
+        .stat-icon.amber {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
+
+        .stat-icon.purple {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+        }
+
+        /* AI工具集区域 */
+        .ai-section {
             margin-bottom: var(--space-4);
         }
-        
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3);
+        }
+
+        .section-header-row h2 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-header-row .section-desc {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .section-header-row .view-all {
+            font-size: var(--font-size-xs);
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+        }
+
+        .section-header-row .view-all:hover {
+            text-decoration: underline;
+        }
+
         .ai-cards-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: var(--space-3);
         }
-        
-        .ai-card {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
+
+        .ai-tool-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-lg);
-            padding: var(--space-3);
-            color: white;
-            cursor: pointer;
-            transition: all var(--duration-base) ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 140px;
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            transition: all var(--duration-base) ease;
+            cursor: pointer;
         }
-        
-        .ai-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            pointer-events: none;
+
+        .ai-tool-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
         }
-        
-        .ai-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(71, 85, 105, 0.4);
-        }
-        
-        .ai-card-icon {
-            font-size: 32px;
+
+        .ai-tool-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: var(--space-2);
         }
-        
-        .ai-card-title {
-            font-size: var(--font-size-lg);
+
+        .ai-tool-name {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+        }
+
+        .ai-tool-card:hover .ai-tool-name {
+            color: var(--primary-blue);
+        }
+
+        .ai-tool-badge {
+            background: rgba(0, 168, 255, 0.1);
+            color: var(--primary-blue);
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
             font-weight: var(--font-weight-semibold);
-            margin-bottom: 4px;
         }
-        
-        .ai-card-desc {
+
+        .ai-tool-desc {
             font-size: var(--font-size-xs);
-            opacity: 0.9;
-            line-height: var(--line-height-relaxed);
+            color: var(--text-secondary);
+            line-height: 1.6;
+            min-height: 36px;
         }
-        
+
+        .ai-tool-btn {
+            width: 100%;
+            padding: 8px 0;
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            color: var(--text-body);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            text-align: center;
+            transition: all var(--duration-base) ease;
+            margin-top: var(--space-2);
+        }
+
+        .ai-tool-card:hover .ai-tool-btn {
+            background: var(--primary-blue);
+            color: #fff;
+            border-color: var(--primary-blue);
+        }
+
         /* 内容区域两栏布局 */
         .content-two-cols {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 7fr 5fr;
             gap: var(--space-4);
             margin-bottom: var(--space-4);
         }
-        
-        /* 任务概览 */
-        .task-overview {
+
+        /* 通用卡片面板 */
+        .panel-card {
             background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            padding: var(--space-3);
-            box-shadow: var(--shadow-card);
             border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-card);
         }
-        
-        .task-list {
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: var(--space-2);
+            margin-bottom: var(--space-3);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .panel-header h3 {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panel-header .meta {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        /* 快速状态计数器 */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .quick-stat-item {
+            padding: var(--space-2);
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            text-align: center;
+        }
+
+        .quick-stat-item .label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-medium);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .quick-stat-item .value {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-bold);
+            padding: 2px 8px;
+            border-radius: var(--radius-base);
+            display: inline-block;
+        }
+
+        .quick-stat-item .value.green {
+            color: var(--primary-green);
+            background: rgba(0, 212, 170, 0.08);
+        }
+
+        .quick-stat-item .value.amber {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        .quick-stat-item .value.blue {
+            color: var(--primary-blue);
+            background: rgba(0, 168, 255, 0.08);
+        }
+
+        .quick-stat-item .value.purple {
+            color: #a78bfa;
+            background: rgba(139, 92, 246, 0.08);
+        }
+
+        /* 任务列表行 */
+        .task-rows {
             display: flex;
             flex-direction: column;
             gap: var(--space-2);
         }
-        
-        .task-item {
-            padding: var(--space-2);
+
+        .task-row {
+            padding: var(--space-2) var(--space-3);
             background: var(--bg-body);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-base);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: var(--space-3);
             transition: all var(--duration-base) ease;
+            cursor: pointer;
         }
-        
-        .task-item:hover {
-            background: rgba(71, 85, 105, 0.05);
+
+        .task-row:hover {
+            background: rgba(0, 168, 255, 0.04);
+            border-color: rgba(0, 168, 255, 0.2);
         }
-        
-        .task-left {
+
+        .task-row-left {
             display: flex;
-            align-items: center;
-            gap: var(--space-2);
+            flex-direction: column;
+            gap: 2px;
             flex: 1;
+            min-width: 0;
         }
-        
-        .task-type-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-base);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        
-        .task-type-icon.homework {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3B82F6;
-        }
-        
-        .task-type-icon.exam {
-            background: rgba(239, 68, 68, 0.1);
-            color: #EF4444;
-        }
-        
-        .task-type-icon.practice {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10B981;
-        }
-        
-        .task-info h4 {
+
+        .task-row-name {
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
             color: var(--text-title);
-            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
-        .task-meta {
+
+        .task-row-meta {
             font-size: var(--font-size-xs);
             color: var(--text-secondary);
         }
-        
-        .task-right {
+
+        .task-row-right {
             display: flex;
             align-items: center;
-            gap: var(--space-2);
+            gap: var(--space-3);
+            flex-shrink: 0;
         }
-        
-        .task-progress {
-            text-align: right;
+
+        .task-progress-mini {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        .progress-bar {
-            width: 100px;
-            height: 6px;
+
+        .task-progress-mini .label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .task-progress-mini .bar {
+            width: 60px;
+            height: 5px;
             background: var(--border-light);
             border-radius: var(--radius-full);
             overflow: hidden;
-            margin-bottom: 4px;
         }
-        
-        .progress-fill {
+
+        .task-progress-mini .bar-fill {
             height: 100%;
+            background: var(--primary-green);
             border-radius: var(--radius-full);
             transition: width var(--duration-slow) ease;
         }
-        
-        .progress-fill.high {
-            background: linear-gradient(90deg, #10B981, #059669);
-        }
-        
-        .progress-fill.medium {
-            background: linear-gradient(90deg, #F59E0B, #D97706);
-        }
-        
-        .progress-fill.low {
-            background: linear-gradient(90deg, #EF4444, #DC2626);
-        }
-        
-        .progress-text {
+
+        .task-progress-mini .pct {
             font-size: var(--font-size-xs);
-            color: var(--text-secondary);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-green);
+            width: 32px;
+            text-align: right;
         }
-        
-        /* 班级学情概览 */
-        .class-overview {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            padding: var(--space-3);
-            box-shadow: var(--shadow-card);
+
+        .task-row-btn {
+            padding: 4px 10px;
+            font-size: var(--font-size-xs);
+            background: transparent;
             border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--duration-base) ease;
         }
-        
-        .chart-container {
-            padding: var(--space-2) 0;
+
+        .task-row-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
         }
-        
-        .bar-chart {
+
+        /* 趋势图区域 */
+        .trend-chart {
+            height: 160px;
             display: flex;
             align-items: flex-end;
             justify-content: space-around;
-            height: 200px;
             padding: var(--space-2) 0;
-            border-bottom: 2px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: var(--space-3);
         }
-        
-        .bar-item {
+
+        .trend-bar-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: var(--space-1);
+            gap: 4px;
             flex: 1;
         }
-        
-        .bar-wrapper {
-            width: 40px;
+
+        .trend-bar-wrap {
+            width: 32px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-end;
-            height: 160px;
+            height: 120px;
         }
-        
-        .bar {
+
+        .trend-bar {
             width: 100%;
             border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            background: linear-gradient(180deg, var(--primary-blue), rgba(0, 168, 255, 0.3));
             transition: all var(--duration-base) ease;
-            position: relative;
         }
-        
-        .bar:hover {
+
+        .trend-bar:hover {
             opacity: 0.8;
         }
-        
-        .bar-value {
+
+        .trend-bar-val {
             position: absolute;
-            top: -20px;
+            top: -18px;
             left: 50%;
             transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: var(--font-weight-bold);
+            color: var(--text-body);
+        }
+
+        .trend-bar-label {
             font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        /* 指标小卡片网格 */
+        .indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-2);
+        }
+
+        .indicator-card {
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+        }
+
+        .indicator-card .label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-medium);
+            margin-bottom: 2px;
+        }
+
+        .indicator-card .value {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .indicator-card .value .num {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-title);
+        }
+
+        .indicator-card .value .trend {
+            font-size: 10px;
+            color: var(--primary-green);
+        }
+
+        .indicator-card .value .unit {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        /* 班级和课程行 */
+        .classes-courses-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+        }
+
+        .overview-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .overview-item {
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-base);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all var(--duration-base) ease;
+            cursor: pointer;
+        }
+
+        .overview-item:hover {
+            border-color: rgba(0, 168, 255, 0.3);
+        }
+
+        .overview-item-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .overview-item-name {
+            font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
             color: var(--text-title);
         }
-        
-        .bar-label {
+
+        .overview-item-meta {
             font-size: var(--font-size-xs);
             color: var(--text-secondary);
-            text-align: center;
-            margin-top: var(--space-1);
         }
-        
+
+        .overview-item-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .overview-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: var(--radius-base);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .overview-badge.amber {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        .overview-badge.muted {
+            color: var(--text-secondary);
+            background: var(--bg-input);
+        }
+
+        .overview-arrow {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+        }
+
+        .overview-item:hover .overview-arrow {
+            color: var(--primary-blue);
+        }
+
         /* 响应式设计 */
         @media (max-width: 1400px) {
             .stats-grid,
@@ -329,25 +736,27 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-        
+
         @media (max-width: 1024px) {
-            .content-two-cols {
+            .content-two-cols,
+            .classes-courses-row {
                 grid-template-columns: 1fr;
             }
         }
-        
+
         @media (max-width: 768px) {
             .stats-grid,
-            .ai-cards-grid {
+            .ai-cards-grid,
+            .quick-stats,
+            .indicator-grid {
                 grid-template-columns: 1fr;
             }
-            
             .stat-card {
                 padding: var(--space-2);
             }
-            
-            .ai-card {
-                min-height: 120px;
+            .teacher-header {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -361,306 +770,443 @@
                 <div class="nav-brand-icon">智</div>
                 <span class="nav-brand-text">人工智能算法训练平台</span>
             </div>
-        <div class="nav-menu" data-platform-navigation="global" aria-label="主导航"></div>
+            <div class="nav-menu" data-platform-navigation="global" aria-label="主导航"></div>
             <div style="display: flex; align-items: center; gap: var(--space-3);">
                 <span style="font-size: var(--font-size-sm); opacity: 0.9;">欢迎，张老师</span>
                 <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #667EEA, #764BA2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">张</div>
             </div>
         </nav>
-        
+
         <!-- 左侧侧边栏 -->
         <aside class="sidebar">
             <div class="sidebar-menu" data-platform-navigation="global" aria-label="功能导航"></div>
         </aside>
-        
+
         <!-- 主内容区 -->
         <main class="main-content">
-            <!-- 页面标题 -->
-            <div class="page-header">
-                <h1 class="page-title">教师工作台</h1>
-                <p class="page-subtitle">欢迎回来！这是您今天的教学概览</p>
+            <!-- 页面头部信息块 -->
+            <div class="teacher-header">
+                <div class="teacher-header-left">
+                    <span class="teacher-header-badge">
+                        <span class="dot"></span>
+                        教师工作台
+                    </span>
+                    <h1>教师工作台</h1>
+                    <p>查看教学任务、班级课程与 AI 教学工具，辅助教师完成课程建设和教学管理。</p>
+                    <div class="teacher-header-actions">
+                        <button class="btn-action-primary" onclick="window.location.href='task-management.html'">
+                            <span>📋</span> 下发任务
+                        </button>
+                        <button class="btn-action-secondary" onclick="window.location.href='task-management.html'">
+                            <span>📖</span> 我的教学
+                        </button>
+                    </div>
+                </div>
+                <div class="teacher-header-right">
+                    <div class="label">今日教学概览</div>
+                    <div class="time">最近更新时间：2026-06-02 09:30</div>
+                    <div class="status">
+                        <span style="font-size: 12px;">✓</span>
+                        智能云评测服务状态正常
+                    </div>
+                </div>
             </div>
-            
+
             <!-- 统计数据卡片 -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon students">👥</div>
-                    <div class="stat-content">
-                        <h3>1,248</h3>
-                        <p>学生任务数</p>
+                    <div class="stat-card-info">
+                        <span class="stat-card-label">下发任务</span>
+                        <div class="stat-card-value">
+                            <span class="num">36</span>
+                            <span class="unit">个</span>
+                        </div>
+                        <span class="stat-card-desc">当前已下发的学习与实验任务</span>
                     </div>
+                    <div class="stat-icon blue">📋</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon time">⏱️</div>
-                    <div class="stat-content">
-                        <h3>326h</h3>
-                        <p>任务总时长</p>
+                    <div class="stat-card-info">
+                        <span class="stat-card-label">任务时长</span>
+                        <div class="stat-card-value">
+                            <span class="num">128</span>
+                            <span class="unit">小时</span>
+                        </div>
+                        <span class="stat-card-desc">学生累计任务学习时长</span>
                     </div>
+                    <div class="stat-icon green">⏱️</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon classes">🏫</div>
-                    <div class="stat-content">
-                        <h3>6</h3>
-                        <p>班级数量</p>
+                    <div class="stat-card-info">
+                        <span class="stat-card-label">班级数量</span>
+                        <div class="stat-card-value">
+                            <span class="num">4</span>
+                            <span class="unit">个</span>
+                        </div>
+                        <span class="stat-card-desc">当前负责教学班级</span>
                     </div>
+                    <div class="stat-icon amber">🏫</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon courses">📖</div>
-                    <div class="stat-content">
-                        <h3>12</h3>
-                        <p>课程数量</p>
+                    <div class="stat-card-info">
+                        <span class="stat-card-label">课程数量</span>
+                        <div class="stat-card-value">
+                            <span class="num">12</span>
+                            <span class="unit">门</span>
+                        </div>
+                        <span class="stat-card-desc">已开设或已购买课程</span>
                     </div>
+                    <div class="stat-icon purple">📖</div>
                 </div>
             </div>
-            
-            <!-- AI快捷入口 -->
-            <div class="ai-shortcuts">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">🤖</span>
-                        AI智能助手
-                    </h2>
+
+            <!-- AI工具集 -->
+            <div class="ai-section">
+                <div class="section-header-row">
+                    <div>
+                        <h2>🤖 AI工具集</h2>
+                        <div class="section-desc">面向课程建设与教学准备的智能辅助工具。</div>
+                    </div>
+                    <a class="view-all" href="ai-assistant.html">查看全部AI工具 →</a>
                 </div>
                 <div class="ai-cards-grid">
-                    <div class="ai-card">
+                    <div class="ai-tool-card" onclick="window.location.href='ai-assistant.html'">
                         <div>
-                            <div class="ai-card-icon">📋</div>
-                            <div class="ai-card-title">AI课标定制</div>
-                            <div class="ai-card-desc">智能生成符合教学标准的课程大纲</div>
+                            <div class="ai-tool-top">
+                                <span class="ai-tool-name">AI课标</span>
+                                <span class="ai-tool-badge">标准定制</span>
+                            </div>
+                            <p class="ai-tool-desc">快速生成课程标准框架与教学目标。</p>
+                        </div>
+                        <button class="ai-tool-btn">立即使用</button>
+                    </div>
+                    <div class="ai-tool-card" onclick="window.location.href='ai-assistant.html'">
+                        <div>
+                            <div class="ai-tool-top">
+                                <span class="ai-tool-name">AI大纲</span>
+                                <span class="ai-tool-badge">架构规划</span>
+                            </div>
+                            <p class="ai-tool-desc">辅助设计教材大纲、章节结构与知识模块。</p>
+                        </div>
+                        <button class="ai-tool-btn">立即使用</button>
+                    </div>
+                    <div class="ai-tool-card" onclick="window.location.href='ai-assistant.html'">
+                        <div>
+                            <div class="ai-tool-top">
+                                <span class="ai-tool-name">AI课件</span>
+                                <span class="ai-tool-badge">内容提炼</span>
+                            </div>
+                            <p class="ai-tool-desc">根据课程主题生成 PPT 大纲与课件内容。</p>
+                        </div>
+                        <button class="ai-tool-btn">立即使用</button>
+                    </div>
+                    <div class="ai-tool-card" onclick="window.location.href='ai-assistant.html'">
+                        <div>
+                            <div class="ai-tool-top">
+                                <span class="ai-tool-name">AI题库</span>
+                                <span class="ai-tool-badge">智能命题</span>
+                            </div>
+                            <p class="ai-tool-desc">按知识点、题型和难度生成题库内容。</p>
+                        </div>
+                        <button class="ai-tool-btn">立即使用</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 教学任务概览 + 教学数据趋势 -->
+            <div class="content-two-cols">
+                <!-- 左：教学任务概览 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>📋 教学任务概览</h3>
+                        <span class="meta">实测总纲数据</span>
+                    </div>
+                    <!-- 快速状态计数器 -->
+                    <div class="quick-stats">
+                        <div class="quick-stat-item">
+                            <div class="label">今日待处理</div>
+                            <span class="value green">8 个</span>
+                        </div>
+                        <div class="quick-stat-item">
+                            <div class="label">待评分报告</div>
+                            <span class="value amber">15 个</span>
+                        </div>
+                        <div class="quick-stat-item">
+                            <div class="label">进行中任务</div>
+                            <span class="value blue">12 个</span>
+                        </div>
+                        <div class="quick-stat-item">
+                            <div class="label">已完成任务</div>
+                            <span class="value purple">24 个</span>
                         </div>
                     </div>
-                    <div class="ai-card">
-                        <div>
-                            <div class="ai-card-icon">📝</div>
-                            <div class="ai-card-title">AI大纲设计</div>
-                            <div class="ai-card-desc">快速设计课程教学大纲与计划</div>
+                    <!-- 任务列表行 -->
+                    <div class="task-rows">
+                        <div class="task-row" onclick="window.location.href='task-management.html'">
+                            <div class="task-row-left">
+                                <span class="task-row-name">物联网设备接入实验任务</span>
+                                <span class="task-row-meta">关联班级 ｜ 物联网 2301</span>
+                            </div>
+                            <div class="task-row-right">
+                                <div class="task-progress-mini">
+                                    <span class="label">完成率:</span>
+                                    <div class="bar"><div class="bar-fill" style="width: 92%;"></div></div>
+                                    <span class="pct">92%</span>
+                                </div>
+                                <button class="task-row-btn">详情</button>
+                            </div>
+                        </div>
+                        <div class="task-row" onclick="window.location.href='task-management.html'">
+                            <div class="task-row-left">
+                                <span class="task-row-name">MQTT通信协议章节学习</span>
+                                <span class="task-row-meta">关联班级 ｜ 物联网 2302</span>
+                            </div>
+                            <div class="task-row-right">
+                                <div class="task-progress-mini">
+                                    <span class="label">完成率:</span>
+                                    <div class="bar"><div class="bar-fill" style="width: 85%;"></div></div>
+                                    <span class="pct">85%</span>
+                                </div>
+                                <button class="task-row-btn">详情</button>
+                            </div>
+                        </div>
+                        <div class="task-row" onclick="window.location.href='task-management.html'">
+                            <div class="task-row-left">
+                                <span class="task-row-name">行业云平台数据上报实验</span>
+                                <span class="task-row-meta">关联班级 ｜ 人工智能 2301</span>
+                            </div>
+                            <div class="task-row-right">
+                                <div class="task-progress-mini">
+                                    <span class="label">完成率:</span>
+                                    <div class="bar"><div class="bar-fill" style="width: 78%;"></div></div>
+                                    <span class="pct">78%</span>
+                                </div>
+                                <button class="task-row-btn">详情</button>
+                            </div>
+                        </div>
+                        <div class="task-row" onclick="window.location.href='task-management.html'">
+                            <div class="task-row-left">
+                                <span class="task-row-name">Linux基础命令练习</span>
+                                <span class="task-row-meta">关联班级 ｜ 工业互联网 2301</span>
+                            </div>
+                            <div class="task-row-right">
+                                <div class="task-progress-mini">
+                                    <span class="label">完成率:</span>
+                                    <div class="bar"><div class="bar-fill" style="width: 95%;"></div></div>
+                                    <span class="pct">95%</span>
+                                </div>
+                                <button class="task-row-btn">详情</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="ai-card">
-                        <div>
-                            <div class="ai-card-icon">🎨</div>
-                            <div class="ai-card-title">AI课件生成</div>
-                            <div class="ai-card-desc">一键生成精美教学课件PPT</div>
+                </div>
+
+                <!-- 右：教学数据趋势 -->
+                <div class="panel-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div class="panel-header">
+                            <h3>📊 教学数据趋势</h3>
+                            <span class="meta">近7日统计</span>
+                        </div>
+                        <!-- 趋势柱状图 -->
+                        <div class="trend-chart">
+                            <div class="trend-bar-item">
+                                <div class="trend-bar-wrap">
+                                    <div class="trend-bar" style="height: 60%; position: relative;">
+                                        <span class="trend-bar-val">96</span>
+                                    </div>
+                                </div>
+                                <span class="trend-bar-label">05-27</span>
+                            </div>
+                            <div class="trend-bar-item">
+                                <div class="trend-bar-wrap">
+                                    <div class="trend-bar" style="height: 70%; position: relative;">
+                                        <span class="trend-bar-val">112</span>
+                                    </div>
+                                </div>
+                                <span class="trend-bar-label">05-28</span>
+                            </div>
+                            <div class="trend-bar-item">
+                                <div class="trend-bar-wrap">
+                                    <div class="trend-bar" style="height: 66%; position: relative;">
+                                        <span class="trend-bar-val">105</span>
+                                    </div>
+                                </div>
+                                <span class="trend-bar-label">05-29</span>
+                            </div>
+                            <div class="trend-bar-item">
+                                <div class="trend-bar-wrap">
+                                    <div class="trend-bar" style="height: 84%; position: relative;">
+                                        <span class="trend-bar-val">134</span>
+                                    </div>
+                                </div>
+                                <span class="trend-bar-label">05-30</span>
+                            </div>
+                            <div class="trend-bar-item">
+                                <div class="trend-bar-wrap">
+                                    <div class="trend-bar" style="height: 89%; position: relative;">
+                                        <span class="trend-bar-val">142</span>
+                                    </div>
+                                </div>
+                                <span class="trend-bar-label">05-31</span>
+                            </div>
+                            <div class="trend-bar-item">
+                                <div class="trend-bar-wrap">
+                                    <div class="trend-bar" style="height: 80%; position: relative;">
+                                        <span class="trend-bar-val">128</span>
+                                    </div>
+                                </div>
+                                <span class="trend-bar-label">06-01</span>
+                            </div>
+                            <div class="trend-bar-item">
+                                <div class="trend-bar-wrap">
+                                    <div class="trend-bar" style="height: 86%; position: relative;">
+                                        <span class="trend-bar-val">138</span>
+                                    </div>
+                                </div>
+                                <span class="trend-bar-label">06-02</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="ai-card">
-                        <div>
-                            <div class="ai-card-icon">📚</div>
-                            <div class="ai-card-title">AI题库设计</div>
-                            <div class="ai-card-desc">智能生成多样化练习题目</div>
+                    <!-- 指标小卡片 -->
+                    <div class="indicator-grid">
+                        <div class="indicator-card">
+                            <div class="label">平均任务完成率</div>
+                            <div class="value">
+                                <span class="num">78%</span>
+                                <span class="trend">↑ 3.2%</span>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="label">学生平均学习时长</div>
+                            <div class="value">
+                                <span class="num">3.6</span>
+                                <span class="unit">小时</span>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="label">报告自动提交率</div>
+                            <div class="value">
+                                <span class="num">82%</span>
+                                <span class="unit">达标</span>
+                            </div>
+                        </div>
+                        <div class="indicator-card">
+                            <div class="label">AI教辅工具调用</div>
+                            <div class="value">
+                                <span class="num">24</span>
+                                <span class="unit">次</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- 任务概览和班级学情 -->
-            <div class="content-two-cols">
-                <!-- 任务概览列表 -->
-                <div class="task-overview">
-                    <div class="section-header">
-                        <h2 class="section-title">
-                            <span class="section-icon">📋</span>
-                            任务概览
-                        </h2>
-                        <a href="#" class="view-all">查看全部 →</a>
+
+            <!-- 我的班级概览 + 我的课程概览 -->
+            <div class="classes-courses-row">
+                <!-- 班级概览 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>🏫 我的班级概览</h3>
+                        <span class="meta">4 个负责班级</span>
                     </div>
-                    <div class="task-list">
-                        <div class="task-item">
-                            <div class="task-left">
-                                <div class="task-type-icon homework">📝</div>
-                                <div class="task-info">
-                                    <h4>第三章课后习题</h4>
-                                    <div class="task-meta">高一(3)班 · 下发时间: 2024-01-15</div>
-                                </div>
+                    <div class="overview-list">
+                        <div class="overview-item" onclick="window.location.href='task-management.html'">
+                            <div class="overview-item-left">
+                                <span class="overview-item-name">物联网 2301 班</span>
+                                <span class="overview-item-meta">班级学生数 ｜ 42 人</span>
                             </div>
-                            <div class="task-right">
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill high" style="width: 92%;"></div>
-                                    </div>
-                                    <div class="progress-text">完成率 92%</div>
-                                </div>
+                            <div class="overview-item-right">
+                                <span class="overview-badge amber">进行中 5 个</span>
+                                <span class="overview-arrow">›</span>
                             </div>
                         </div>
-                        <div class="task-item">
-                            <div class="task-left">
-                                <div class="task-type-icon exam">📊</div>
-                                <div class="task-info">
-                                    <h4>月度测试卷</h4>
-                                    <div class="task-meta">高一(2)班 · 下发时间: 2024-01-14</div>
-                                </div>
+                        <div class="overview-item" onclick="window.location.href='task-management.html'">
+                            <div class="overview-item-left">
+                                <span class="overview-item-name">物联网 2302 班</span>
+                                <span class="overview-item-meta">班级学生数 ｜ 39 人</span>
                             </div>
-                            <div class="task-right">
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill high" style="width: 88%;"></div>
-                                    </div>
-                                    <div class="progress-text">完成率 88%</div>
-                                </div>
+                            <div class="overview-item-right">
+                                <span class="overview-badge amber">进行中 4 个</span>
+                                <span class="overview-arrow">›</span>
                             </div>
                         </div>
-                        <div class="task-item">
-                            <div class="task-left">
-                                <div class="task-type-icon practice">🎯</div>
-                                <div class="task-info">
-                                    <h4>函数练习题组</h4>
-                                    <div class="task-meta">高一(1)班 · 下发时间: 2024-01-13</div>
-                                </div>
+                        <div class="overview-item" onclick="window.location.href='task-management.html'">
+                            <div class="overview-item-left">
+                                <span class="overview-item-name">人工智能 2301 班</span>
+                                <span class="overview-item-meta">班级学生数 ｜ 45 人</span>
                             </div>
-                            <div class="task-right">
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill medium" style="width: 75%;"></div>
-                                    </div>
-                                    <div class="progress-text">完成率 75%</div>
-                                </div>
+                            <div class="overview-item-right">
+                                <span class="overview-badge amber">进行中 3 个</span>
+                                <span class="overview-arrow">›</span>
                             </div>
                         </div>
-                        <div class="task-item">
-                            <div class="task-left">
-                                <div class="task-type-icon homework">📝</div>
-                                <div class="task-info">
-                                    <h4>几何证明专项训练</h4>
-                                    <div class="task-meta">高一(4)班 · 下发时间: 2024-01-12</div>
-                                </div>
+                        <div class="overview-item" onclick="window.location.href='task-management.html'">
+                            <div class="overview-item-left">
+                                <span class="overview-item-name">工业互联网 2301 班</span>
+                                <span class="overview-item-meta">班级学生数 ｜ 36 人</span>
                             </div>
-                            <div class="task-right">
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill medium" style="width: 68%;"></div>
-                                    </div>
-                                    <div class="progress-text">完成率 68%</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-left">
-                                <div class="task-type-icon practice">🎯</div>
-                                <div class="task-info">
-                                    <h4>期中复习资料</h4>
-                                    <div class="task-meta">高一(5)班 · 下发时间: 2024-01-11</div>
-                                </div>
-                            </div>
-                            <div class="task-right">
-                                <div class="task-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill low" style="width: 45%;"></div>
-                                    </div>
-                                    <div class="progress-text">完成率 45%</div>
-                                </div>
+                            <div class="overview-item-right">
+                                <span class="overview-badge amber">进行中 2 个</span>
+                                <span class="overview-arrow">›</span>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- 班级学情概览 -->
-                <div class="class-overview">
-                    <div class="section-header">
-                        <h2 class="section-title">
-                            <span class="section-icon">📊</span>
-                            班级学情概览
-                        </h2>
+
+                <!-- 课程概览 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>📖 我的课程概览</h3>
+                        <span class="meta">12 门总课程</span>
                     </div>
-                    <div class="chart-container">
-                        <div class="bar-chart">
-                            <div class="bar-item">
-                                <div class="bar-wrapper">
-                                    <div class="bar" style="height: 85%; background: linear-gradient(180deg, #475569, #64748B);">
-                                        <span class="bar-value">85%</span>
-                                    </div>
-                                </div>
-                                <div class="bar-label">高一(1)班</div>
+                    <div class="overview-list">
+                        <div class="overview-item" onclick="window.location.href='course-hall.html'">
+                            <div class="overview-item-left">
+                                <span class="overview-item-name">物联网设备开发实战</span>
+                                <span class="overview-item-meta">学生 81 ｜ 任务 12</span>
                             </div>
-                            <div class="bar-item">
-                                <div class="bar-wrapper">
-                                    <div class="bar" style="height: 92%; background: linear-gradient(180deg, #475569, #64748B);">
-                                        <span class="bar-value">92%</span>
-                                    </div>
-                                </div>
-                                <div class="bar-label">高一(2)班</div>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar-wrapper">
-                                    <div class="bar" style="height: 78%; background: linear-gradient(180deg, #475569, #64748B);">
-                                        <span class="bar-value">78%</span>
-                                    </div>
-                                </div>
-                                <div class="bar-label">高一(3)班</div>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar-wrapper">
-                                    <div class="bar" style="height: 88%; background: linear-gradient(180deg, #475569, #64748B);">
-                                        <span class="bar-value">88%</span>
-                                    </div>
-                                </div>
-                                <div class="bar-label">高一(4)班</div>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar-wrapper">
-                                    <div class="bar" style="height: 72%; background: linear-gradient(180deg, #475569, #64748B);">
-                                        <span class="bar-value">72%</span>
-                                    </div>
-                                </div>
-                                <div class="bar-label">高一(5)班</div>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar-wrapper">
-                                    <div class="bar" style="height: 95%; background: linear-gradient(180deg, #475569, #64748B);">
-                                        <span class="bar-value">95%</span>
-                                    </div>
-                                </div>
-                                <div class="bar-label">高一(6)班</div>
+                            <div class="overview-item-right">
+                                <span class="overview-badge muted">更新 06-01</span>
+                                <span class="overview-arrow">›</span>
                             </div>
                         </div>
-                    </div>
-                    <div style="margin-top: var(--space-2); padding: var(--space-2); background: var(--bg-body); border-radius: var(--radius-base);">
-                        <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-1);">整体完成情况</div>
-                        <div style="display: flex; align-items: center; gap: var(--space-2);">
-                            <div style="flex: 1; height: 8px; background: var(--border-light); border-radius: var(--radius-full); overflow: hidden;">
-                                <div style="width: 85%; height: 100%; background: linear-gradient(90deg, #475569, #64748B); border-radius: var(--radius-full);"></div>
+                        <div class="overview-item" onclick="window.location.href='course-hall.html'">
+                            <div class="overview-item-left">
+                                <span class="overview-item-name">Linux操作系统</span>
+                                <span class="overview-item-meta">学生 45 ｜ 任务 8</span>
                             </div>
-                            <span style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--primary-blue);">85%</span>
+                            <div class="overview-item-right">
+                                <span class="overview-badge muted">更新 05-28</span>
+                                <span class="overview-arrow">›</span>
+                            </div>
+                        </div>
+                        <div class="overview-item" onclick="window.location.href='course-hall.html'">
+                            <div class="overview-item-left">
+                                <span class="overview-item-name">边缘计算技术应用</span>
+                                <span class="overview-item-meta">学生 36 ｜ 任务 10</span>
+                            </div>
+                            <div class="overview-item-right">
+                                <span class="overview-badge muted">更新 05-30</span>
+                                <span class="overview-arrow">›</span>
+                            </div>
+                        </div>
+                        <div class="overview-item" onclick="window.location.href='course-hall.html'">
+                            <div class="overview-item-left">
+                                <span class="overview-item-name">工业互联网应用开发</span>
+                                <span class="overview-item-meta">学生 42 ｜ 任务 6</span>
+                            </div>
+                            <div class="overview-item-right">
+                                <span class="overview-badge muted">更新 06-02</span>
+                                <span class="overview-arrow">›</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-    
-    <script>
-        // AI卡片点击交互
-        document.querySelectorAll('.ai-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const title = this.querySelector('.ai-card-title').textContent;
-                alert(`即将打开: ${title}`);
-            });
-        });
-        
-        // 任务项点击交互
-        document.querySelectorAll('.task-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const taskName = this.querySelector('h4').textContent;
-                console.log('查看任务详情:', taskName);
-            });
-        });
-        
-        // 侧边栏导航交互
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-        
-        // 顶部导航交互
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-    </script>
+
     <script src="js/platform-shell.js"></script>
 </body>
 </html>

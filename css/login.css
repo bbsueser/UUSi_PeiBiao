@@ -82,28 +82,28 @@ body {
 .login-brand {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
     margin-bottom: var(--space-5);
 }
 
-.login-brand-icon {
-    width: 48px;
-    height: 48px;
-    background: var(--primary-blue);
-    border-radius: var(--radius-base);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-2xl);
-    color: white;
-    box-shadow: var(--shadow-lg);
+/* 星朴XP-AI001 品牌标识（透明底PNG，大图展示保证副标题可读） */
+.login-brand-logo {
+    height: 88px;
+    width: auto;
+    display: block;
 }
 
-.login-brand-text {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    letter-spacing: -0.02em;
+/* 登录卡内的品牌完整 logo 图 */
+.login-card h1.login-card-brand {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.login-brand-mark {
+    height: 52px;
+    width: auto;
+    flex: 0 0 auto;
+    display: block;
 }
 
 /* 宣传语 */
